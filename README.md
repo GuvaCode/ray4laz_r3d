@@ -140,6 +140,6 @@ Licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
 
 ## Screenshots
 
-![](examples/screenshots/sponza.webp)
-![](examples/screenshots/pbr.webp)
-![](examples/screenshots/skybox.webp)
+![](screenshots/sponza.webp)
+![](screenshots/pbr.webp)
+![](screenshots/skybox.webp)
