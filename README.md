@@ -1,4 +1,4 @@
-# R3D - 3D Rendering Library for raylib
+# ![R3D](https://github.com/Bigfoot71/r3d) - 3D Rendering Library for raylib (free pascal binding)
 
 <img align="left" src="https://github.com/Bigfoot71/r3d/blob/master/logo.png" width="100" hspace="20">
 <br>
