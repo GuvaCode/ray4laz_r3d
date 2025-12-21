@@ -69,7 +69,7 @@ begin
   Result := '[r3d] - Transparency example';
 end;
 
-procedure Update(delta: Single);
+procedure Update({%H-}delta: Single);
 begin
   UpdateCamera(@Camera, CAMERA_ORBITAL);
 end;

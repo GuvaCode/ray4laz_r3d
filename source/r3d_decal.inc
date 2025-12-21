@@ -1,3 +1,5 @@
+// R3D Decal Module.
+
 {*
  * @brief Represents a decal and its properties.
  *

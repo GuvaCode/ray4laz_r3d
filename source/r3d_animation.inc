@@ -1,3 +1,4 @@
+// R3D Animation Module.
 
 {*
  * @brief Animation track storing keyframe times and values.

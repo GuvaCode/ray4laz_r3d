@@ -1,3 +1,5 @@
+// R3D Particles Module.
+
 {*
  * @struct R3D_Particle
  * @brief Represents a particle in a 3D particle system, with properties

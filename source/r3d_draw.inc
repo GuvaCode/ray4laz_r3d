@@ -1,3 +1,4 @@
+// R3D Draw Module.
 
 {*
  * @brief Begins a rendering session for a 3D camera.

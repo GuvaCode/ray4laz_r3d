@@ -1,4 +1,4 @@
-
+// R3D Skeleton Module.
 
 {*
  * @brief Stores bone information for skeletal animation.

@@ -1,3 +1,4 @@
+// R3D Environment Module.
 
 {*
  * @brief Bloom effect modes.

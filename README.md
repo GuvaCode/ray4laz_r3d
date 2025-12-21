@@ -5,13 +5,6 @@
 R3D is a modern 3D rendering library for <a href="https://www.raylib.com/">raylib</a> that provides advanced lighting, shadows, materials, and post-processing effects without the complexity of building a full engine from scratch.
 <br clear="left">
 
----
-
-> [!WARNING]
-> **It is recommended to use the pre-release tags.**
-> While you can use the master branch, unexpected (mostly minor) API breaking changes may occur until the first official release is published.
-
----
 
 ## Key Features
 
@@ -24,63 +17,126 @@ R3D is a modern 3D rendering library for <a href="https://www.raylib.com/">rayli
 
 ## Installation
 
-```bash
-git clone --recurse-submodules https://github.com/Bigfoot71/r3d
-cd r3d
-mkdir build && cd build
-cmake ..
-cmake --build .
+```
+Open and complile package/ray4laz_r3d.lpk
 ```
 
-**Requirements**: raylib 5.5+, Assimp, Python 3.6+, OpenGL 3.3+
+**Requirements package**: ray4laz 
 
 ## Quick Start
 
-```c
-#include <r3d.h>
+```pascal
+program R3DExample;
 
-int main(void)
-{
-    InitWindow(800, 600, "R3D Example");
-    R3D_Init(800, 600, 0);
+{$mode objfpc}{$H+}
 
-    // Create scene objects
-    R3D_Mesh mesh = R3D_GenMeshSphere(1.0f, 16, 32, true);
-    R3D_Material material = R3D_GetDefaultMaterial();
+uses
+  raylib, r3d;  
+
+const
+  SCREEN_WIDTH = 800;   // Window width in pixels
+  SCREEN_HEIGHT = 600;  // Window height in pixels
+
+var
+  Mesh: TR3D_Mesh;           // 3D mesh object (sphere)
+  Material: TR3D_Material;   // Material properties for the mesh
+  Light: TR3D_Light;         // Directional light source
+  Camera: TCamera3D;         // 3D camera for viewing the scene
+  ModelRotation: Single = 0.0; // Current rotation angle of the model in degrees
+
+begin
+  // Initialize Raylib window and set target FPS
+  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 'R3D Example');
+  SetTargetFPS(60);  // Target 60 frames per second
+  
+  // Initialize R3D rendering engine with screen resolution and no special flags
+  R3D_Init(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+  
+  // Configure environment settings
+  R3D_SetBackgroundColor(BLACK);  // Set clear color to black
+  R3D_SetAmbientColor(ColorCreate(20, 20, 20, 255));  // Set ambient light to dark gray
+
+  try
+    // === Create 3D objects ===
     
-    // Setup lighting
-    R3D_Light light = R3D_CreateLight(R3D_LIGHT_DIR);
-    R3D_SetLightDirection(light, (Vector3){ -1, -1, -1 });
-    R3D_SetLightActive(light, true);
+    // Generate a sphere mesh with radius 1.0, 16 rings, and 32 slices
+    Mesh := R3D_GenMeshSphere(1.0, 16, 32);
     
-    // Camera setup
-    Camera3D camera = {
-        .position = { -3, 3, 3 },
-        .target = { 0, 0, 0 },
-        .up = { 0, 1, 0 },
-        .fovy = 60.0f,
-        .projection = CAMERA_PERSPECTIVE
-    };
+    // Get default material and set its base color to red
+    Material := R3D_GetDefaultMaterial();
+    Material.albedo.color := RED;
+    
+    // === Setup lighting ===
+    
+    // Create a directional light (simulates sunlight)
+    Light := R3D_CreateLight(R3D_LIGHT_DIR);
+    
+    // Set light direction (coming from top-left-back)
+    R3D_SetLightDirection(Light, Vector3Create(-1, -1, -1));
+    
+    // Set light color to white
+    R3D_SetLightColor(Light, WHITE);
+    
+    // Enable shadows with 2048x2048 resolution shadow map
+    R3D_EnableShadow(Light, 2048);
+    
+    // Activate the light
+    R3D_SetLightActive(Light, True);
+    
+    // === Setup camera ===
+    
+    // Position camera at (-3, 3, 3) looking at origin (0, 0, 0)
+    Camera.position := Vector3Create(-3, 3, 3);
+    Camera.target := Vector3Create(0, 0, 0);
+    Camera.up := Vector3Create(0, 1, 0);  // Y-axis is up
+    Camera.fovy := 60.0;  // Field of view in degrees
+    Camera.projection := CAMERA_PERSPECTIVE;  // Perspective projection
 
-    // Main loop
-    while (!WindowShouldClose()) {
-        BeginDrawing();
-        R3D_Begin(camera);
-        R3D_DrawMesh(&mesh, &material, MatrixIdentity());
-        R3D_End();
-        EndDrawing();
-    }
+    // === Main rendering loop ===
+    while not WindowShouldClose() do  // Continue until window close requested
+    begin
+      // Update rotation angle (1 degree per frame at 60 FPS = 60 degrees per second)
+      ModelRotation := ModelRotation + 1.0;
+      
+      // Begin drawing frame
+      BeginDrawing();
+        // Clear screen with black color
+        ClearBackground(BLACK);
+        
+        // Begin R3D rendering with our camera
+        R3D_Begin(Camera);
+          // Draw the mesh with material, rotated around Y-axis
+          R3D_DrawMesh(@Mesh, @Material, 
+            MatrixRotateY(ModelRotation * DEG2RAD));  // Convert degrees to radians
+        R3D_End();  // End R3D rendering (performs all lighting, shadow, post-processing passes)
+        
+        // Draw 2D overlay text using standard Raylib functions
+        DrawText('R3D Basic Example', 10, 10, 20, LIME);
+        DrawFPS(10, 40);  // Display frames per second counter
+      EndDrawing();  // End drawing frame (swap buffers)
+    end;
 
-    R3D_UnloadMesh(&mesh);
+  finally
+    // === Cleanup resources (always executed, even if exception occurs) ===
+    
+    // Unload mesh data from GPU memory
+    R3D_UnloadMesh(@Mesh);
+    
+    // Unload material and associated textures
+    R3D_UnloadMaterial(@Material);
+    
+    // Shutdown R3D rendering engine
     R3D_Close();
+    
+    // Close Raylib window
     CloseWindow();
-    return 0;
-}
+  end;
+end.
 ```
 
 ## License
 
-Licensed under the **Zlib License** - see [LICENSE](LICENSE) for details.
+Licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
 
 ## Screenshots
 

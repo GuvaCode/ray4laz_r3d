@@ -1,4 +1,4 @@
-
+// R3D Core Module.
 {*
  * @brief Flags to configure the rendering engine behavior.
  *

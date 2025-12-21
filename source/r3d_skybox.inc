@@ -1,3 +1,4 @@
+// R3D SkyBox Module.
 {*
  * @brief Structure representing a skybox and its related textures for lighting.
  *

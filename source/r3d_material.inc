@@ -1,3 +1,4 @@
+// R3D Material Module.
 
 {*
  * @brief Blend modes for rendering.

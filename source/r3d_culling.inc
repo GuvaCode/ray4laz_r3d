@@ -1,3 +1,5 @@
+// R3D Culling Module.
+
 {*
  * @brief Checks if a point is inside the view frustum.
  *

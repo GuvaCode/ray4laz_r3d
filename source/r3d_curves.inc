@@ -1,3 +1,4 @@
+// R3D Curves Module.
 
 {*
  * @brief Represents a keyframe in an interpolation curve.

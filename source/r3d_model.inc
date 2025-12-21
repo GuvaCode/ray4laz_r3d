@@ -1,3 +1,5 @@
+// R3D Model Module.
+
 {*
  * @brief Represents a complete 3D model with meshes and materials.
  *

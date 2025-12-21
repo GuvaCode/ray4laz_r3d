@@ -1,3 +1,4 @@
+// R3D Lighting Module.
 
 {*
  * @brief Types of lights supported by the rendering engine.

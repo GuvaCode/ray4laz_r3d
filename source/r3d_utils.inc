@@ -1,6 +1,4 @@
-// ----------------------------------------
-// UTILS: Default Texture Retrieval Functions
-// ----------------------------------------
+// R3D Utility Module.
 
 {*
  * @brief Retrieves a default white texture.

@@ -2,7 +2,7 @@
 (*
  * r3d header for pascal 2025 Gunko Vadim @guvacode
  * this is part of ray4laz project
- * original code r3d by Le Juez Victor
+ * original c lang code r3d by Le Juez Victor
  * https://github.com/Bigfoot71/r3d
  *
  * This software is provided "as-is", without any express or implied warranty. In no event
@@ -29,32 +29,27 @@ interface
 uses
   raylib;
 
-
 const
   r3dName =
-    {$IFDEF WINDOWS} 'libr3d.dll'; {$IFEND}
-    {$IFDEF LINUX} 'libr3d.so'; {$IFEND}
+  {$IFDEF WINDOWS} 'libr3d.dll'; {$IFEND}
+  {$IFDEF LINUX} 'libr3d.so'; {$IFEND}
 
-{$I r3d_core.inc}
-{$I r3d_culling.inc}
-{$I r3d_curves.inc}
-
-{$I r3d_skybox.inc}
-{$I r3d_environment.inc}
-{$I r3d_lighting.inc}
-{$I r3d_material.inc}
-{$I r3d_decal.inc}
-{$I r3d_skeleton.inc}
-{$I r3d_animation.inc}
-{$I r3d_mesh_data.inc}
-{$I r3d_mesh.inc}
-{$I r3d_model.inc}
-{$I r3d_particles.inc}
-
-
-
-{$I r3d_utils.inc}
-{$I r3d_draw.inc}
+  {$I r3d_core.inc}
+  {$I r3d_culling.inc}
+  {$I r3d_curves.inc}
+  {$I r3d_skybox.inc}
+  {$I r3d_environment.inc}
+  {$I r3d_lighting.inc}
+  {$I r3d_material.inc}
+  {$I r3d_decal.inc}
+  {$I r3d_skeleton.inc}
+  {$I r3d_animation.inc}
+  {$I r3d_mesh_data.inc}
+  {$I r3d_mesh.inc}
+  {$I r3d_model.inc}
+  {$I r3d_particles.inc}
+  {$I r3d_utils.inc}
+  {$I r3d_draw.inc}
 
 implementation
 
