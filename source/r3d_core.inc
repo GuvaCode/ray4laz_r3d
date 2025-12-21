@@ -1,0 +1,214 @@
+
+{*
+ * @brief Flags to configure the rendering engine behavior.
+ *
+ * These flags control various aspects of the rendering pipeline.
+ *}
+type
+  TR3D_Flags = LongWord;
+
+const
+  R3D_FLAG_NONE                   = 0;          ///< No special rendering flags
+  R3D_FLAG_FXAA                  = (1 shl 0);   ///< Enables Fast Approximate Anti-Aliasing (FXAA)
+  R3D_FLAG_BLIT_LINEAR           = (1 shl 1);   ///< Uses linear filtering when blitting the final image
+  R3D_FLAG_ASPECT_KEEP           = (1 shl 2);   ///< Maintains the aspect ratio of the internal resolution when blitting the final image
+  R3D_FLAG_8_BIT_NORMALS         = (1 shl 3);   ///< Use 8-bit precision for the normals buffer (deferred); default is 16-bit float
+  R3D_FLAG_NO_FRUSTUM_CULLING    = (1 shl 4);   ///< Disables internal frustum culling. Manual culling is allowed, but may break shadow visibility if objects casting shadows are skipped.
+  R3D_FLAG_TRANSPARENT_SORTING   = (1 shl 5);   ///< Back-to-front sorting of transparent objects for correct blending of non-discarded fragments. Be careful, in 'force forward' mode this flag will also sort opaque objects in 'near-to-far' but in the same sorting pass.
+  R3D_FLAG_OPAQUE_SORTING        = (1 shl 6);   ///< Front-to-back sorting of opaque objects to optimize depth testing at the cost of additional sorting. Please note, in 'force forward' mode this flag has no effect, see transparent sorting.
+  R3D_FLAG_LOW_PRECISION_BUFFERS = (1 shl 7);   ///< Use 32-bit HDR formats like R11G11B10F for intermediate color buffers instead of full 16-bit floats. Saves memory and bandwidth.
+
+{*
+ * @brief Bitfield type used to specify rendering layers for 3D objects.
+ *
+ * This type is used by `R3D_Mesh` and `R3D_Sprite` objects to indicate
+ * which rendering layer(s) they belong to. Active layers are controlled
+ * globally via the functions:
+ *
+ * - void R3D_EnableLayers(R3D_Layer bitfield);
+ * - void R3D_DisableLayers(R3D_Layer bitfield);
+ *
+ * A mesh or sprite will be rendered if at least one of its assigned layers is active.
+ *
+ * For simplicity, 16 layers are defined in this header, but the maximum number
+ * of layers is 32 for an uint32_t.
+ *}
+type
+  TR3D_Layer = LongWord;
+
+const
+  R3D_LAYER_01 = (1 shl 0);
+  R3D_LAYER_02 = (1 shl 1);
+  R3D_LAYER_03 = (1 shl 2);
+  R3D_LAYER_04 = (1 shl 3);
+  R3D_LAYER_05 = (1 shl 4);
+  R3D_LAYER_06 = (1 shl 5);
+  R3D_LAYER_07 = (1 shl 6);
+  R3D_LAYER_08 = (1 shl 7);
+  R3D_LAYER_09 = (1 shl 8);
+  R3D_LAYER_10 = (1 shl 9);
+  R3D_LAYER_11 = (1 shl 10);
+  R3D_LAYER_12 = (1 shl 11);
+  R3D_LAYER_13 = (1 shl 12);
+  R3D_LAYER_14 = (1 shl 13);
+  R3D_LAYER_15 = (1 shl 14);
+  R3D_LAYER_16 = (1 shl 15);
+  R3D_LAYER_ALL = $FFFFFFFF;
+
+// ========================================
+// PUBLIC API
+// ========================================
+
+{*
+ * @brief Initializes the rendering engine.
+ *
+ * This function sets up the internal rendering system with the provided resolution
+ * and state flags, which define the internal behavior. These flags can be modified
+ * later via R3D_SetState.
+ *
+ * @param resWidth Width of the internal resolution.
+ * @param resHeight Height of the internal resolution.
+ * @param flags Flags indicating internal behavior (modifiable via R3D_SetState).
+ *}
+procedure R3D_Init(resWidth, resHeight: Integer; flags: LongWord); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_Init';
+
+{*
+ * @brief Closes the rendering engine and deallocates all resources.
+ *
+ * This function shuts down the rendering system and frees all allocated memory,
+ * including the resources associated with the created lights.
+ *}
+procedure R3D_Close; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_Close';
+
+{*
+ * @brief Checks if a specific internal state flag is set.
+ *
+ * @param flag The state flag to check.
+ * @return True if the flag is set, false otherwise.
+ *}
+function R3D_HasState(flag: LongWord): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_HasState';
+
+{*
+ * @brief Sets internal state flags for the rendering engine.
+ *
+ * This function modifies the behavior of the rendering engine by setting one or more
+ * state flags. Flags can be later cleared with R3D_ClearState.
+ *
+ * @param flags The flags to set.
+ *}
+procedure R3D_SetState(flags: LongWord); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetState';
+
+{*
+ * @brief Clears specific internal state flags.
+ *
+ * This function clears one or more previously set state flags, modifying the
+ * behavior of the rendering engine accordingly.
+ *
+ * @param flags The flags to clear.
+ *}
+procedure R3D_ClearState(flags: LongWord); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ClearState';
+
+{*
+ * @brief Gets the current internal resolution.
+ *
+ * This function retrieves the current internal resolution being used by the
+ * rendering engine.
+ *
+ * @param width Pointer to store the width of the internal resolution.
+ * @param height Pointer to store the height of the internal resolution.
+ *}
+procedure R3D_GetResolution(width, height: PInteger); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetResolution';
+
+{*
+ * @brief Updates the internal resolution.
+ *
+ * This function changes the internal resolution of the rendering engine. Note that
+ * this process destroys and recreates all framebuffers, which may be a slow operation.
+ *
+ * @param width The new width for the internal resolution.
+ * @param height The new height for the internal resolution.
+ *
+ * @warning This function may be slow due to the destruction and recreation of framebuffers.
+ *}
+procedure R3D_UpdateResolution(width, height: Integer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UpdateResolution';
+
+{*
+ * @brief Defines the bounds of the scene for directional light calculations.
+ *
+ * This function sets the scene bounds used to determine which areas should be illuminated
+ * by directional lights. It is the user's responsibility to calculate and provide the
+ * correct bounds.
+ *
+ * @param sceneBounds The bounding box defining the scene's dimensions.
+ *}
+procedure R3D_SetSceneBounds(sceneBounds: TBoundingBox); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetSceneBounds';
+
+{*
+ * @brief Sets the default texture filtering mode.
+ *
+ * This function defines the default texture filter that will be applied to all subsequently
+ * loaded textures, including those used in materials, sprites, and other resources.
+ *
+ * If a trilinear or anisotropic filter is selected, mipmaps will be automatically generated
+ * for the textures, but they will not be generated when using nearest or bilinear filtering.
+ *
+ * The default texture filter mode is `TEXTURE_FILTER_TRILINEAR`.
+ *
+ * @param filter The texture filtering mode to be applied by default.
+ *}
+procedure R3D_SetTextureFilter(filter: Integer); cdecl; // Используем Integer вместо TTextureFilter
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetTextureFilter';
+
+{*
+ * @brief Get the currently active global rendering layers.
+ *
+ * Returns the bitfield representing the currently active layers in the renderer.
+ * By default, the internal active layers are set to 0, which means that any
+ * non-zero layer assigned to an object will NOT be rendered unless explicitly
+ * activated.
+ *
+ * @return R3D_Layer Bitfield of active layers.
+ *}
+function R3D_GetActiveLayers: TR3D_Layer; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetActiveLayers';
+
+{*
+ * @brief Set the active global rendering layers.
+ *
+ * Replaces the current set of active layers with the given bitfield.
+ *
+ * @param layers Bitfield representing the layers to activate.
+ *}
+procedure R3D_SetActiveLayers(layers: TR3D_Layer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetActiveLayers';
+
+{*
+ * @brief Enable one or more layers without affecting other active layers.
+ *
+ * This function sets the bits in the global active layers corresponding to
+ * the bits in the provided bitfield. Layers already active remain active.
+ *
+ * @param bitfield Bitfield representing one or more layers to enable.
+ *}
+procedure R3D_EnableLayers(bitfield: TR3D_Layer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EnableLayers';
+
+{*
+ * @brief Disable one or more layers without affecting other active layers.
+ *
+ * This function clears the bits in the global active layers corresponding to
+ * the bits in the provided bitfield. Layers not included in the bitfield
+ * remain unchanged.
+ *
+ * @param bitfield Bitfield representing one or more layers to disable.
+ *}
+procedure R3D_DisableLayers(bitfield: TR3D_Layer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DisableLayers';
