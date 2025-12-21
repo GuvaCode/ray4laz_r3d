@@ -1,13 +1,7 @@
 #!/bin/bash
 
 rm -f ../libs/x86_64-linux/libr3d*
-rm -f ../libs/x86_64-linux/libassimp*
-rm -f ../libs/x86_32-linux/libr3d*
-rm -f ../libs/x86_32-linux/libassimp*
-rm -f ../libs/x86_64-win64/libr3d*
-rm -f ../libs/x86_64-win64/libassimp*
-rm -f ../libs/i386-win32/libr3d*
-rm -f ../libs/i386-win32/libassimp*
+
 
 
 git clone https://github.com/raysan5/raylib.git
@@ -36,7 +30,7 @@ echo " "
 cmake .. \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DBUILD_SHARED_LIBS=ON \
-    -DR3D_BUILD_EXAMPLES=ON \
+    -DR3D_BUILD_EXAMPLES=OFF \
     -DR3D_RAYLIB_VENDORED=ON \
     -DR3D_ASSIMP_VENDORED=ON \
     -DR3D_BUILD_DOCS=OFF 
@@ -44,3 +38,38 @@ cmake .. \
 cmake --build .
 
 cp libr3d.so ../../../libs/x86_64-linux/libr3d.so
+cd ../../
+
+
+
+echo " "
+echo " -------------------------- "
+echo " Build R3D x86_64_WINDOWS   "
+echo " -------------------------- "
+echo " "
+
+cp mingw-w64-x86_64.cmake r3d/mingw-w64-x86_64.cmake
+
+cd r3d
+mkdir build_win64
+cd build_win64
+
+cmake .. \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake \
+    -DCMAKE_PREFIX_PATH=$(pwd)/../external/raylib \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DBUILD_SHARED_LIBS=ON \
+    -DR3D_BUILD_EXAMPLES=OFF \
+    -DR3D_RAYLIB_VENDORED=ON \
+    -DR3D_ASSIMP_VENDORED=ON \
+    -DR3D_BUILD_DOCS=OFF 
+
+
+cmake --build .
+
+cp libr3d.dll ../../../libs/x86_64-linux/libr3d.dll
+
+
+
+
+
