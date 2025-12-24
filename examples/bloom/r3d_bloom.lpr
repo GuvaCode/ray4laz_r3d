@@ -3,166 +3,158 @@ program BloomExample;
 {$mode objfpc}{$H+}
 
 uses
-  Math, SysUtils,
-  raylib, raymath, r3d;
+  SysUtils, Math,
+  raylib, raymath,
+  r3d;
 
+// Прямой порт на Паскаль
+
+function IsKeyDownDelay(key: Integer): Boolean;
+begin
+  Result := IsKeyPressedRepeat(key) or IsKeyPressed(key);
+end;
+
+function GetBloomModeName: string;
 const
-  SCREEN_WIDTH = 800;
-  SCREEN_HEIGHT = 600;
-
+  modes: array[0..3] of string = ('Disabled', 'Mix', 'Additive', 'Screen');
 var
-  // === Resources ===
-  Cube: TR3D_Mesh;
-  Material: TR3D_Material;
-  Camera: TCamera3D;
-  HueCube: Single;
-
-// === Local Functions ===
-
-function GetBloomModeName(mode: TR3D_Bloom): PAnsiChar;
+  env: PR3D_Environment;
+  mode: Integer;
 begin
-  case R3D_GetBloomMode() of
-    R3D_BLOOM_DISABLED:
-      Result := 'Disabled';
-    R3D_BLOOM_MIX:
-      Result := 'Mix';
-    R3D_BLOOM_ADDITIVE:
-      Result := 'Additive';
-    R3D_BLOOM_SCREEN:
-      Result := 'Screen';
+  env := R3D_GetEnvironment();
+  if Assigned(env) then
+  begin
+    mode := Integer(env^.bloom.mode);
+    if (mode >= 0) and (mode <= Integer(R3D_BLOOM_SCREEN)) then
+      Result := modes[mode]
+    else
+      Result := 'Unknown';
+  end
   else
-    Result := 'Unknown';
-  end;
+    Result := 'No Environment';
 end;
 
-// === Example ===
-
-procedure InitExample;
-begin
-  // --- Initialize R3D with its internal resolution ---
-  R3D_Init(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-  SetTargetFPS(60);
-
-  // --- Setup the default bloom parameters ---
-  R3D_SetTonemapMode(R3D_TONEMAP_ACES);
-  R3D_SetBloomMode(R3D_BLOOM_MIX);
-  R3D_SetBackgroundColor(BLACK);
-
-  // --- Load a cube mesh and setup its material ---
-  Cube := R3D_GenMeshCube(1.0, 1.0, 1.0);
-  Material := R3D_GetDefaultMaterial();
-
-  HueCube := 0.0;
-  Material.emission.color := ColorFromHSV(HueCube, 1.0, 1.0);
-  Material.emission.energy := 1.0;
-  Material.albedo.color := BLACK;
-
-  // --- Setup the camera ---
-  Camera.position := Vector3Create(0, 3.5, 5);
-  Camera.target := Vector3Create(0, 0, 0);
-  Camera.up := Vector3Create(0, 1, 0);
-  Camera.fovy := 60;
-  Camera.projection := CAMERA_PERSPECTIVE;
-end;
-
-procedure UpdateExample(Delta: Single);
+procedure DrawTextRight(const text: string; y, fontSize: Integer; color: TColor);
 var
-  HueDir, IntensityDir, RadiusDir: Integer;
-  CurrentBloomMode: TR3D_Bloom;
+  width: Integer;
 begin
-  UpdateCamera(@Camera, CAMERA_ORBITAL);
-
-  // Изменение цвета куба с помощью мыши
-  HueDir := Ord(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) -
-            Ord(IsMouseButtonDown(MOUSE_BUTTON_LEFT));
-
-  if HueDir <> 0 then
-  begin
-    HueCube := Wrap(HueCube + HueDir * 90.0 * Delta, 0, 360);
-    Material.emission.color := ColorFromHSV(HueCube, 1.0, 1.0);
-  end;
-
-  // Изменение интенсивности блюма с помощью клавиш влево/вправо
-  IntensityDir := Ord(IsKeyPressedRepeat(KEY_RIGHT) or IsKeyPressed(KEY_RIGHT)) -
-                  Ord(IsKeyPressedRepeat(KEY_LEFT) or IsKeyPressed(KEY_LEFT));
-
-  if IntensityDir <> 0 then
-  begin
-    R3D_SetBloomIntensity(R3D_GetBloomIntensity() + IntensityDir * 0.01);
-  end;
-
-  // Изменение радиуса фильтра блюма с помощью клавиш вверх/вниз
-  RadiusDir := Ord(IsKeyPressedRepeat(KEY_UP) or IsKeyPressed(KEY_UP)) -
-               Ord(IsKeyPressedRepeat(KEY_DOWN) or IsKeyPressed(KEY_DOWN));
-
-  if RadiusDir <> 0 then
-  begin
-    R3D_SetBloomFilterRadius(R3D_GetBloomFilterRadius() + RadiusDir);
-  end;
-
-  // Переключение режимов блюма с помощью пробела
-  if IsKeyPressed(KEY_SPACE) then
-  begin
-    CurrentBloomMode := R3D_GetBloomMode();
-    CurrentBloomMode := TR3D_Bloom((Ord(CurrentBloomMode) + 1) mod (Ord(R3D_BLOOM_SCREEN) + 1));
-    R3D_SetBloomMode(CurrentBloomMode);
-  end;
+  width := MeasureText(PChar(text), fontSize);
+  DrawText(PChar(text), GetScreenWidth() - width - 10, y, fontSize, color);
 end;
 
-procedure DrawExample;
+procedure AdjustBloomParam(var param: Single; direction: Integer; step, minVal, maxVal: Single);
+begin
+  if direction <> 0 then
+    param := Clamp(param + direction * step, minVal, maxVal);
+end;
+
+
 var
-  InfoStr: string;
-  InfoLen: Integer;
-begin
-  R3D_Begin(Camera);
-    R3D_DrawMesh(@Cube, @Material, MatrixIdentity());
-  R3D_End();
-
-  // Отрисовка буферов эмиссии и блюма для отладки
-  // Примечание: Эти функции могут быть недоступны в Pascal версии R3D
-  // R3D_DrawBufferEmission(10, 10, 100, 100);
-  // R3D_DrawBufferBloom(120, 10, 100, 100);
-
-  // Отображение информации о настройках блюма
-  InfoStr := Format('Mode: %s', [GetBloomModeName(R3D_GetBloomMode())]);
-  InfoLen := MeasureText(PAnsiChar(InfoStr), 20);
-  DrawText(PAnsiChar(InfoStr), GetScreenWidth() - InfoLen - 10, 10, 20, LIME);
-
-  InfoStr := Format('Intensity: %.2f', [R3D_GetBloomIntensity()]);
-  InfoLen := MeasureText(PAnsiChar(InfoStr), 20);
-  DrawText(PAnsiChar(InfoStr), GetScreenWidth() - InfoLen - 10, 40, 20, LIME);
-
-  InfoStr := Format('Filter Radius: %d', [R3D_GetBloomFilterRadius()]);
-  InfoLen := MeasureText(PAnsiChar(InfoStr), 20);
-  DrawText(PAnsiChar(InfoStr), GetScreenWidth() - InfoLen - 10, 70, 20, LIME);
-end;
-
-procedure CloseExample;
-begin
-  R3D_UnloadMesh(@Cube);
-  R3D_UnloadMaterial(@Material);
-  R3D_Close();
-end;
+  cube: TR3D_Mesh;
+  material: TR3D_Material;
+  hueCube: Single;
+  camera: TCamera3D;
+  delta: Single;
+  env: PR3D_Environment;
+  intensity, radius, levels: Single;
+  intensityDir, radiusDir, levelDir: Integer;
 
 begin
   // Инициализация окна
-  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, '[r3d] - Bloom example');
+  InitWindow(800, 450, '[r3d] - Bloom example');
+  SetTargetFPS(60);
 
-  // Инициализация примера
-  InitExample;
+  // Инициализация R3D
+  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
 
-  // Главный цикл
+  // Получаем указатель на environment
+  env := R3D_GetEnvironment();
+  if not Assigned(env) then
+  begin
+    TraceLog(LOG_ERROR, 'Failed to get R3D environment');
+    CloseWindow();
+    Halt(1);
+  end;
+
+  // Настройка bloom и tonemapping (как в оригинале)
+  env^.tonemap.mode := R3D_TONEMAP_ACES;
+  env^.bloom.mode := R3D_BLOOM_MIX;
+  env^.bloom.levels := 1.0;
+
+  // Установка фона
+  env^.background.color := BLACK;
+
+  // Создание куба и материала
+  cube := R3D_GenMeshCube(1.0, 1.0, 1.0);
+  material := R3D_GetDefaultMaterial();
+
+  hueCube := 0.0;
+  material.emission.color := ColorFromHSV(hueCube, 1.0, 1.0);
+  material.emission.energy := 1.0;
+  material.albedo.color := BLACK;
+
+  // Настройка камеры (аналогично C-коду)
+  camera.position := Vector3Create(0, 3.5, 5);
+  camera.target := Vector3Create(0, 0, 0);
+  camera.up := Vector3Create(0, 1, 0);
+  camera.fovy := 60;
+  camera.projection := CAMERA_PERSPECTIVE;
+
+  // Основной цикл
   while not WindowShouldClose() do
   begin
-    UpdateExample(GetFrameTime());
+    delta := GetFrameTime();
+    UpdateCamera(@camera, CAMERA_ORBITAL);
 
+    // Изменение цвета куба
+    if IsKeyDown(KEY_C) then
+    begin
+      hueCube := Wrap(hueCube + 45.0 * delta, 0, 360);
+      material.emission.color := ColorFromHSV(hueCube, 1.0, 1.0);
+    end;
+
+    // Регулировка параметров bloom
+    intensity := env^.bloom.intensity;
+    intensityDir := Integer(IsKeyDownDelay(KEY_RIGHT)) - Integer(IsKeyDownDelay(KEY_LEFT));
+    AdjustBloomParam(intensity, intensityDir, 0.01, 0.0, MaxSingle); // INFINITY заменено на MaxSingle
+    env^.bloom.intensity := intensity;
+
+    radius := env^.bloom.filterRadius;
+    radiusDir := Integer(IsKeyDownDelay(KEY_UP)) - Integer(IsKeyDownDelay(KEY_DOWN));
+    AdjustBloomParam(radius, radiusDir, 0.1, 0.0, MaxSingle); // INFINITY заменено на MaxSingle
+    env^.bloom.filterRadius := radius;
+
+    levelDir := Integer(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) -
+                Integer(IsMouseButtonDown(MOUSE_BUTTON_LEFT));
+    levels := env^.bloom.levels;
+    AdjustBloomParam(levels, levelDir, 0.01, 0.0, 1.0);
+    env^.bloom.levels := levels;
+
+    // Переключение режима bloom
+    if IsKeyPressed(KEY_SPACE) then
+    begin
+      env^.bloom.mode := TR3D_Bloom((Integer(env^.bloom.mode) + 1) mod (Integer(R3D_BLOOM_SCREEN) + 1));
+    end;
+
+    // Отрисовка сцены
     BeginDrawing();
-      ClearBackground(BLACK);
-      DrawExample;
+      ClearBackground(RAYWHITE);
+
+      R3D_Begin(camera);
+        R3D_DrawMesh(@cube, @material, MatrixIdentity());
+      R3D_End();
+
+      // Отображение информации о bloom
+      DrawTextRight('Mode: ' + GetBloomModeName(), 10, 20, LIME);
+      DrawTextRight(Format('Intensity: %.2f', [env^.bloom.intensity]), 40, 20, LIME);
+      DrawTextRight(Format('Filter Radius: %.2f', [env^.bloom.filterRadius]), 70, 20, LIME);
+      DrawTextRight(Format('Levels: %.2f', [env^.bloom.levels]), 100, 20, LIME);
+
     EndDrawing();
   end;
 
   // Очистка ресурсов
-  CloseExample;
+  R3D_UnloadMesh(@cube);
+  R3D_Close();
   CloseWindow();
 end.

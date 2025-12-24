@@ -7,9 +7,9 @@
  *}
 type
   TR3D_LightType = (
-    R3D_LIGHT_DIR,      ///< Directional light, affects the entire scene with parallel rays.
-    R3D_LIGHT_SPOT,     ///< Spot light, emits light in a cone shape.
-    R3D_LIGHT_OMNI      ///< Omni light, emits light in all directions from a single point.
+    R3D_LIGHT_DIR,    ///< Directional light, affects the entire scene with parallel rays.
+    R3D_LIGHT_SPOT,   ///< Spot light, emits light in a cone shape.
+    R3D_LIGHT_OMNI    ///< Omni light, emits light in all directions from a single point.
   );
 
 {*
@@ -19,25 +19,23 @@ type
  *}
 type
   TR3D_ShadowUpdateMode = (
-    R3D_SHADOW_UPDATE_MANUAL,     ///< Shadow maps update only when explicitly requested.
-    R3D_SHADOW_UPDATE_INTERVAL,   ///< Shadow maps update at defined time intervals.
-    R3D_SHADOW_UPDATE_CONTINUOUS  ///< Shadow maps update every frame for real-time accuracy.
+    R3D_SHADOW_UPDATE_MANUAL,    ///< Shadow maps update only when explicitly requested.
+    R3D_SHADOW_UPDATE_INTERVAL,  ///< Shadow maps update at defined time intervals.
+    R3D_SHADOW_UPDATE_CONTINUOUS ///< Shadow maps update every frame for real-time accuracy.
   );
 
-// ========================================
-// ALIASES TYPES
-// ========================================
-
 {*
- * @brief Represents a unique identifier for a light in R3D.
+ * @brief Unique identifier for an R3D light.
  *
- * This ID is used to reference a specific light when calling R3D lighting functions.
+ * ID type used to reference a light.
+ * A negative value indicates an invalid light.
  *}
 type
-  TR3D_Light = LongWord;
+  TR3D_Light = Int32;
+  PR3D_Light = ^TR3D_Light;
 
 // ========================================
-// PUBLIC API
+// Public API Functions
 // ========================================
 
 // ----------------------------------------
@@ -125,22 +123,22 @@ procedure R3D_SetLightActive(id: TR3D_Light; active: Boolean); cdecl;
 {*
  * @brief Gets the color of a light.
  *
- * This function retrieves the color of the specified light as a `Color` structure.
+ * This function retrieves the color of the specified light as a `TColor` structure.
  *
  * @param id The ID of the light.
- * @return The color of the light as a `Color` structure.
+ * @return The color of the light as a `TColor` structure.
  *}
 function R3D_GetLightColor(id: TR3D_Light): TColor; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightColor';
 
 {*
- * @brief Gets the color of a light as a `Vector3`.
+ * @brief Gets the color of a light as a `TVector3`.
  *
- * This function retrieves the color of the specified light as a `Vector3`, where each
+ * This function retrieves the color of the specified light as a `TVector3`, where each
  * component (x, y, z) represents the RGB values of the light.
  *
  * @param id The ID of the light.
- * @return The color of the light as a `Vector3`.
+ * @return The color of the light as a `TVector3`.
  *}
 function R3D_GetLightColorV(id: TR3D_Light): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightColorV';
@@ -148,7 +146,7 @@ function R3D_GetLightColorV(id: TR3D_Light): TVector3; cdecl;
 {*
  * @brief Sets the color of a light.
  *
- * This function sets the color of the specified light using a `Color` structure.
+ * This function sets the color of the specified light using a `TColor` structure.
  *
  * @param id The ID of the light.
  * @param color The new color to set for the light.
@@ -157,13 +155,13 @@ procedure R3D_SetLightColor(id: TR3D_Light; color: TColor); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightColor';
 
 {*
- * @brief Sets the color of a light using a `Vector3`.
+ * @brief Sets the color of a light using a `TVector3`.
  *
- * This function sets the color of the specified light using a `Vector3`, where each
+ * This function sets the color of the specified light using a `TVector3`, where each
  * component (x, y, z) represents the RGB values of the light.
  *
  * @param id The ID of the light.
- * @param color The new color to set for the light as a `Vector3`.
+ * @param color The new color to set for the light as a `TVector3`.
  *}
 procedure R3D_SetLightColorV(id: TR3D_Light; color: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightColorV';
@@ -175,7 +173,7 @@ procedure R3D_SetLightColorV(id: TR3D_Light; color: TVector3); cdecl;
  * Only applicable to spot lights or omni-lights.
  *
  * @param id The ID of the light.
- * @return The position of the light as a `Vector3`.
+ * @return The position of the light as a `TVector3`.
  *}
 function R3D_GetLightPosition(id: TR3D_Light): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightPosition';
@@ -203,7 +201,7 @@ procedure R3D_SetLightPosition(id: TR3D_Light; position: TVector3); cdecl;
  * Only applicable to directional lights or spot lights.
  *
  * @param id The ID of the light.
- * @return The direction of the light as a `Vector3`.
+ * @return The direction of the light as a `TVector3`.
  *}
 function R3D_GetLightDirection(id: TR3D_Light): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightDirection';
@@ -304,14 +302,13 @@ function R3D_GetLightRange(id: TR3D_Light): Single; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightRange';
 
 {*
- * @brief Sets the range of a light.
+ * @brief Sets the range parameter of a light.
  *
- * This function sets the range of the specified light.
- * The range determines how far the light can illuminate the scene before it fades out.
- * Only applicable to spot lights or omni-lights.
+ * For spot and omni lights, this defines the maximum illumination distance.
+ * For directional lights, this defines the shadow rendering radius around the camera.
  *
  * @param id The ID of the light.
- * @param range The new range to set for the light.
+ * @param range The range value to apply.
  *}
 procedure R3D_SetLightRange(id: TR3D_Light; range: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightRange';
@@ -397,28 +394,30 @@ procedure R3D_SetLightOuterCutOff(id: TR3D_Light; degrees: Single); cdecl;
 // ----------------------------------------
 
 {*
- * @brief Enables shadow casting for a light and sets the resolution of its shadow map.
+ * @brief Enables shadow casting for a light and sets its shadow map resolution.
  *
- * This function enables shadow casting for a specified light and allocates a shadow map with the specified resolution.
- * Shadows can be rendered from the light based on this shadow map.
+ * Allocates a shadow map at the given resolution and enables shadow rendering.
+ * This function can be called multiple times to resize the shadow map, but doing so
+ * reallocates GPU resources and has a performance cost.
  *
- * @param id The ID of the light for which shadows should be enabled.
- * @param resolution The resolution of the shadow map to be used by the light.
+ * @param id The ID of the light.
+ * @param resolution The shadow map resolution.
+ *
+ * @note Shadow maps are memory-intensive. High resolutions (e.g. 4K) consume significant
+ * GPU memory; creating many high-resolution shadow maps may lead crashes...
  *}
 procedure R3D_EnableShadow(id: TR3D_Light; resolution: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EnableShadow';
 
 {*
- * @brief Disables shadow casting for a light and optionally destroys its shadow map.
+ * @brief Disables shadow casting for a light.
  *
- * This function disables shadow casting for the specified light and optionally frees the memory
- * used by its shadow map. If `destroyMap` is true, the shadow map will be destroyed, otherwise,
- * the map will be retained but the light will no longer cast shadows.
+ * Disables shadow rendering for the light. The shadow map is preserved in memory,
+ * and may be reused later, even if the light itself is destroyed.
  *
- * @param id The ID of the light for which shadows should be disabled.
- * @param destroyMap Whether or not to destroy the shadow map associated with the light.
+ * @param id The ID of the light.
  *}
-procedure R3D_DisableShadow(id: TR3D_Light; destroyMap: Boolean); cdecl;
+procedure R3D_DisableShadow(id: TR3D_Light); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DisableShadow';
 
 {*
@@ -431,17 +430,6 @@ procedure R3D_DisableShadow(id: TR3D_Light; destroyMap: Boolean); cdecl;
  *}
 function R3D_IsShadowEnabled(id: TR3D_Light): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsShadowEnabled';
-
-{*
- * @brief Checks if a light has an associated shadow map.
- *
- * This function checks if the specified light has a shadow map allocated for it.
- *
- * @param id The ID of the light.
- * @return True if the light has a shadow map, false otherwise.
- *}
-function R3D_HasShadowMap(id: TR3D_Light): Boolean; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_HasShadowMap';
 
 {*
  * @brief Gets the shadow map update mode of a light.
@@ -585,7 +573,7 @@ procedure R3D_SetShadowSlopeBias(id: TR3D_Light; value: Single); cdecl;
  *
  * @param light The light for which to compute the bounding box.
  *
- * @return A BoundingBox struct that encloses the light's influence volume.
+ * @return A TBoundingBox struct that encloses the light's influence volume.
  *}
 function R3D_GetLightBoundingBox(light: TR3D_Light): TBoundingBox; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightBoundingBox';

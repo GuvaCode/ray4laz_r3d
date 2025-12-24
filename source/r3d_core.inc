@@ -12,11 +12,9 @@ const
   R3D_FLAG_FXAA                  = (1 shl 0);   ///< Enables Fast Approximate Anti-Aliasing (FXAA)
   R3D_FLAG_BLIT_LINEAR           = (1 shl 1);   ///< Uses linear filtering when blitting the final image
   R3D_FLAG_ASPECT_KEEP           = (1 shl 2);   ///< Maintains the aspect ratio of the internal resolution when blitting the final image
-  R3D_FLAG_8_BIT_NORMALS         = (1 shl 3);   ///< Use 8-bit precision for the normals buffer (deferred); default is 16-bit float
-  R3D_FLAG_NO_FRUSTUM_CULLING    = (1 shl 4);   ///< Disables internal frustum culling. Manual culling is allowed, but may break shadow visibility if objects casting shadows are skipped.
-  R3D_FLAG_TRANSPARENT_SORTING   = (1 shl 5);   ///< Back-to-front sorting of transparent objects for correct blending of non-discarded fragments. Be careful, in 'force forward' mode this flag will also sort opaque objects in 'near-to-far' but in the same sorting pass.
-  R3D_FLAG_OPAQUE_SORTING        = (1 shl 6);   ///< Front-to-back sorting of opaque objects to optimize depth testing at the cost of additional sorting. Please note, in 'force forward' mode this flag has no effect, see transparent sorting.
-  R3D_FLAG_LOW_PRECISION_BUFFERS = (1 shl 7);   ///< Use 32-bit HDR formats like R11G11B10F for intermediate color buffers instead of full 16-bit floats. Saves memory and bandwidth.
+  R3D_FLAG_NO_FRUSTUM_CULLING    = (1 shl 3);   ///< Disables internal frustum culling. Manual culling is allowed, but may break shadow visibility if objects casting shadows are skipped.
+  R3D_FLAG_TRANSPARENT_SORTING   = (1 shl 4);   ///< Back-to-front sorting of transparent objects for correct blending of non-discarded fragments. Be careful, in 'force forward' mode this flag will also sort opaque objects in 'near-to-far' but in the same sorting pass.
+  R3D_FLAG_OPAQUE_SORTING        = (1 shl 5);   ///< Front-to-back sorting of opaque objects to optimize depth testing at the cost of additional sorting. Please note, in 'force forward' mode this flag has no effect, see transparent sorting.
 
 {*
  * @brief Bitfield type used to specify rendering layers for 3D objects.
@@ -70,7 +68,7 @@ const
  * @param resHeight Height of the internal resolution.
  * @param flags Flags indicating internal behavior (modifiable via R3D_SetState).
  *}
-procedure R3D_Init(resWidth, resHeight: Integer; flags: LongWord); cdecl;
+procedure R3D_Init(resWidth, resHeight: Integer; flags: TR3D_Flags); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_Init';
 
 {*
@@ -85,10 +83,10 @@ procedure R3D_Close; cdecl;
 {*
  * @brief Checks if a specific internal state flag is set.
  *
- * @param flag The state flag to check.
- * @return True if the flag is set, false otherwise.
+ * @param flags The state flags to check.
+ * @return True if the flags are set, false otherwise.
  *}
-function R3D_HasState(flag: LongWord): Boolean; cdecl;
+function R3D_HasState(flag: TR3D_Flags): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_HasState';
 
 {*
@@ -99,7 +97,7 @@ function R3D_HasState(flag: LongWord): Boolean; cdecl;
  *
  * @param flags The flags to set.
  *}
-procedure R3D_SetState(flags: LongWord); cdecl;
+procedure R3D_SetState(flags: TR3D_Flags); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetState';
 
 {*
@@ -110,7 +108,7 @@ procedure R3D_SetState(flags: LongWord); cdecl;
  *
  * @param flags The flags to clear.
  *}
-procedure R3D_ClearState(flags: LongWord); cdecl;
+procedure R3D_ClearState(flags: TR3D_Flags); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ClearState';
 
 {*
@@ -138,18 +136,6 @@ procedure R3D_GetResolution(width, height: PInteger); cdecl;
  *}
 procedure R3D_UpdateResolution(width, height: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UpdateResolution';
-
-{*
- * @brief Defines the bounds of the scene for directional light calculations.
- *
- * This function sets the scene bounds used to determine which areas should be illuminated
- * by directional lights. It is the user's responsibility to calculate and provide the
- * correct bounds.
- *
- * @param sceneBounds The bounding box defining the scene's dimensions.
- *}
-procedure R3D_SetSceneBounds(sceneBounds: TBoundingBox); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetSceneBounds';
 
 {*
  * @brief Sets the default texture filtering mode.
@@ -185,9 +171,9 @@ function R3D_GetActiveLayers: TR3D_Layer; cdecl;
  *
  * Replaces the current set of active layers with the given bitfield.
  *
- * @param layers Bitfield representing the layers to activate.
+  * @param bitfield Bitfield representing the layers to activate.
  *}
-procedure R3D_SetActiveLayers(layers: TR3D_Layer); cdecl;
+procedure R3D_SetActiveLayers(bitfield: TR3D_Layer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetActiveLayers';
 
 {*

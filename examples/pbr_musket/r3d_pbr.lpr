@@ -26,11 +26,13 @@ begin
   SetTargetFPS(60);
 
   // Configure PBR rendering settings
-  R3D_SetSSAO(True);
-  R3D_SetSSAORadius(4.0);
-  R3D_SetTonemapMode(R3D_TONEMAP_ACES);
-  R3D_SetTonemapExposure(0.75);
-  R3D_SetTonemapWhite(1.25);
+
+  R3D_GetEnvironment^.ssao.enabled := True;
+  R3D_GetEnvironment^.ssao.radius := 4.0;
+  R3D_GetEnvironment^.tonemap.mode := R3D_TONEMAP_ACES;
+  R3D_GetEnvironment^.tonemap.exposure := 0.75;
+  R3D_GetEnvironment^.tonemap.white:= 1.25;
+
 
   // Load musket model
   Model := R3D_LoadModel('resources/pbr/musket.glb');
@@ -47,7 +49,8 @@ begin
 
   // Setup skybox
   Skybox := R3D_LoadSkybox('resources/sky/skybox2.png', CUBEMAP_LAYOUT_AUTO_DETECT);
-  R3D_EnableSkybox(Skybox);
+  R3D_GetEnvironment^.background.sky := Skybox;
+
 
   // Configure camera
   Camera.position := Vector3Create(0, 0, 0.5);

@@ -126,19 +126,6 @@ function R3D_GetMatrixInvProjection: TMatrix; cdecl; external {$IFNDEF RAY_STATI
 procedure R3D_DrawBufferAlbedo(x, y, w, h: Single); cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawBufferAlbedo';
 
 {*
- * @brief Renders the internal emission buffer to the screen.
- *
- * Displays the emission buffer, which contains emissive lighting data.
- * Must be called outside of `R3D_Begin` and `R3D_End`.
- *
- * @param x X position to draw the buffer.
- * @param y Y position to draw the buffer.
- * @param w Width of the drawn buffer.
- * @param h Height of the drawn buffer.
- *}
-procedure R3D_DrawBufferEmission(x, y, w, h: Single); cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawBufferEmission';
-
-{*
  * @brief Renders the internal normal buffer to the screen.
  *
  * Displays the normal buffer, showing world-space normal data as colors.
@@ -167,31 +154,4 @@ procedure R3D_DrawBufferNormal(x, y, w, h: Single); cdecl; external {$IFNDEF RAY
  * @param h Height of the drawn buffer.
  *}
 procedure R3D_DrawBufferORM(x, y, w, h: Single); cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawBufferORM';
-
-{*
- * @brief Renders the SSAO (Screen Space Ambient Occlusion) buffer to the screen.
- *
- * Displays the SSAO buffer, showing ambient occlusion data in grayscale.
- * Must be called outside of `R3D_Begin` and `R3D_End`.
- *
- * @param x X position to draw the buffer.
- * @param y Y position to draw the buffer.
- * @param w Width of the drawn buffer.
- * @param h Height of the drawn buffer.
- *}
-procedure R3D_DrawBufferSSAO(x, y, w, h: Single); cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawBufferSSAO';
-
-{*
- * @brief Renders the bloom buffer to the screen.
- *
- * Displays the bloom effect buffer, showing the extracted bright areas after blur processing.
- * Must be called outside of `R3D_Begin` and `R3D_End`.
- *
- * @param x X position to draw the buffer.
- * @param y Y position to draw the buffer.
- * @param w Width of the drawn buffer.
- * @param h Height of the drawn buffer.
- *}
-procedure R3D_DrawBufferBloom(x, y, w, h: Single); cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawBufferBloom';
-
 

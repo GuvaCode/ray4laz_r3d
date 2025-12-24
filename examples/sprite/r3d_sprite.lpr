@@ -61,7 +61,6 @@ begin
   MeshSprite.shadowCastMode := R3D_SHADOW_CAST_ON_DOUBLE_SIDED;
 
   MatSprite := R3D_GetDefaultMaterial();
-  MatSprite.blendMode := R3D_BLEND_ALPHA;
   MatSprite.billboardMode := R3D_BILLBOARD_Y_AXIS;
   MatSprite.albedo.texture := LoadTexture(RESOURCES_PATH + 'spritesheet.png');
 

@@ -1,142 +1,149 @@
 program PBRCarExample;
 
-{$mode objfpc}{$H+}
-
 uses
-  Math, SysUtils,
-  raylib, raymath, r3d; // Предполагается, что модуль R3D называется r3d
+  SysUtils, Math,
+  raylib, raymath, r3d;
 
 const
   RESOURCES_PATH = 'resources/';
-  SCREEN_WIDTH = 800;
-  SCREEN_HEIGHT = 600;
 
 var
-  // === Resources ===
-  Model: TR3D_Model;
-  Ground: TR3D_Mesh;
-  GroundMat: TR3D_Material;
-  Skybox: TR3D_Skybox;
-  Camera: TCamera3D;
-  ShowSkybox: Boolean;
+  model: TR3D_Model;
+  ground: TR3D_Mesh;
+  groundMat: TR3D_Material;
+  skybox: TR3D_Skybox;
+  camera: TCamera3D;
+  light: TR3D_Light;
+  showSkybox: Boolean = false;
 
-procedure InitExample;
-var
-  Flags: TR3D_Flags;
-  Light: TR3D_Light;
+function Init: PChar;
 begin
-  // --- Initialize R3D with its internal resolution and flags ---
-  Flags := R3D_FLAG_TRANSPARENT_SORTING or R3D_FLAG_FXAA;
-  R3D_Init(SCREEN_WIDTH, SCREEN_HEIGHT, Flags);
+  { --- Initialize R3D with its internal resolution and flags --- }
+
+  R3D_Init(GetScreenWidth, GetScreenHeight,
+    R3D_FLAG_TRANSPARENT_SORTING or R3D_FLAG_FXAA);
   SetTargetFPS(60);
 
-  // --- Setup background color and ambient light ---
-  R3D_SetBackgroundColor(BLACK);
-  R3D_SetAmbientColor(DARKGRAY);
+  { --- Setup background color and ambient light --- }
 
-  // --- Setup post processing parameters ---
-  R3D_SetSSR(True);
+  R3D_GetEnvironment^.background.color := BLACK;
+  R3D_GetEnvironment^.ambient.color := DARKGRAY;
 
-  R3D_SetSSAO(True);
-  R3D_SetSSAORadius(2.0);
+  { --- Setup post processing parameters --- }
 
-  R3D_SetBloomIntensity(0.1);
-  R3D_SetBloomMode(R3D_BLOOM_MIX);
-  R3D_SetTonemapMode(R3D_TONEMAP_ACES);
+  R3D_GetEnvironment^.ssr.enabled := true;
 
-  // --- Load the car model and apply scaling on import ---
-  Model := R3D_LoadModel(RESOURCES_PATH + 'pbr/car.glb');
+  R3D_GetEnvironment^.ssao.enabled := true;
+  R3D_GetEnvironment^.ssao.radius := 2.0;
 
-  // --- Generate ground mesh and setup its material ---
-  Ground := R3D_GenMeshPlane(10.0, 10.0, 1, 1);
+  R3D_GetEnvironment^.bloom.intensity := 0.1;
+  R3D_GetEnvironment^.bloom.mode := R3D_BLOOM_MIX;
+  R3D_GetEnvironment^.tonemap.mode := R3D_TONEMAP_ACES;
 
-  GroundMat := R3D_GetDefaultMaterial();
-  GroundMat.albedo.color := ColorCreate(31, 31, 31, 255);
-  GroundMat.orm.roughness := 0.0;
-  GroundMat.orm.metalness := 0.5;
+  { --- Load the car model and apply scaling on import --- }
 
-  // --- Load skybox (disabled by default) ---
-  Skybox := R3D_LoadSkybox(RESOURCES_PATH + 'sky/skybox3.png', CUBEMAP_LAYOUT_AUTO_DETECT);
-  ShowSkybox := False;
+  model := R3D_LoadModel(PChar(RESOURCES_PATH + 'pbr/car.glb'));
 
-  // --- Configure the scene lighting ---
-  R3D_SetSceneBounds(BoundingBoxCreate(
-    Vector3Create(-10, -10, -10),
-    Vector3Create(10, 10, 10)
-  ));
+  { --- Generate ground mesh and setup its material --- }
 
-  Light := R3D_CreateLight(R3D_LIGHT_DIR);
-  R3D_SetLightDirection(Light, Vector3Create(-1, -1, -1));
-  R3D_EnableShadow(Light, 4096);
-  R3D_SetLightActive(Light, True);
+  ground := R3D_GenMeshPlane(10.0, 10.0, 1, 1);
 
-  // --- Setup camera ---
-  Camera.position := Vector3Create(0, 0, 5);
-  Camera.target := Vector3Create(0, 0, 0);
-  Camera.up := Vector3Create(0, 1, 0);
-  Camera.fovy := 60;
-  Camera.projection := CAMERA_PERSPECTIVE;
+  groundMat := R3D_GetDefaultMaterial();
+  groundMat.albedo.color := ColorCreate(31, 31, 31, 255);
+  groundMat.orm.roughness := 0.0;
+  groundMat.orm.metalness := 0.5;
 
-  // --- Capture the mouse and let's go! ---
+  { --- Load skybox (disabled by default) --- }
+
+  skybox := R3D_LoadSkybox(
+    PChar(RESOURCES_PATH + 'sky/skybox3.png'),
+    CUBEMAP_LAYOUT_AUTO_DETECT
+  );
+
+  { --- Configure the scene lighting --- }
+
+  light := R3D_CreateLight(R3D_LIGHT_DIR);
+
+  R3D_SetLightDirection(light, Vector3Create(-1, -1, -1));
+  R3D_EnableShadow(light, 4096);
+  R3D_SetLightActive(light, true);
+  R3D_SetLightRange(light, 10);
+
+  { --- Setup camera --- }
+
+  camera := Default(TCamera3D);
+  camera.position := Vector3Create(0, 0, 5);
+  camera.target := Vector3Create(0, 0, 0);
+  camera.up := Vector3Create(0, 1, 0);
+  camera.fovy := 60;
+  camera.projection := CAMERA_PERSPECTIVE;
+
+  { --- Capture the mouse and let's go! --- }
+
   DisableCursor();
+
+  Result := '[r3d] - PBR car example';
 end;
 
-procedure UpdateExample(Delta: Single);
+procedure Update(delta: Single);
 begin
-  UpdateCamera(@Camera, CAMERA_FREE);
+  UpdateCamera(@camera, CAMERA_FREE);
 
   if IsKeyPressed(KEY_O) then
   begin
-    R3D_SetSSAO(not R3D_GetSSAO());
+    R3D_GetEnvironment^.ssao.enabled := not R3D_GetEnvironment^.ssao.enabled;
   end;
 
   if IsKeyPressed(KEY_T) then
   begin
-    ShowSkybox := not ShowSkybox;
-    if ShowSkybox then
-      R3D_EnableSkybox(Skybox)
+    showSkybox := not showSkybox;
+    if showSkybox then
+      R3D_GetEnvironment^.background.sky := skybox
     else
-      R3D_DisableSkybox();
+      R3D_GetEnvironment^.background.sky := Default(TR3D_Skybox);
   end;
 end;
 
-procedure DrawExample;
+procedure Draw;
 begin
-  R3D_Begin(Camera);
-    R3D_DrawMesh(@Ground, @GroundMat, MatrixTranslate(0.0, -0.4, 0.0));
-      R3D_DrawModel(@Model, Vector3Create(0, 0, 0), 1.0);
+  R3D_Begin(camera);
+    R3D_DrawMesh(@ground, @groundMat,
+      MatrixTranslate(0.0, -0.4, 0.0));
+    R3D_DrawModel(@model, Vector3Create(0, 0, 0), 1.0);
   R3D_End();
 
-
-
-  DrawText('Model made by MaximePages', 10, GetScreenHeight() - 30, 20, RAYWHITE);
+  DrawText('Model made by MaximePages', 10, GetScreenHeight - 30, 20, LIGHTGRAY);
 end;
 
-procedure CloseExample;
+procedure Close;
 begin
-  R3D_UnloadModel(@Model, True);
-  R3D_UnloadSkybox(Skybox);
-  R3D_UnloadMesh(@Ground);
-  R3D_UnloadMaterial(@GroundMat);
+  R3D_UnloadModel(@model, true);
+  R3D_UnloadSkybox(skybox);
   R3D_Close();
 end;
 
+{ Main program }
+var
+  screenWidth, screenHeight: Integer;
 begin
-  // Инициализация окна
-  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, '[r3d] - PBR car example');
+  screenWidth := 800;
+  screenHeight := 600;
 
-  InitExample;
+  InitWindow(screenWidth, screenHeight, 'R3D PBR Car Example');
+
+  Init();
 
   while not WindowShouldClose() do
   begin
-    UpdateExample(GetFrameTime());
+    Update(GetFrameTime());
 
     BeginDrawing();
       ClearBackground(BLACK);
-      DrawExample;
+      Draw();
     EndDrawing();
   end;
 
-  CloseExample;
+  Close();
+
   CloseWindow();
 end.

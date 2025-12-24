@@ -1,149 +1,174 @@
 program AnimationExample;
 
-{$mode objfpc}{$H+}
-
 uses
-  Math, SysUtils,
+  SysUtils, Math,
   raylib, raymath, r3d;
 
 const
   RESOURCES_PATH = 'resources/';
-  SCREEN_WIDTH = 800;
-  SCREEN_HEIGHT = 600;
 
 var
-  // === Resources ===
-  Plane: TR3D_Mesh;
-  PlaneMat: TR3D_Material;
-  Dancer: TR3D_Model;
-  DancerInstances: array[0..3] of TMatrix;
-  DancerAnims: TR3D_AnimationLib;
-  DancerPlayer: TR3D_AnimationPlayer;
-  Camera: TCamera3D;
-  Lights: array[0..1] of TR3D_Light;
+  plane: TR3D_Mesh;
+  planeMat: TR3D_Material;
 
-procedure InitExample;
+  dancer: TR3D_Model;
+  dancerInstances: array[0..3] of TMatrix;
+  dancerAnims: TR3D_AnimationLib;
+  dancerPlayer: PR3D_AnimationPlayer;
+
+  camera: TCamera3D;
+  lights: array[0..1] of TR3D_Light;
+
+  frame: Integer = 0;
+
+function Init: PChar;
 var
-  Checked: TImage;
-  Z, X: Integer;
+  checked: TImage;
+  x, z: Integer;
 begin
-  // --- Initialize R3D with FXAA and disable frustum culling ---
-  R3D_Init(SCREEN_WIDTH, SCREEN_HEIGHT, R3D_FLAG_FXAA or R3D_FLAG_NO_FRUSTUM_CULLING);
+  { --- Initialize R3D with FXAA and disable frustum culling --- }
 
-  // --- Set the application frame rate ---
+  R3D_Init(GetScreenWidth, GetScreenHeight,
+    R3D_FLAG_FXAA or R3D_FLAG_NO_FRUSTUM_CULLING);
+
+  { --- Set the application frame rate --- }
+
   SetTargetFPS(60);
 
-  // --- Enable post-processing effects ---
-  R3D_SetSSAO(True);
-  R3D_SetBloomIntensity(0.03);
-  R3D_SetBloomMode(R3D_BLOOM_ADDITIVE);
-  R3D_SetTonemapMode(R3D_TONEMAP_ACES);
+  { --- Enable post-processing effects --- }
 
-  // --- Set background and ambient lighting colors ---
-  R3D_SetBackgroundColor(BLACK);
-  R3D_SetAmbientColor(ColorCreate(7, 7, 7, 255));
+  R3D_GetEnvironment^.ssao.enabled := true;
+  R3D_GetEnvironment^.bloom.intensity := 0.03;
+  R3D_GetEnvironment^.bloom.mode := R3D_BLOOM_ADDITIVE;
+  R3D_GetEnvironment^.tonemap.mode := R3D_TONEMAP_ACES;
 
-  // --- Generate a plane to serve as the ground and setup its material ---
-  Plane := R3D_GenMeshPlane(32, 32, 1, 1);
+  { --- Set background and ambient lighting colors --- }
 
-  PlaneMat := R3D_GetDefaultMaterial();
-  PlaneMat.orm.roughness := 0.5;
-  PlaneMat.orm.metalness := 0.5;
-  PlaneMat.uvScale.x := 64.0;
-  PlaneMat.uvScale.y := 64.0;
+  R3D_GetEnvironment^.background.color := BLACK;
+  R3D_GetEnvironment^.ambient.color := ColorCreate(7, 7, 7, 255);
 
-  Checked := GenImageChecked(2, 2, 1, 1, ColorCreate(20, 20, 20, 255), WHITE);
-  PlaneMat.albedo.texture := LoadTextureFromImage(Checked);
-  UnloadImage(Checked);
+  { --- Generate a plane to serve as the ground and setup its material --- }
 
-  SetTextureWrap(PlaneMat.albedo.texture, TEXTURE_WRAP_REPEAT);
+  plane := R3D_GenMeshPlane(32, 32, 1, 1);
 
-  // --- Load the 3D model and its default material ---
-  Dancer := R3D_LoadModel(RESOURCES_PATH + 'dancer.glb');
+  planeMat := R3D_GetDefaultMaterial();
+  planeMat.orm.roughness := 0.5;
+  planeMat.orm.metalness := 0.5;
+  planeMat.uvScale.x := 64.0;
+  planeMat.uvScale.y := 64.0;
 
-  // --- Create instance matrices for multiple model copies ---
-  for Z := 0 to 1 do
+  checked := GenImageChecked(2, 2, 1, 1,
+    ColorCreate(20, 20, 20, 255), WHITE);
+  planeMat.albedo.texture := LoadTextureFromImage(checked);
+  UnloadImage(checked);
+
+  SetTextureWrap(planeMat.albedo.texture, TEXTURE_WRAP_REPEAT);
+
+  { --- Load the 3D model and its default material --- }
+
+  dancer := R3D_LoadModel(RESOURCES_PATH + 'dancer.glb');
+
+  { --- Create instance matrices for multiple model copies --- }
+
+  for z := 0 to 1 do
   begin
-    for X := 0 to 1 do
+    for x := 0 to 1 do
     begin
-      DancerInstances[Z * 2 + X] := MatrixTranslate(X - 0.5, 0, Z - 0.5);
+      dancerInstances[z * 2 + x] :=
+        MatrixTranslate(x - 0.5, 0, z - 0.5);
     end;
   end;
 
-  // --- Load model animations ---
-  DancerAnims := R3D_LoadAnimationLib(RESOURCES_PATH + 'dancer.glb');
-  Dancer.player := R3D_LoadAnimationPlayer(@Dancer.skeleton, @DancerAnims);
-  Dancer.player^.states[0].weight := 1.0;
-  Dancer.player^.states[0].loop := True;
+  { --- Load model animations --- }
 
-  // --- Setup scene lights with shadows ---
-  Lights[0] := R3D_CreateLight(R3D_LIGHT_OMNI);
-  R3D_SetLightPosition(Lights[0], Vector3Create(-10.0, 25.0, 0.0));
-  R3D_EnableShadow(Lights[0], 4096);
-  R3D_SetLightActive(Lights[0], True);
+  dancerAnims := R3D_LoadAnimationLib(RESOURCES_PATH + 'dancer.glb');
+  dancer.player := R3D_LoadAnimationPlayer(@dancer.skeleton, @dancerAnims);
+  dancer.player^.states[0].weight := 1.0;
+  dancer.player^.states[0].loop := true;
 
-  Lights[1] := R3D_CreateLight(R3D_LIGHT_OMNI);
-  R3D_SetLightPosition(Lights[1], Vector3Create(+10.0, 25.0, 0.0));
-  R3D_EnableShadow(Lights[1], 4096);
-  R3D_SetLightActive(Lights[1], True);
+  { --- Setup scene lights with shadows --- }
 
-  // --- Setup the camera ---
-  Camera.position := Vector3Create(0, 2.0, 3.5);
-  Camera.target := Vector3Create(0, 1.0, 1.5);
-  Camera.up := Vector3Create(0, 1, 0);
-  Camera.fovy := 60;
-  Camera.projection := CAMERA_PERSPECTIVE;
+  lights[0] := R3D_CreateLight(R3D_LIGHT_OMNI);
+  R3D_SetLightPosition(lights[0], Vector3Create(-10.0, 25.0, 0.0));
+  R3D_EnableShadow(lights[0], 4096);
+  R3D_SetLightActive(lights[0], true);
 
-  // --- Capture the mouse and let's go! ---
+  lights[1] := R3D_CreateLight(R3D_LIGHT_OMNI);
+  R3D_SetLightPosition(lights[1], Vector3Create(10.0, 25.0, 0.0));
+  R3D_EnableShadow(lights[1], 4096);
+  R3D_SetLightActive(lights[1], true);
+
+  { --- Setup the camera --- }
+
+  camera := Default(TCamera3D);
+  camera.position := Vector3Create(0, 2.0, 3.5);
+  camera.target := Vector3Create(0, 1.0, 1.5);
+  camera.up := Vector3Create(0, 1, 0);
+  camera.fovy := 60;
+  camera.projection := CAMERA_PERSPECTIVE;
+
+  { --- Capture the mouse and let's go! --- }
+
   DisableCursor();
+
+  Result := '[r3d] - Animation example';
 end;
 
-procedure UpdateExample(Delta: Single);
+procedure Update(delta: Single);
+var
+  hue1, hue2: Single;
 begin
-  UpdateCamera(@Camera, CAMERA_FREE);
-  R3D_UpdateAnimationPlayer(Dancer.player, Delta);
+  UpdateCamera(@camera, CAMERA_FREE);
+  R3D_UpdateAnimationPlayer(dancer.player, delta);
 
-  R3D_SetLightColor(Lights[0], ColorFromHSV(90.0 * GetTime() + 90.0, 1.0, 1.0));
-  R3D_SetLightColor(Lights[1], ColorFromHSV(90.0 * GetTime() - 90.0, 1.0, 1.0));
+  hue1 := 90.0 * GetTime() + 90.0;
+  hue2 := 90.0 * GetTime() - 90.0;
+
+  R3D_SetLightColor(lights[0], ColorFromHSV(hue1, 1.0, 1.0));
+  R3D_SetLightColor(lights[1], ColorFromHSV(hue2, 1.0, 1.0));
 end;
 
-procedure DrawExample;
+procedure Draw;
 begin
-  R3D_Begin(Camera);
-    R3D_DrawMesh(@Plane, @PlaneMat, MatrixIdentity());
-     R3D_DrawModel(@Dancer, Vector3Create(0, 0, 1.5), 1.0);
-    R3D_DrawModelInstanced(@Dancer, @DancerInstances[0], 2*2);
+  R3D_Begin(camera);
+    R3D_DrawMesh(@plane, @planeMat, MatrixIdentity());
+    R3D_DrawModel(@dancer, Vector3Create(0, 0, 1.5), 1.0);
+    R3D_DrawModelInstanced(@dancer, @dancerInstances[0], 4);
   R3D_End();
 
-  DrawText('Model made by zhuoyi0904', 10, GetScreenHeight() - 30, 20, RAYWHITE);
+  DrawText('Model made by zhuoyi0904', 10, GetScreenHeight - 30, 20, LIGHTGRAY);
 end;
 
-procedure CloseExample;
+procedure Close;
 begin
-  R3D_UnloadMesh(@Plane);
-  R3D_UnloadModel(@Dancer, True);
-  R3D_UnloadMaterial(@PlaneMat);
-  R3D_UnloadAnimationLib(@DancerAnims);
-  R3D_UnloadAnimationPlayer(@DancerPlayer);
+  R3D_UnloadMesh(@plane);
+  R3D_UnloadModel(@dancer, true);
+  R3D_UnloadMaterial(@planeMat);
   R3D_Close();
 end;
 
+{ Main program }
+var
+  screenWidth, screenHeight: Integer;
 begin
-  // Инициализация окна
-  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, '[r3d] - Animation example');
+  screenWidth := 800;
+  screenHeight := 600;
 
-  InitExample;
+  InitWindow(screenWidth, screenHeight, 'R3D Animation Example');
+
+  Init();
 
   while not WindowShouldClose() do
   begin
-    UpdateExample(GetFrameTime());
+    Update(GetFrameTime());
 
     BeginDrawing();
       ClearBackground(BLACK);
-      DrawExample;
+      Draw();
     EndDrawing();
   end;
 
-  CloseExample;
+  Close();
+
   CloseWindow();
 end.

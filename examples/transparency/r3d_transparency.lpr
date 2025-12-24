@@ -15,7 +15,6 @@ function Init: PChar;
 var
   Mesh: TR3D_Mesh;
   Light: TR3D_Light;
-  LightPos, LightTarget: TVector3;
   CubeColor: TColor;
 begin
   R3D_Init(GetScreenWidth, GetScreenHeight, 0);
@@ -26,12 +25,12 @@ begin
   Cube := R3D_LoadModelFromMesh(@Mesh);
 
   CubeColor := ColorCreate(100, 100, 255, 100);
-  cube.meshes[0].shadowCastMode := R3D_SHADOW_CAST_DISABLED;
+  cube.materials[0].transparencyMode := R3D_TRANSPARENCY_ALPHA;
   Cube.materials[0].albedo.color := CubeColor;
   Cube.materials[0].orm.occlusion := 1.0;
   Cube.materials[0].orm.roughness := 0.2;
   Cube.materials[0].orm.metalness := 0.2;
-  Cube.materials[0].blendMode := R3D_BLEND_ALPHA;
+
 
   // --- Load plane model ---
   Mesh := R3D_GenMeshPlane(1000, 1000, 1, 1);
@@ -55,16 +54,14 @@ begin
   Camera.up := Vector3Create(0, 1, 0);
   Camera.fovy := 60;
 
-  // --- Configure lighting ---
-  R3D_SetAmbientColor(ColorCreate( 10, 10, 10, 255 ));
-
+  // Setup lighting
+  R3D_GetEnvironment^.ambient.color := ColorCreate(10, 10, 10, 255);
   Light := R3D_CreateLight(R3D_LIGHT_SPOT);
-  LightPos := Vector3Create(0, 10, 5);
-  LightTarget := Vector3Create(0, 0, 0);
 
-  R3D_LightLookAt(Light, LightPos, LightTarget);
-  R3D_SetLightActive(Light, True);
-  R3D_EnableShadow(Light, 4096);
+  R3D_LightLookAt(light, Vector3Create(0, 10, 5), Vector3Create(0,0,0));
+  R3D_SetLightActive(light, true);
+  R3D_EnableShadow(light, 4096);
+
 
   Result := '[r3d] - Transparency example';
 end;

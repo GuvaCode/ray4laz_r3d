@@ -177,7 +177,7 @@ begin
 
   Decal.material := R3D_GetDefaultMaterial();
   Decal.material.albedo.texture := Texture;
-  Decal.material.blendMode := R3D_BLEND_ALPHA;
+
 
   // --- Create a plane along with the transformation matrices to place them to represent a room ---
   MeshPlane := R3D_GenMeshPlane(RoomSize, RoomSize, 1, 1);

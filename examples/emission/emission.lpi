@@ -35,7 +35,7 @@
       <Unit>
         <Filename Value="emission.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Emission"/>
+        <UnitName Value="EmissionExample"/>
       </Unit>
     </Units>
   </ProjectOptions>

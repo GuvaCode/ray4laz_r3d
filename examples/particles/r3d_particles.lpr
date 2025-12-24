@@ -22,10 +22,12 @@ begin
   SetTargetFPS(60);
 
   // Configure bloom and background
-  R3D_SetBloomMode(R3D_BLOOM_ADDITIVE);
+
+  R3D_GetEnvironment^.bloom.mode := R3D_BLOOM_ADDITIVE;
   BgColor := ColorCreate(4, 4, 4, 255);
-  R3D_SetBackgroundColor(BgColor);
-  R3D_SetAmbientColor(BLACK);
+  R3D_GetEnvironment^.background.color := BgColor;
+  R3D_GetEnvironment^.ambient.color := BLACK;
+
 
   // Create sphere mesh for particles
   Sphere := R3D_GenMeshSphere(0.1, 16, 32);

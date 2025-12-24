@@ -35,6 +35,7 @@
       <Unit>
         <Filename Value="dofexample.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="DoFExample"/>
       </Unit>
     </Units>
   </ProjectOptions>

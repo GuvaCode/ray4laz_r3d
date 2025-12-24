@@ -36,7 +36,8 @@ begin
 
   // Load skybox
   Skybox := R3D_LoadSkybox('resources/sky/skybox1.png', CUBEMAP_LAYOUT_AUTO_DETECT);
-  R3D_EnableSkybox(Skybox);
+
+  R3D_GetEnvironment^.background.sky := Skybox;
 
   // Setup camera
   Camera.position := Vector3Create(0, 0, 5);

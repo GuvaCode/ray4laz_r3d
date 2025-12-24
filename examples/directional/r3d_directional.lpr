@@ -42,15 +42,18 @@ begin
     end;
   end;
 
-  // Create and configure directional light
-  Light := R3D_CreateLight(R3D_LIGHT_DIR);
-  LightDir := Vector3Create(0, -1, -1);
+  // Setup environment
+  R3D_GetEnvironment^.ambient.color := ColorCreate(10, 10, 10, 255);
 
-  R3D_SetLightDirection(Light, LightDir);
-  R3D_SetShadowUpdateMode(Light, R3D_SHADOW_UPDATE_MANUAL);
-  //R3D_SetShadowBias(Light, 0.005);
-  R3D_EnableShadow(Light, 4096);
-  R3D_SetLightActive(Light, True);
+  // Create directional light with shadows
+  light := R3D_CreateLight(R3D_LIGHT_DIR);
+  LightDir := Vector3Create(0, -1, -1);
+  R3D_SetLightDirection(light, LightDir);
+  R3D_SetLightActive(light, true);
+  R3D_SetLightRange(light, 16.0);
+  R3D_EnableShadow(light, 4096);
+  R3D_SetShadowDepthBias(light, 0.01);
+  R3D_SetShadowSoftness(light, 2.0);
 
   DisableCursor();
 
