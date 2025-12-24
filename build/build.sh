@@ -67,7 +67,7 @@ cmake .. \
 
 cmake --build .
 
-cp libr3d.dll ../../../libs/x86_64-linux/libr3d.dll
+cp libr3d.dll ../../../libs/x86_64-windows/libr3d.dll
 
 
 
