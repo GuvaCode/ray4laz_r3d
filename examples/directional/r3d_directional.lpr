@@ -1,102 +1,111 @@
-program r3d_directional;
-{$mode objfpc}{$H+}
+program DirectionalLightExample;
 
 uses
-  cthreads,
-  Classes, SysUtils, CustApp, raylib, r3d, raymath;
+  SysUtils, raylib, r3d, raymath;
+
+const
+  X_INSTANCES = 50;
+  Y_INSTANCES = 50;
+  INSTANCE_COUNT = X_INSTANCES * Y_INSTANCES;
 
 var
-  Plane: TR3D_Mesh;
-  Sphere: TR3D_Mesh;
-  Material: TR3D_Material;
-  Camera: TCamera3D;
-  Transforms: array of TMatrix;
-  Light: TR3D_Light;
+  ScreenWidth, ScreenHeight: Integer;
+  plane, sphere: TR3D_Mesh;
+  material: TR3D_Material;
+  instances: TR3D_InstanceBuffer;
+  positions: PVector3;
+  spacing, offsetX, offsetZ: Single;
+  x, y, idx: Integer;
+  camera: TCamera3D;
+  ambientColor: TColor;
+  light: TR3D_Light;
 
-function Init: PChar;
-var
-  x, z, index: Integer;
-  LightDir: TVector3;
 begin
-  R3D_Init(GetScreenWidth, GetScreenHeight, 0);
+  // Initialize window
+  ScreenWidth := 800;
+  ScreenHeight := 450;
+  InitWindow(ScreenWidth, ScreenHeight, '[r3d] - Directional light example');
   SetTargetFPS(60);
 
-  Plane := R3D_GenMeshPlane(1000, 1000, 1, 1);
-  Sphere := R3D_GenMeshSphere(0.35, 16, 16);
-  Material := R3D_GetDefaultMaterial();
+  // Initialize R3D
+  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
 
-  Camera.position := Vector3Create(0, 2, 2);
-  Camera.target := Vector3Create(0, 0, 0);
-  Camera.up := Vector3Create(0, 1, 0);
-  Camera.fovy := 60;
+  // Create meshes and material
+  plane := R3D_GenMeshPlane(1000, 1000, 1, 1);
+  sphere := R3D_GenMeshSphere(0.35, 24, 16);
+  material := R3D_GetDefaultMaterial();
 
-  // Initialize transforms array
-  SetLength(Transforms, 100 * 100);
+  // Create transforms for instanced spheres
+  instances := R3D_LoadInstanceBuffer(INSTANCE_COUNT, R3D_INSTANCE_POSITION);
+  positions := PVector3(R3D_MapInstances(instances, R3D_INSTANCE_POSITION));
 
-  for x := -50 to 49 do
+  spacing := 1.5;
+  offsetX := (X_INSTANCES * spacing) / 2.0;
+  offsetZ := (Y_INSTANCES * spacing) / 2.0;
+
+  idx := 0;
+  for x := 0 to X_INSTANCES - 1 do
   begin
-    for z := -50 to 49 do
+    for y := 0 to Y_INSTANCES - 1 do
     begin
-      index := (z + 50) * 100 + (x + 50);
-      Transforms[index] := MatrixTranslate(x * 2, 0, z * 2);
+      positions[idx] := Vector3Create(
+        x * spacing - offsetX,
+        0,
+        y * spacing - offsetZ
+      );
+      Inc(idx);
     end;
   end;
 
-  // Setup environment
-  R3D_GetEnvironment^.ambient.color := ColorCreate(10, 10, 10, 255);
+  R3D_UnmapInstances(instances, R3D_INSTANCE_POSITION);
 
+  // Setup environment
+  ambientColor := ColorCreate(10, 10, 10, 255);
+  //R3D_ENVIRONMENT_SET(ambient.color, ambientColor);
+  R3D_GetEnvironment^.ambient.color := ambientColor;
   // Create directional light with shadows
   light := R3D_CreateLight(R3D_LIGHT_DIR);
-  LightDir := Vector3Create(0, -1, -1);
-  R3D_SetLightDirection(light, LightDir);
-  R3D_SetLightActive(light, true);
+  R3D_SetLightDirection(light, Vector3Create(0, -1, -1));
+  R3D_SetLightActive(light, True);
   R3D_SetLightRange(light, 16.0);
   R3D_EnableShadow(light, 4096);
   R3D_SetShadowDepthBias(light, 0.01);
   R3D_SetShadowSoftness(light, 2.0);
 
+  // Setup camera
+  camera.position := Vector3Create(0, 2, 2);
+  camera.target := Vector3Create(0, 0, 0);
+  camera.up := Vector3Create(0, 1, 0);
+  camera.fovy := 60;
+  camera.projection := CAMERA_PERSPECTIVE;
+
+  // Capture mouse
   DisableCursor();
 
-  Result := '[r3d] - Directional light example';
-end;
-
-procedure Update(delta: Single);
-begin
-  UpdateCamera(@Camera, CAMERA_FREE);
-end;
-
-procedure Draw;
-begin
-  R3D_Begin(Camera);
-    R3D_DrawMesh(@Plane, @Material, MatrixTranslate(0, -0.5, 0));
-    R3D_DrawMeshInstanced(@Sphere, @Material, @Transforms[0], 100 * 100);
-  R3D_End();
-
-  DrawFPS(10, 10);
-end;
-
-procedure Close;
-begin
-  R3D_UnloadMesh(@Plane);
-  R3D_UnloadMesh(@Sphere);
-  R3D_UnloadMaterial(@Material);
-  R3D_Close();
-end;
-
-begin
-  InitWindow(800, 600, 'Directional Light Example');
-  Init();
-
+  // Main loop
   while not WindowShouldClose() do
   begin
-    Update(GetFrameTime());
+    UpdateCamera(@camera, CAMERA_FREE);
+
     BeginDrawing();
-      ClearBackground(BLACK);
-      Draw();
+      ClearBackground(RAYWHITE);
+
+      R3D_Begin(camera);
+        R3D_DrawMesh(plane, material, Vector3Create(0, -0.5, 0), 1.0);
+        R3D_DrawMeshInstanced(sphere, material, instances, INSTANCE_COUNT);
+      R3D_End();
+
+      DrawFPS(10, 10);
+
     EndDrawing();
   end;
 
-  Close();
+  // Cleanup
+  R3D_UnloadInstanceBuffer(instances);
+  R3D_UnloadMaterial(material);
+  R3D_UnloadMesh(sphere);
+  R3D_UnloadMesh(plane);
+  R3D_Close();
+
   CloseWindow();
 end.
-

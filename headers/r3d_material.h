@@ -18,6 +18,46 @@
  */
 
 // ========================================
+// CONSTANTS
+// ========================================
+
+/**
+ * @brief Default environment configuration.
+ *
+ * Initializes an R3D_Environment structure with sensible default values for all
+ * rendering parameters. Use this as a starting point for custom configurations.
+ */
+#define R3D_MATERIAL_BASE                               \
+    R3D_LITERAL(R3D_Material) {                         \
+        .albedo = {                                     \
+            .texture = {0},                             \
+            .color = {255, 255, 255, 255},              \
+        },                                              \
+        .emission = {                                   \
+            .texture = {0},                             \
+            .color = {255, 255, 255, 255},              \
+            .energy = 0.0f,                             \
+        },                                              \
+        .normal = {                                     \
+            .texture = {0},                             \
+            .scale = 1.0f,                              \
+        },                                              \
+        .orm = {                                        \
+            .texture = {0},                             \
+            .occlusion = 1.0f,                          \
+            .roughness = 1.0f,                          \
+            .metalness = 0.0f,                          \
+        },                                              \
+        .transparencyMode = R3D_TRANSPARENCY_DISABLED,  \
+        .billboardMode = R3D_BILLBOARD_DISABLED,        \
+        .blendMode = R3D_BLEND_MIX,                     \
+        .cullMode = R3D_CULL_BACK,                      \
+        .uvOffset = {0.0f, 0.0f},                       \
+        .uvScale = {1.0f, 1.0f},                        \
+        .alphaCutoff = 0.01f,                           \
+    }
+
+// ========================================
 // ENUMS TYPES
 // ========================================
 
@@ -76,51 +116,69 @@ typedef enum R3D_CullMode {
 // ========================================
 
 /**
- * @brief Represents a material with textures, parameters, and rendering modes.
+ * @brief Albedo (base color) map.
  *
- * Combines multiple texture maps and settings used during shading.
+ * Provides the base color texture and a color multiplier.
+ */
+typedef struct R3D_AlbedoMap {
+    Texture2D texture;  ///< Base color texture (default: WHITE)
+    Color color;        ///< Color multiplier (default: WHITE)
+} R3D_AlbedoMap;
+
+/**
+ * @brief Emission map.
+ *
+ * Provides emission texture, color, and energy multiplier.
+ */
+typedef struct R3D_EmissionMap {
+    Texture2D texture;  ///< Emission texture (default: WHITE)
+    Color color;        ///< Emission color (default: WHITE)
+    float energy;       ///< Emission strength (default: 0.0f)
+} R3D_EmissionMap;
+
+/**
+ * @brief Normal map.
+ *
+ * Provides normal map texture and scale factor.
+ */
+typedef struct R3D_NormalMap {
+    Texture2D texture;  ///< Normal map texture (default: Front Facing)
+    float scale;        ///< Normal scale (default: 1.0f)
+} R3D_NormalMap;
+
+/**
+ * @brief Combined Occlusion-Roughness-Metalness (ORM) map.
+ *
+ * Provides texture and individual multipliers for occlusion, roughness, and metalness.
+ */
+typedef struct R3D_OrmMap {
+    Texture2D texture;  ///< ORM texture (default: WHITE)
+    float occlusion;    ///< Occlusion multiplier (default: 1.0f)
+    float roughness;    ///< Roughness multiplier (default: 1.0f)
+    float metalness;    ///< Metalness multiplier (default: 0.0f)
+} R3D_OrmMap;
+
+/**
+ * @brief Material definition.
+ *
+ * Combines multiple texture maps and rendering parameters for shading.
  */
 typedef struct R3D_Material {
 
-    struct R3D_MapAlbedo {
-        Texture2D texture;      ///< Albedo (base color) texture.
-        Color color;            ///< Albedo color multiplier.
-    } albedo;
+    R3D_AlbedoMap albedo;       ///< Albedo map
+    R3D_EmissionMap emission;   ///< Emission map
+    R3D_NormalMap normal;       ///< Normal map
+    R3D_OrmMap orm;             ///< Occlusion-Roughness-Metalness map
 
-    struct R3D_MapEmission {
-        Texture2D texture;      ///< Emission texture.
-        Color color;            ///< Emission color.
-        float energy;           ///< Emission energy multiplier.
-    } emission;
+    R3D_TransparencyMode transparencyMode;  ///< Transparency mode (default: DISABLED)
+    R3D_BillboardMode billboardMode;        ///< Billboard mode (default: DISABLED)
+    R3D_BlendMode blendMode;                ///< Blend mode (default: MIX)
+    R3D_CullMode cullMode;                  ///< Face culling mode (default: BACK)
 
-    struct R3D_MapNormal {
-        Texture2D texture;      ///< Normal map texture.
-        float scale;            ///< Normal scale.
-    } normal;
+    Vector2 uvOffset;    ///< UV offset (default: {0.0f, 0.0f})
+    Vector2 uvScale;     ///< UV scale (default: {1.0f, 1.0f})
 
-    struct R3D_MapORM {
-        Texture2D texture;      ///< Combined Occlusion-Roughness-Metalness texture.
-        float occlusion;        ///< Occlusion multiplier.
-        float roughness;        ///< Roughness multiplier.
-        float metalness;        ///< Metalness multiplier.
-    } orm;
-
-    R3D_TransparencyMode transparencyMode;  ///< Transparency mode applied to the object.
-    R3D_BillboardMode billboardMode;        ///< Billboard mode applied to the object.
-    R3D_BlendMode blendMode;                ///< Blend mode used for rendering.
-    R3D_CullMode cullMode;                  ///< Face culling mode used for rendering.
-
-    Vector2 uvOffset;                       /**< UV offset applied to the texture coordinates.
-                                             *  For models, this can be set manually.
-                                             *  For sprites, this value is overridden automatically.
-                                             */
-
-    Vector2 uvScale;                        /**< UV scale factor applied to the texture coordinates.
-                                             *  For models, this can be set manually.
-                                             *  For sprites, this value is overridden automatically.
-                                             */
-
-    float alphaCutoff;          ///< Alpha threshold below which fragments are discarded during opaque rendering.
+    float alphaCutoff;   ///< Alpha cutoff threshold (default: 0.01f)
 
 } R3D_Material;
 
@@ -135,12 +193,22 @@ extern "C" {
 /**
  * @brief Get the default material configuration.
  *
- * Returns a default material with standard properties and default textures.
- * This material can be used as a fallback or starting point for custom materials.
+ * Returns `R3D_MATERIAL_BASE` by default,
+ * or the material defined via `R3D_SetDefaultMaterial()`.
  *
  * @return Default material structure with standard properties.
  */
 R3DAPI R3D_Material R3D_GetDefaultMaterial(void);
+
+/**
+ * @brief Set the default material configuration.
+ *
+ * Allows you to override the default material.
+ * The default material will be used as the basis for loading 3D models.
+ *
+ * @param material Default material to define.
+ */
+R3DAPI void R3D_SetDefaultMaterial(R3D_Material material);
 
 /**
  * @brief Unload a material and its associated textures.
@@ -154,7 +222,147 @@ R3DAPI R3D_Material R3D_GetDefaultMaterial(void);
  *
  * @param material Pointer to the material structure to be unloaded.
  */
-R3DAPI void R3D_UnloadMaterial(const R3D_Material* material);
+R3DAPI void R3D_UnloadMaterial(R3D_Material material);
+
+/**
+ * @brief Load an albedo (base color) map from file.
+ *
+ * Loads an image, uploads it as an sRGB texture (if enabled),
+ * and applies the provided tint color.
+ *
+ * @param fileName Path to the texture file.
+ * @param color Multiplicative tint applied in the shader.
+ * @return Albedo map structure. Returns an empty map on failure.
+ */
+R3DAPI R3D_AlbedoMap R3D_LoadAlbedoMap(const char* fileName, Color color);
+
+/**
+ * @brief Load an albedo (base color) map from memory.
+ *
+ * Same behavior as R3D_LoadAlbedoMap(), but reads from memory instead of disk.
+ *
+ * @param fileType Image format hint (e.g. "png", "jpg").
+ * @param fileData Pointer to image data.
+ * @param dataSize Size of image data in bytes.
+ * @param color Multiplicative tint applied in the shader.
+ * @return Albedo map structure. Returns an empty map on failure.
+ */
+R3DAPI R3D_AlbedoMap R3D_LoadAlbedoMapFromMemory(const char* fileType, const void* fileData, int dataSize, Color color);
+
+/**
+ * @brief Unload an albedo map texture.
+ *
+ * Frees the underlying texture unless it is a default texture.
+ *
+ * @param map Albedo map to unload.
+ */
+R3DAPI void R3D_UnloadAlbedoMap(R3D_AlbedoMap map);
+
+/**
+ * @brief Load an emission map from file.
+ *
+ * Loads an emissive texture (sRGB if enabled) and sets color + energy.
+ *
+ * @param fileName Path to the texture file.
+ * @param color Emission color.
+ * @param energy Emission intensity multiplier.
+ * @return Emission map. Returns an empty map on failure.
+ */
+R3DAPI R3D_EmissionMap R3D_LoadEmissionMap(const char* fileName, Color color, float energy);
+
+/**
+ * @brief Load an emission map from memory.
+ *
+ * Same behavior as R3D_LoadEmissionMap(), but reads from memory.
+ *
+ * @param fileType Image format hint.
+ * @param fileData Pointer to image data.
+ * @param dataSize Size of image data in bytes.
+ * @param color Emission color.
+ * @param energy Emission intensity multiplier.
+ * @return Emission map. Returns an empty map on failure.
+ */
+R3DAPI R3D_EmissionMap R3D_LoadEmissionMapFromMemory(const char* fileType, const void* fileData, int dataSize, Color color, float energy);
+
+/**
+ * @brief Unload an emission map texture.
+ *
+ * Frees the texture unless it is a default texture.
+ *
+ * @param map Emission map to unload.
+ */
+R3DAPI void R3D_UnloadEmissionMap(R3D_EmissionMap map);
+
+/**
+ * @brief Load a normal map from file.
+ *
+ * Uploads the texture in linear space and stores the normal scale factor.
+ *
+ * @param fileName Path to the texture file.
+ * @param scale Normal intensity multiplier.
+ * @return Normal map. Returns an empty map on failure.
+ */
+R3DAPI R3D_NormalMap R3D_LoadNormalMap(const char* fileName, float scale);
+
+/**
+ * @brief Load a normal map from memory.
+ *
+ * Same behavior as R3D_LoadNormalMap(), but reads from memory.
+ *
+ * @param fileType Image format hint.
+ * @param fileData Pointer to image data.
+ * @param dataSize Size of image data in bytes.
+ * @param scale Normal intensity multiplier.
+ * @return Normal map. Returns an empty map on failure.
+ */
+R3DAPI R3D_NormalMap R3D_LoadNormalMapFromMemory(const char* fileType, const void* fileData, int dataSize, float scale);
+
+/**
+ * @brief Unload a normal map texture.
+ *
+ * Frees the texture unless it is a default texture.
+ *
+ * @param map Normal map to unload.
+ */
+R3DAPI void R3D_UnloadNormalMap(R3D_NormalMap map);
+
+/**
+ * @brief Load a combined ORM (Occlusion-Roughness-Metalness) map from file.
+ *
+ * Uploads the texture in linear space and applies the provided multipliers.
+ *
+ * @param fileName Path to the ORM texture.
+ * @param occlusion Occlusion multiplier.
+ * @param roughness Roughness multiplier.
+ * @param metalness Metalness multiplier.
+ * @return ORM map. Returns an empty map on failure.
+ */
+R3DAPI R3D_OrmMap R3D_LoadOrmMap(const char* fileName, float occlusion, float roughness, float metalness);
+
+/**
+ * @brief Load a combined ORM (Occlusion-Roughness-Metalness) map from memory.
+ *
+ * Same behavior as R3D_LoadOrmMap(), but reads from memory.
+ *
+ * @param fileType Image format hint.
+ * @param fileData Pointer to image data.
+ * @param dataSize Size of image data in bytes.
+ * @param occlusion Occlusion multiplier.
+ * @param roughness Roughness multiplier.
+ * @param metalness Metalness multiplier.
+ * @return ORM map. Returns an empty map on failure.
+ */
+R3DAPI R3D_OrmMap R3D_LoadOrmMapFromMemory(const char* fileType, const void* fileData, int dataSize,
+                                           float occlusion, float roughness, float metalness);
+
+/**
+ * @brief Unload an ORM map texture.
+ *
+ * Frees the texture unless it is a default texture.
+ *
+ * @param map ORM map to unload.
+ */
+R3DAPI void R3D_UnloadOrmMap(R3D_OrmMap map);
 
 #ifdef __cplusplus
 } // extern "C"

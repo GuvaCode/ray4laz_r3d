@@ -35,6 +35,7 @@
       <Unit>
         <Filename Value="r3d_skybox.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="SkyboxExample"/>
       </Unit>
     </Units>
   </ProjectOptions>

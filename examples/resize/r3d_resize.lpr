@@ -1,121 +1,106 @@
-program r3d_resize;
-{$mode objfpc}{$H+}
+program ResizeExample;
 
 uses
-  cthreads,
-  Classes, SysUtils, CustApp, raylib, r3d, raymath, rlgl;
+  SysUtils, Math, raylib, r3d, raymath;
 
 var
-  Camera: TCamera3D;
-  Sphere: TR3D_Mesh;
-  Materials: array[0..4] of TR3D_Material;
-  Light: TR3D_Light;
-
-function Init: PChar;
-var
+  ScreenWidth, ScreenHeight: Integer;
+  sphere: TR3D_Mesh;
+  materials: array[0..4] of TR3D_Material;
+  light: TR3D_Light;
+  camera: TCamera3D;
   i: Integer;
-  LightDir: TVector3;
+  keep, linear: Boolean;
+  keepText, filterText: string;
+
 begin
-  R3D_Init(GetScreenWidth, GetScreenHeight, 0);
+  // Initialize window
+  ScreenWidth := 800;
+  ScreenHeight := 450;
+  InitWindow(ScreenWidth, ScreenHeight, '[r3d] - Resize example');
   SetWindowState(FLAG_WINDOW_RESIZABLE);
   SetTargetFPS(60);
 
-  Sphere := R3D_GenMeshSphere(0.5, 64, 64);
+  // Initialize R3D
+  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
 
+  // Create sphere mesh and materials
+  sphere := R3D_GenMeshSphere(0.5, 64, 64);
   for i := 0 to 4 do
   begin
-    Materials[i] := R3D_GetDefaultMaterial();
-    Materials[i].albedo.color := ColorFromHSV(i / 5 * 330, 1.0, 1.0);
+    materials[i] := R3D_GetDefaultMaterial();
+    materials[i].albedo.color := ColorFromHSV(i / 5.0 * 330, 1.0, 1.0);
   end;
 
-  Camera.position := Vector3Create(0, 2, 2);
-  Camera.target := Vector3Create(0, 0, 0);
-  Camera.up := Vector3Create(0, 1, 0);
-  Camera.fovy := 60;
+  // Setup directional light
+  light := R3D_CreateLight(R3D_LIGHT_DIR);
+  R3D_SetLightDirection(light, Vector3Create(0, 0, -1));
+  R3D_SetLightActive(light, True);
 
-  Light := R3D_CreateLight(R3D_LIGHT_DIR);
-  LightDir := Vector3Create(0, 0, -1);
-  R3D_SetLightDirection(Light, LightDir);
-  R3D_SetLightActive(Light, True);
+  // Setup camera
+  camera.position := Vector3Create(0, 2, 2);
+  camera.target := Vector3Create(0, 0, 0);
+  camera.up := Vector3Create(0, 1, 0);
+  camera.fovy := 60;
+  camera.projection := CAMERA_PERSPECTIVE;
 
-  Result := '[r3d] - Resize example';
-end;
-
-procedure Update(delta: Single);
-begin
-  UpdateCamera(@Camera, CAMERA_ORBITAL);
-
-  if IsKeyPressed(KEY_R) then
-  begin
-    if R3D_HasState(R3D_FLAG_ASPECT_KEEP) then
-      R3D_ClearState(R3D_FLAG_ASPECT_KEEP)
-    else
-      R3D_SetState(R3D_FLAG_ASPECT_KEEP);
-  end;
-
-  if IsKeyPressed(KEY_F) then
-  begin
-    if R3D_HasState(R3D_FLAG_BLIT_LINEAR) then
-      R3D_ClearState(R3D_FLAG_BLIT_LINEAR)
-    else
-      R3D_SetState(R3D_FLAG_BLIT_LINEAR);
-  end;
-end;
-
-procedure Draw;
-var
-  KeepAspect, LinearFilter: Boolean;
-  i: Integer;
-  ModeStr, FilterStr: string;
-begin
-  KeepAspect := R3D_HasState(R3D_FLAG_ASPECT_KEEP);
-  LinearFilter := R3D_HasState(R3D_FLAG_BLIT_LINEAR);
-
-  if KeepAspect then
-    ClearBackground(BLACK);
-
-  R3D_Begin(Camera);
-    rlPushMatrix();
-    for i := 0 to 4 do
-    begin
-      R3D_DrawMesh(@Sphere, @Materials[i], MatrixTranslate(i - 2, 0, 0));
-    end;
-    rlPopMatrix();
-  R3D_End();
-
-  // Draw mode info
-  if KeepAspect then
-    ModeStr := 'Resize mode: KEEP'
-  else
-    ModeStr := 'Resize mode: EXPAND';
-  DrawText(PChar(ModeStr), 10, 10, 20, BLACK);
-
-  if LinearFilter then
-    FilterStr := 'Filter mode: LINEAR'
-  else
-    FilterStr := 'Filter mode: NEAREST';
-  DrawText(PChar(FilterStr), 10, 40, 20, BLACK);
-end;
-
-procedure Close;
-begin
-  R3D_UnloadMesh(@Sphere);
-  R3D_Close();
-end;
-
-begin
-  InitWindow(800, 600, 'Resize Example');
-  Init();
-
+  // Main loop
   while not WindowShouldClose() do
   begin
-    Update(GetFrameTime());
+    UpdateCamera(@camera, CAMERA_ORBITAL);
+
+    // Toggle aspect keep
+    if IsKeyPressed(KEY_R) then
+    begin
+      if R3D_HasState(R3D_FLAG_ASPECT_KEEP) then
+        R3D_ClearState(R3D_FLAG_ASPECT_KEEP)
+      else
+        R3D_SetState(R3D_FLAG_ASPECT_KEEP);
+    end;
+
+    // Toggle linear filtering
+    if IsKeyPressed(KEY_F) then
+    begin
+      if R3D_HasState(R3D_FLAG_BLIT_LINEAR) then
+        R3D_ClearState(R3D_FLAG_BLIT_LINEAR)
+      else
+        R3D_SetState(R3D_FLAG_BLIT_LINEAR);
+    end;
+
     BeginDrawing();
-      ClearBackground(RAYWHITE);
-      Draw();
+      ClearBackground(BLACK);
+
+      // Draw spheres
+      R3D_Begin(camera);
+        for i := 0 to 4 do
+        begin
+          R3D_DrawMesh(sphere, materials[i], Vector3Create(i - 2, 0, 0), 1.0);
+        end;
+      R3D_End();
+
+      // Draw info
+      keep := R3D_HasState(R3D_FLAG_ASPECT_KEEP);
+      linear := R3D_HasState(R3D_FLAG_BLIT_LINEAR);
+
+      if keep then
+        keepText := 'KEEP'
+      else
+        keepText := 'EXPAND';
+
+      if linear then
+        filterText := 'LINEAR'
+      else
+        filterText := 'NEAREST';
+
+      DrawText(PAnsiChar('Resize mode: ' + keepText), 10, 10, 20, RAYWHITE);
+      DrawText(PAnsiChar('Filter mode: ' + filterText), 10, 40, 20, RAYWHITE);
+
     EndDrawing();
   end;
 
-  Close();
+  // Cleanup
+  R3D_UnloadMesh(sphere);
+  R3D_Close();
+
   CloseWindow();
 end.

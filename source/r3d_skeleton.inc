@@ -28,6 +28,8 @@ type
     boneOffsets: PMatrix;  ///< Inverse bind matrices, one per bone. Transform vertices from mesh space to bone space (used in skinning).
     bindLocal: PMatrix;    ///< Bind pose transforms in local bone space (relative to parent).
     bindPose: PMatrix;     ///< Bind pose transforms in model space (global). Used as the default pose when not animated.
+    texBindPose: Uint32;   ///< Texture ID that contains the bind pose for GPU skinning. This is a 1D Texture RGBA32F 4*boneCount.
+
   end;
 
 // ========================================
@@ -64,19 +66,18 @@ function R3D_LoadSkeletonFromData(const data: Pointer; size: LongWord;
 {*
  * @brief Frees the memory allocated for a skeleton.
  *
- * @param skeleton Pointer to the R3D_Skeleton to destroy.
+ * @param skeleton R3D_Skeleton to destroy.
  *}
-procedure R3D_UnloadSkeleton(skeleton: PR3D_Skeleton); cdecl;
+procedure R3D_UnloadSkeleton(skeleton: TR3D_Skeleton); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadSkeleton';
 
 {*
- * @brief Check if a skeleton is valid.
- *
- * Returns true if the skeleton has bones, offsets, bind local matrices,
- * and bind pose matrices properly initialized.
- *
- * @param skeleton Pointer to the skeleton to check.
- * @return true if valid, false otherwise.
- *}
-function R3D_IsSkeletonValid(const skeleton: PR3D_Skeleton): Boolean; cdecl;
+* @brief Check if a skeleton is valid.
+*
+* Returns true if atleast the texBindPose is greater than zero.
+*
+* @param skeleton The skeleton to check.
+* @return true if valid, false otherwise.
+*}
+function R3D_IsSkeletonValid(const skeleton: TR3D_Skeleton): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsSkeletonValid';

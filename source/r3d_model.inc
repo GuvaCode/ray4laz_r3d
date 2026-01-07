@@ -17,8 +17,6 @@ type
 
     aabb: TBoundingBox;              ///< Axis-Aligned Bounding Box encompassing the whole model.
     skeleton: TR3D_Skeleton;         ///< Skeleton hierarchy and bind pose used for skinning (NULL if non-skinned).
-
-    player: PR3D_AnimationPlayer;    ///< Animation player controlling the skeleton. If NULL the model uses its bind pose.
   end;
 
 
@@ -67,11 +65,11 @@ function R3D_LoadModelFromMemory(const data: Pointer; size: LongWord;
  * @warning The model's bounding box calculation assumes that the mesh's
  * bounding boxes has already been computed.
  *
- * @param mesh Pointer to the mesh to be wrapped in a model structure.
+ * @param mesh The mesh to be wrapped in a model structure.
  *
  * @return Model structure containing the specified mesh.
  *}
-function R3D_LoadModelFromMesh(const mesh: PR3D_Mesh): TR3D_Model; cdecl;
+function R3D_LoadModelFromMesh(mesh: TR3D_Mesh): TR3D_Model; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadModelFromMesh';
 
 {*
@@ -84,5 +82,5 @@ function R3D_LoadModelFromMesh(const mesh: PR3D_Mesh): TR3D_Model; cdecl;
  * @param unloadMaterials If true, also unloads all materials associated with the model.
  * Set to false if textures are still being used elsewhere to avoid freeing shared resources.
  *}
-procedure R3D_UnloadModel(model: PR3D_Model; unloadMaterials: Boolean); cdecl;
+procedure R3D_UnloadModel(model: TR3D_Model; unloadMaterials: Boolean); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadModel';

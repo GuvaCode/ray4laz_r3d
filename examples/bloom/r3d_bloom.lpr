@@ -141,7 +141,7 @@ begin
       ClearBackground(RAYWHITE);
 
       R3D_Begin(camera);
-        R3D_DrawMesh(@cube, @material, MatrixIdentity());
+        R3D_DrawMesh(cube, material, Vector3Zero, 1.0);
       R3D_End();
 
       // Отображение информации о bloom
@@ -154,7 +154,7 @@ begin
   end;
 
   // Очистка ресурсов
-  R3D_UnloadMesh(@cube);
+  R3D_UnloadMesh(cube);
   R3D_Close();
   CloseWindow();
 end.

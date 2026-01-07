@@ -33,9 +33,8 @@ typedef uint32_t R3D_Flags;
 #define R3D_FLAG_FXAA                   (1 << 0)    ///< Enables Fast Approximate Anti-Aliasing (FXAA)
 #define R3D_FLAG_BLIT_LINEAR            (1 << 1)    ///< Uses linear filtering when blitting the final image
 #define R3D_FLAG_ASPECT_KEEP            (1 << 2)    ///< Maintains the aspect ratio of the internal resolution when blitting the final image
-#define R3D_FLAG_NO_FRUSTUM_CULLING     (1 << 3)    ///< Disables internal frustum culling. Manual culling is allowed, but may break shadow visibility if objects casting shadows are skipped.
-#define R3D_FLAG_TRANSPARENT_SORTING    (1 << 4)    ///< Back-to-front sorting of transparent objects for correct blending of non-discarded fragments. Be careful, in 'force forward' mode this flag will also sort opaque objects in 'near-to-far' but in the same sorting pass.
-#define R3D_FLAG_OPAQUE_SORTING         (1 << 5)    ///< Front-to-back sorting of opaque objects to optimize depth testing at the cost of additional sorting. Please note, in 'force forward' mode this flag has no effect, see transparent sorting.
+#define R3D_FLAG_TRANSPARENT_SORTING    (1 << 3)    ///< Back-to-front sorting of transparent objects for correct blending of non-discarded fragments.
+#define R3D_FLAG_OPAQUE_SORTING         (1 << 4)    ///< Front-to-back sorting of opaque objects to optimize depth testing at the cost of additional sorting.
 
 /**
  * @brief Bitfield type used to specify rendering layers for 3D objects.
@@ -72,6 +71,24 @@ typedef uint32_t R3D_Layer;
 #define R3D_LAYER_16    (1 << 15)
 
 #define R3D_LAYER_ALL   0xFFFFFFFF
+
+/**
+ * @brief Specifies the color space for user-provided colors and color textures.
+ *
+ * This enum defines how colors are interpreted for material inputs:
+ * - Surface colors (e.g., albedo or emission tint)
+ * - Color textures (albedo, emission maps)
+ *
+ * Lighting values (direct or indirect light) are always linear and
+ * are not affected by this setting.
+ *
+ * Used with `R3D_SetColorSpace()` to control whether input colors
+ * should be treated as linear or sRGB.
+ */
+typedef enum {
+    R3D_COLORSPACE_LINEAR,  ///< Linear color space: values are used as-is.
+    R3D_COLORSPACE_SRGB     ///< sRGB color space: values are converted to linear on load.
+} R3D_ColorSpace;
 
 // ========================================
 // PUBLIC API
@@ -168,6 +185,25 @@ R3DAPI void R3D_UpdateResolution(int width, int height);
  * @param filter The texture filtering mode to be applied by default.
  */
 R3DAPI void R3D_SetTextureFilter(TextureFilter filter);
+
+/**
+ * @brief Set the working color space for user-provided surface colors and color textures.
+ *
+ * Defines how all *color inputs* should be interpreted:
+ * - surface colors provided in materials (e.g. albedo/emission tints)
+ * - color textures such as albedo and emission maps
+ *
+ * When set to sRGB, these values are converted to linear before shading.
+ * When set to linear, values are used as-is.
+ *
+ * This does NOT affect lighting inputs (direct or indirect light),
+ * which are always expected to be provided in linear space.
+ *
+ * The default color space is `R3D_COLORSPACE_SRGB`.
+ *
+ * @param space Color space to use for color inputs (linear or sRGB).
+ */
+R3DAPI void R3D_SetColorSpace(R3D_ColorSpace space);
 
 /**
  * @brief Get the currently active global rendering layers.

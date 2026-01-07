@@ -1,128 +1,98 @@
-program r3d_pbr;
-
-
-{$mode objfpc}{$H+}
+program PBRMusketExample;
 
 uses
-  {$IFDEF UNIX} cthreads,{$ENDIF}
-  Classes, SysUtils, CustApp, raylib, r3d, raymath, math;
+  SysUtils, Math, raylib, r3d, raymath;
+
+const
+  RESOURCES_PATH = 'resources/';
 
 var
-  Model: TR3D_Model;
-  ModelMatrix: TMatrix;
-  Skybox: TR3D_Skybox;
-  Camera: TCamera3D;
-  ModelScale: Single = 1.0;
+  ScreenWidth, ScreenHeight: Integer;
+  model: TR3D_Model;
+  modelMatrix, scaleMatrix, transformMatrix, rotateMatrix: TMatrix;
+  modelScale, pitch, yaw: Single;
+  skybox: TR3D_Cubemap;
+  ambient: TR3D_AmbientMap;
+  light: TR3D_Light;
+  camera: TCamera3D;
+  mouseDelta: TVector2;
 
-function Init: PChar;
-var
-  Light: TR3D_Light;
-  LightDir: TVector3;
-  Transform: TMatrix;
-  i: Integer;
 begin
-  // Initialize with FXAA anti-aliasing
-  R3D_Init(GetScreenWidth, GetScreenHeight, R3D_FLAG_FXAA);
+  // Initialize window
+  ScreenWidth := 800;
+  ScreenHeight := 450;
+  InitWindow(ScreenWidth, ScreenHeight, '[r3d] - PBR musket example');
   SetTargetFPS(60);
 
-  // Configure PBR rendering settings
+  // Initialize R3D
+  R3D_Init(GetScreenWidth(), GetScreenHeight(), R3D_FLAG_FXAA);
 
-  R3D_GetEnvironment^.ssao.enabled := True;
-  R3D_GetEnvironment^.ssao.radius := 4.0;
-  R3D_GetEnvironment^.tonemap.mode := R3D_TONEMAP_ACES;
+  // Tonemapping
+  R3D_GetEnvironment^.tonemap.mode := R3D_TONEMAP_FILMIC;
   R3D_GetEnvironment^.tonemap.exposure := 0.75;
-  R3D_GetEnvironment^.tonemap.white:= 1.25;
 
+  // Set texture filter for mipmaps
+  R3D_SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_4X);
 
-  // Load musket model
-  Model := R3D_LoadModel('resources/pbr/musket.glb');
+  // Load model
+  model := R3D_LoadModel(PAnsiChar(RESOURCES_PATH + 'pbr/musket.glb'));
+  modelMatrix := MatrixIdentity();
+  modelScale := 1.0;
 
-  // Rotate model 90 degrees around Y axis and set texture filters
-  Transform := MatrixRotateY(PI / 2);
-  for i := 0 to Model.materialCount - 1 do
-  begin
-    SetTextureFilter(Model.materials[i].albedo.texture, TEXTURE_FILTER_BILINEAR);
-    SetTextureFilter(Model.materials[i].orm.texture, TEXTURE_FILTER_BILINEAR);
-  end;
+  // Load skybox and ambient map
+  skybox := R3D_LoadCubemap(PAnsiChar(RESOURCES_PATH + 'sky/skybox2.png'), R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
+  ambient := R3D_GenAmbientMap(skybox, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
+  R3D_GetEnvironment^.background.sky := skybox;
+  R3D_GetEnvironment^.ambient.map := ambient;
 
-  ModelMatrix := MatrixIdentity();
+  // Setup directional light
+  light := R3D_CreateLight(R3D_LIGHT_DIR);
+  R3D_SetLightDirection(light, Vector3Create(0, -1, -1));
+  R3D_SetLightActive(light, True);
 
-  // Setup skybox
-  Skybox := R3D_LoadSkybox('resources/sky/skybox2.png', CUBEMAP_LAYOUT_AUTO_DETECT);
-  R3D_GetEnvironment^.background.sky := Skybox;
+  // Setup camera
+  camera.position := Vector3Create(0, 0, 0.5);
+  camera.target := Vector3Create(0, 0, 0);
+  camera.up := Vector3Create(0, 1, 0);
+  camera.fovy := 60;
+  camera.projection := CAMERA_PERSPECTIVE;
 
-
-  // Configure camera
-  Camera.position := Vector3Create(0, 0, 0.5);
-  Camera.target := Vector3Create(0, 0, 0);
-  Camera.up := Vector3Create(0, 1, 0);
-  Camera.fovy := 60;
-
-  // Create directional light
-  Light := R3D_CreateLight(R3D_LIGHT_DIR);
-  LightDir := Vector3Create(0, -1, -1);
-  R3D_SetLightDirection(Light, LightDir);
-  R3D_SetLightActive(Light, True);
-
-  Result := '[r3d] - PBR musket example';
-end;
-
-procedure Update(delta: Single);
-var
-  Pitch, Yaw: Single;
-  Rotate: TMatrix;
-  RotAngles: TVector3;
-begin
-  // Zoom with mouse wheel
-  ModelScale := Clamp(ModelScale + GetMouseWheelMove() * 0.1, 0.25, 2.5);
-
-  // Rotate with left mouse button
-  if IsMouseButtonDown(MOUSE_BUTTON_LEFT) then
-  begin
-    Pitch := (GetMouseDelta().y * 0.005) / ModelScale;
-    Yaw := (GetMouseDelta().x * 0.005) / ModelScale;
-
-    RotAngles := Vector3Create(Pitch, Yaw, 0.0);
-    Rotate := MatrixRotateXYZ(RotAngles);
-    ModelMatrix := MatrixMultiply(ModelMatrix, Rotate);
-  end;
-end;
-
-procedure Draw;
-var
-  ScaleMatrix, Transform: TMatrix;
-begin
-  R3D_Begin(Camera);
-    // Apply scale and rotation to model
-    ScaleMatrix := MatrixScale(ModelScale, ModelScale, ModelScale);
-    Transform := MatrixMultiply(ModelMatrix, ScaleMatrix);
-    R3D_DrawModelPro(@Model, Transform);
-  R3D_End();
-
-  // Draw credits
-  DrawText('Model made by TommyLingL', 10, GetScreenHeight - 30, 20, WHITE);
-end;
-
-procedure Close;
-begin
-  R3D_UnloadModel(@Model, True);
-  R3D_UnloadSkybox(Skybox);
-  R3D_Close();
-end;
-
-begin
-  InitWindow(800, 600, 'PBR Musket Example');
-  Init();
-
+  // Main loop
   while not WindowShouldClose() do
   begin
-    Update(GetFrameTime());
+    // Update model scale with mouse wheel
+    modelScale := Clamp(modelScale + GetMouseWheelMove() * 0.1, 0.25, 2.5);
+
+    // Rotate model with left mouse button
+    if IsMouseButtonDown(MOUSE_BUTTON_LEFT) then
+    begin
+      mouseDelta := GetMouseDelta();
+      pitch := (mouseDelta.y * 0.005) / modelScale;
+      yaw := (mouseDelta.x * 0.005) / modelScale;
+      rotateMatrix := MatrixRotateXYZ(Vector3Create(pitch, yaw, 0.0));
+      modelMatrix := MatrixMultiply(modelMatrix, rotateMatrix);
+    end;
+
     BeginDrawing();
-      ClearBackground(BLACK);
-      Draw();
+      ClearBackground(RAYWHITE);
+
+      // Draw model
+      R3D_Begin(camera);
+        scaleMatrix := MatrixScale(modelScale, modelScale, modelScale);
+        transformMatrix := MatrixMultiply(modelMatrix, scaleMatrix);
+        R3D_DrawModelPro(model, transformMatrix);
+      R3D_End();
+
+      DrawText('Model made by TommyLingL', 10, GetScreenHeight()-26, 16, LIME);
+
     EndDrawing();
   end;
 
-  Close();
+  // Cleanup
+  R3D_UnloadModel(model, True);
+  R3D_UnloadAmbientMap(ambient);
+  R3D_UnloadCubemap(skybox);
+  R3D_Close();
+
   CloseWindow();
 end.

@@ -54,9 +54,9 @@ function R3D_CreateMeshData(vertexCount, indexCount: Integer): TR3D_MeshData; cd
 
 {*
  * @brief Releases memory used by a mesh data container.
- * @param meshData Pointer to the R3D_MeshData to destroy.
+ * @param meshData R3D_MeshData to destroy.
  *}
-procedure R3D_UnloadMeshData(meshData: PR3D_MeshData); cdecl;
+procedure R3D_UnloadMeshData(meshData: TR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadMeshData';
 
 {*
@@ -65,10 +65,10 @@ procedure R3D_UnloadMeshData(meshData: PR3D_MeshData); cdecl;
  * Returns true if the mesh data contains at least one vertex buffer
  * with a positive number of vertices.
  *
- * @param meshData Pointer to the mesh data to check.
+ * @param meshData Mesh data to check.
  * @return true if valid, false otherwise.
  *}
-function R3D_IsMeshDataValid(const meshData: PR3D_MeshData): Boolean; cdecl;
+function R3D_IsMeshDataValid(meshData: TR3D_MeshData): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsMeshDataValid';
 
 {*

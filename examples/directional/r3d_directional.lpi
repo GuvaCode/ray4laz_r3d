@@ -35,6 +35,7 @@
       <Unit>
         <Filename Value="r3d_directional.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="DirectionalLightExample"/>
       </Unit>
     </Units>
   </ProjectOptions>

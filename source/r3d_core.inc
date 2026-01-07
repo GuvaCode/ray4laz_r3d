@@ -6,15 +6,13 @@
  *}
 type
   TR3D_Flags = LongWord;
-
 const
-  R3D_FLAG_NONE                   = 0;          ///< No special rendering flags
-  R3D_FLAG_FXAA                  = (1 shl 0);   ///< Enables Fast Approximate Anti-Aliasing (FXAA)
-  R3D_FLAG_BLIT_LINEAR           = (1 shl 1);   ///< Uses linear filtering when blitting the final image
-  R3D_FLAG_ASPECT_KEEP           = (1 shl 2);   ///< Maintains the aspect ratio of the internal resolution when blitting the final image
-  R3D_FLAG_NO_FRUSTUM_CULLING    = (1 shl 3);   ///< Disables internal frustum culling. Manual culling is allowed, but may break shadow visibility if objects casting shadows are skipped.
-  R3D_FLAG_TRANSPARENT_SORTING   = (1 shl 4);   ///< Back-to-front sorting of transparent objects for correct blending of non-discarded fragments. Be careful, in 'force forward' mode this flag will also sort opaque objects in 'near-to-far' but in the same sorting pass.
-  R3D_FLAG_OPAQUE_SORTING        = (1 shl 5);   ///< Front-to-back sorting of opaque objects to optimize depth testing at the cost of additional sorting. Please note, in 'force forward' mode this flag has no effect, see transparent sorting.
+  R3D_FLAG_NONE                  = 0;            ///< No special rendering flags
+  R3D_FLAG_FXAA                  = (1 shl 0);    ///< Enables Fast Approximate Anti-Aliasing (FXAA)
+  R3D_FLAG_BLIT_LINEAR           = (1 shl 1);    ///< Uses linear filtering when blitting the final image
+  R3D_FLAG_ASPECT_KEEP           = (1 shl 2);    ///< Maintains the aspect ratio of the internal resolution when blitting the final image
+  R3D_FLAG_TRANSPARENT_SORTING   = (1 shl 3);    ///< Back-to-front sorting of transparent objects for correct blending of non-discarded fragments.
+  R3D_FLAG_OPAQUE_SORTING        = (1 shl 4);    ///< Front-to-back sorting of opaque objects to optimize depth testing at the cost of additional sorting.
 
 {*
  * @brief Bitfield type used to specify rendering layers for 3D objects.
@@ -52,6 +50,28 @@ const
   R3D_LAYER_15 = (1 shl 14);
   R3D_LAYER_16 = (1 shl 15);
   R3D_LAYER_ALL = $FFFFFFFF;
+
+
+{*
+ * @brief Specifies the color space for user-provided colors and color textures.
+ *
+ * This enum defines how colors are interpreted for material inputs:
+ * - Surface colors (e.g., albedo or emission tint)
+ * - Color textures (albedo, emission maps)
+ *
+ * Lighting values (direct or indirect light) are always linear and
+ * are not affected by this setting.
+ *
+ * Used with `R3D_SetColorSpace()` to control whether input colors
+ * should be treated as linear or sRGB.
+ *}
+type
+  TR3D_ColorSpace = (
+    R3D_COLORSPACE_LINEAR,  ///< Linear color space: values are used as-is.
+    R3D_COLORSPACE_SRGB     ///< sRGB color space: values are converted to linear on load.
+    );
+
+
 
 // ========================================
 // PUBLIC API
@@ -150,8 +170,28 @@ procedure R3D_UpdateResolution(width, height: Integer); cdecl;
  *
  * @param filter The texture filtering mode to be applied by default.
  *}
-procedure R3D_SetTextureFilter(filter: Integer); cdecl; // Используем Integer вместо TTextureFilter
+procedure R3D_SetTextureFilter(filter: TTextureFilter); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetTextureFilter';
+
+{*
+ * @brief Set the working color space for user-provided surface colors and color textures.
+ *
+ * Defines how all *color inputs* should be interpreted:
+ * - surface colors provided in materials (e.g. albedo/emission tints)
+ * - color textures such as albedo and emission maps
+ *
+ * When set to sRGB, these values are converted to linear before shading.
+ * When set to linear, values are used as-is.
+ *
+ * This does NOT affect lighting inputs (direct or indirect light),
+ * which are always expected to be provided in linear space.
+ *
+ * The default color space is `R3D_COLORSPACE_SRGB`.
+ *
+ * @param space Color space to use for color inputs (linear or sRGB).
+ *}
+ procedure R3D_SetColorSpace(space: TR3D_ColorSpace); cdecl;
+   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetColorSpace';
 
 {*
  * @brief Get the currently active global rendering layers.

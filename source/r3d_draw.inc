@@ -1,272 +1,291 @@
 // R3D Draw Module.
 
 {*
- * @brief Begins a rendering session for a 3D camera.
+ * @brief Begins a rendering session using the given camera.
  *
- * This function starts a rendering session, preparing the engine to handle subsequent
- * draw calls using the provided camera settings. Rendering output will be directed
- * to the default screen framebuffer.
+ * Rendering output is directed to the default framebuffer.
  *
- * @param camera The camera to use for rendering the scene.
+ * @param camera Camera used to render the scene.
  *}
 procedure R3D_Begin(camera: TCamera3D); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_Begin';
 
 {*
- * @brief Begins a rendering session for a 3D camera with an optional custom render target.
+ * @brief Begins a rendering session with a custom render target.
  *
- * This function starts a rendering session, preparing the engine to handle subsequent
- * draw calls using the provided camera settings. If a render target is provided, rendering
- * output will be directed to it. If the target is `NULL`, rendering will be performed
- * directly to the screen framebuffer (same behavior as R3D_Begin).
+ * If the render target is invalid (ID = 0), rendering goes to the screen.
  *
- * @param camera The camera to use for rendering the scene.
- * @param target Optional pointer to a RenderTexture to render into. Can be NULL to render
- *               directly to the screen.
+ * @param target Render texture to render into.
+ * @param camera Camera used to render the scene.
  *}
-procedure R3D_BeginEx(camera: TCamera3D; const target: PRenderTexture); cdecl;
+procedure R3D_BeginEx(target: TRenderTexture; camera: TCamera3D); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_BeginEx';
 
 {*
  * @brief Ends the current rendering session.
  *
- * This function signals the end of a rendering session, at which point the engine
- * will process all necessary render passes and output the final result to the main
- * or custom framebuffer.
+ * This function is the one that actually performs the full
+ * rendering of the described scene. It carries out culling,
+ * sorting, shadow rendering, scene rendering, and screen /
+ * post-processing effects.
  *}
 procedure R3D_End; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_End';
 
 {*
- * @brief Draws a mesh with a specified material and transformation.
+ * @brief Begins a clustered draw pass.
  *
- * This function renders a mesh with the provided material and transformation matrix.
+ * All draw calls submitted in this pass are first tested against the
+ * cluster AABB. If the cluster fails the scene/shadow frustum test,
+ * none of the contained objects are tested or drawn.
  *
- * @param mesh A pointer to the mesh to render. Cannot be NULL.
- * @param material A pointer to the material to apply to the mesh. Can be NULL, default material will be used.
- * @param transform The transformation matrix to apply to the mesh.
+ * @param aabb Bounding box used as the cluster-level frustum test.
  *}
-procedure R3D_DrawMesh(const mesh: PR3D_Mesh; const material: PR3D_Material;
-  transform: TMatrix); cdecl;
+procedure R3D_BeginCluster(aabb: TBoundingBox); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_BeginCluster';
+
+{*
+ * @brief Ends the current clustered draw pass.
+ *
+ * Stops submitting draw calls to the active cluster.
+ *}
+procedure R3D_EndCluster; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EndCluster';
+
+{*
+ * @brief Queues a mesh draw command.
+ *
+ * Draws the mesh at the given position and uniform scale.
+ * The command is executed during R3D_End().
+ *
+ * @param mesh Mesh to render.
+ * @param material Material to apply to the mesh.
+ * @param position Position of the mesh.
+ * @param scale Uniform scale factor.
+ *}
+procedure R3D_DrawMesh(mesh: TR3D_Mesh; material: TR3D_Material;
+  position: TVector3; scale: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMesh';
 
 {*
- * @brief Draws a mesh with instancing support.
+ * @brief Queues a mesh draw command with rotation and non-uniform scale.
  *
- * This function renders a mesh multiple times with different transformation matrices
- * for each instance.
+ * Executed during R3D_End().
  *
- * @param mesh A pointer to the mesh to render. Cannot be NULL.
- * @param material A pointer to the material to apply to the mesh. Can be NULL, default material will be used.
- * @param instanceTransforms Array of transformation matrices for each instance. Cannot be NULL.
- * @param instanceCount The number of instances to render. Must be greater than 0.
+ * @param mesh Mesh to render.
+ * @param material Material to apply to the mesh.
+ * @param position Position of the mesh.
+ * @param rotation Rotation quaternion.
+ * @param scale Non-uniform scale vector.
  *}
-procedure R3D_DrawMeshInstanced(const mesh: PR3D_Mesh; const material: PR3D_Material;
-  const instanceTransforms: PMatrix; instanceCount: Integer); cdecl;
+procedure R3D_DrawMeshEx(mesh: TR3D_Mesh; material: TR3D_Material;
+  position: TVector3; rotation: TQuaternion; scale: TVector3); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshEx';
+
+{*
+ * @brief Queues a mesh draw command using a full transform matrix.
+ *
+ * Executed during R3D_End().
+ *
+ * @param mesh Mesh to render.
+ * @param material Material to apply to the mesh.
+ * @param transform Full transformation matrix.
+ *}
+procedure R3D_DrawMeshPro(mesh: TR3D_Mesh; material: TR3D_Material;
+  transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshPro';
+
+{*
+ * @brief Queues an instanced mesh draw command.
+ *
+ * Draws multiple instances using the provided instance buffer.
+ * Executed during R3D_End().
+ *
+ * @param mesh Mesh to render.
+ * @param material Material to apply to the mesh.
+ * @param instances Instance buffer containing instance data.
+ * @param count Number of instances to draw.
+ *}
+procedure R3D_DrawMeshInstanced(mesh: TR3D_Mesh; material: TR3D_Material;
+  instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshInstanced';
 
 {*
- * @brief Draws a mesh with instancing support and different colors per instance.
+ * @brief Queues an instanced mesh draw command with an additional transform.
  *
- * This function renders a mesh multiple times with different transformation matrices
- * and different colors for each instance.
+ * The transform is applied to all instances. Executed during R3D_End().
  *
- * @param mesh A pointer to the mesh to render. Cannot be NULL.
- * @param material A pointer to the material to apply to the mesh. Can be NULL, default material will be used.
- * @param instanceTransforms Array of transformation matrices for each instance. Cannot be NULL.
- * @param instanceColors Array of colors for each instance. Can be NULL if no per-instance colors are needed.
- * @param instanceCount The number of instances to render. Must be greater than 0.
+ * @param mesh Mesh to render.
+ * @param material Material to apply to the mesh.
+ * @param instances Instance buffer containing instance data.
+ * @param count Number of instances to draw.
+ * @param transform Additional transformation matrix applied to all instances.
  *}
-procedure R3D_DrawMeshInstancedEx(const mesh: PR3D_Mesh; const material: PR3D_Material;
-  const instanceTransforms: PMatrix; const instanceColors: PColor; instanceCount: Integer); cdecl;
+procedure R3D_DrawMeshInstancedEx(mesh: TR3D_Mesh; material: TR3D_Material;
+  instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshInstancedEx';
 
 {*
- * @brief Draws a mesh with instancing support, a global transformation, and different colors per instance.
+ * @brief Queues a model draw command.
  *
- * This function renders a mesh multiple times using instancing, with a global transformation
- * applied to all instances, and individual transformation matrices and colors for each instance.
- * Each instance can have its own position, rotation, scale, and color while sharing the same mesh
- * and material.
+ * Draws the model at the given position and uniform scale.
+ * Executed during R3D_End().
  *
- * @param mesh A pointer to the mesh to render. Cannot be NULL.
- * @param material A pointer to the material to apply to the mesh. Can be NULL, default material will be used.
- * @param globalAabb Optional bounding box encompassing all instances, in local space. Used for frustum culling.
- *                   Can be NULL to disable culling. Will be transformed by the global matrix if necessary.
- * @param globalTransform The global transformation matrix applied to all instances.
- * @param instanceTransforms Pointer to an array of transformation matrices for each instance, allowing unique transformations. Cannot be NULL.
- * @param transformsStride The stride (in bytes) между последовательными матрицами преобразования в массиве.
- *                         Set to 0 if the matrices are tightly packed (stride equals sizeof(Matrix)).
- *                         If matrices are embedded in a struct, set to the size of the struct or the actual byte offset between elements.
- * @param instanceColors Pointer to an array of colors for each instance, allowing unique colors. Can be NULL if no per-instance colors are needed.
- * @param colorsStride The stride (in bytes) между последовательными цветами в массиве.
- *                     Set to 0 if the colors are tightly packed (stride equals sizeof(Color)).
- *                     If colors are embedded in a struct, set to the size of the struct or the actual byte offset between elements.
- * @param instanceCount The number of instances to render. Must be greater than 0.
+ * @param model Model to render.
+ * @param position Position of the model.
+ * @param scale Uniform scale factor.
  *}
-procedure R3D_DrawMeshInstancedPro(const mesh: PR3D_Mesh; const material: PR3D_Material;
-  const globalAabb: PBoundingBox; globalTransform: TMatrix;
-  const instanceTransforms: PMatrix; transformsStride: Integer;
-  const instanceColors: PColor; colorsStride: Integer;
-  instanceCount: Integer); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshInstancedPro';
-
-{*
- * @brief Draws a model at a specified position and scale.
- *
- * This function renders a model at the given position with the specified scale factor.
- *
- * @param model A pointer to the model to render.
- * @param position The position to place the model at.
- * @param scale The scale factor to apply to the model.
- *}
-procedure R3D_DrawModel(const model: PR3D_Model; position: TVector3; scale: Single); cdecl;
+procedure R3D_DrawModel(model: TR3D_Model; position: TVector3; scale: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModel';
 
 {*
- * @brief Draws a model with advanced transformation options.
+ * @brief Queues a model draw command with rotation and non-uniform scale.
  *
- * This function renders a model with a specified position, rotation axis, rotation
- * angle, and scale. It provides more control over how the model is transformed before
- * rendering.
+ * Executed during R3D_End().
  *
- * @param model A pointer to the model to render.
- * @param position The position to place the model at.
- * @param rotationAxis The axis of rotation for the model.
- * @param rotationAngle The angle to rotate the model.
- * @param scale The scale factor to apply to the model.
+ * @param model Model to render.
+ * @param position Position of the model.
+ * @param rotation Rotation quaternion.
+ * @param scale Non-uniform scale vector.
  *}
-procedure R3D_DrawModelEx(const model: PR3D_Model; position, rotationAxis: TVector3;
-  rotationAngle: Single; scale: TVector3); cdecl;
+procedure R3D_DrawModelEx(model: TR3D_Model; position: TVector3;
+  rotation: TQuaternion; scale: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelEx';
 
 {*
- * @brief Draws a model using a transformation matrix.
+ * @brief Queues a model draw command using a full transform matrix.
  *
- * This function renders a model using a custom transformation matrix, allowing full control
- * over the model's position, rotation, scale, and skew. It is intended for advanced rendering
- * scenarios where a single matrix defines the complete transformation.
+ * Executed during R3D_End().
  *
- * @param model A pointer to the model to render.
- * @param transform A transformation matrix that defines how to position, rotate, and scale the model.
+ * @param model Model to render.
+ * @param transform Full transformation matrix.
  *}
-procedure R3D_DrawModelPro(const model: PR3D_Model; transform: TMatrix); cdecl;
+procedure R3D_DrawModelPro(model: TR3D_Model; transform: TMatrix); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelPro';
 
 {*
- * @brief Draws a model with instancing support.
+ * @brief Queues an instanced model draw command.
  *
- * This function renders a model multiple times with different transformation matrices
- * for each instance.
+ * Draws multiple instances using the provided instance buffer.
+ * Executed during R3D_End().
  *
- * @param model A pointer to the model to render. Cannot be NULL.
- * @param instanceTransforms Array of transformation matrices for each instance. Cannot be NULL.
- * @param instanceCount The number of instances to render. Must be greater than 0.
+ * @param model Model to render.
+ * @param instances Instance buffer containing instance data.
+ * @param count Number of instances to draw.
  *}
-procedure R3D_DrawModelInstanced(const model: PR3D_Model;
-  const instanceTransforms: PMatrix; instanceCount: Integer); cdecl;
+procedure R3D_DrawModelInstanced(model: TR3D_Model;
+  instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelInstanced';
 
 {*
- * @brief Draws a model with instancing support and different colors per instance.
+ * @brief Queues an instanced model draw command with an additional transform.
  *
- * This function renders a model multiple times with different transformation matrices
- * and different colors for each instance.
+ * The transform is applied to all instances. Executed during R3D_End().
  *
- * @param model A pointer to the model to render. Cannot be NULL.
- * @param instanceTransforms Array of transformation matrices for each instance. Cannot be NULL.
- * @param instanceColors Array of colors for each instance. Can be NULL if no per-instance colors are needed.
- * @param instanceCount The number of instances to render. Must be greater than 0.
+ * @param model Model to render.
+ * @param instances Instance buffer containing instance data.
+ * @param count Number of instances to draw.
+ * @param transform Additional transformation matrix applied to all instances.
  *}
-procedure R3D_DrawModelInstancedEx(const model: PR3D_Model;
-  const instanceTransforms: PMatrix; const instanceColors: PColor;
-  instanceCount: Integer); cdecl;
+procedure R3D_DrawModelInstancedEx(model: TR3D_Model;
+  instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelInstancedEx';
 
 {*
- * @brief Draws a model with instancing support, a global transformation, and different colors per instance.
+ * @brief Queues an animated model draw command.
  *
- * This function renders a model multiple times using instancing, with a global transformation
- * applied to all instances, and individual transformation matrices and colors for each instance.
- * Each instance can have its own position, rotation, scale, and color while sharing the same model.
+ * Uses the provided animation player to compute the pose.
+ * Executed during R3D_End().
  *
- * @param model A pointer to the model to render. Cannot be NULL.
- * @param globalAabb Optional bounding box encompassing all instances, in local space. Used for frustum culling.
- *                   Can be NULL to disable culling. Will be transformed by the global matrix if necessary.
- * @param globalTransform The global transformation matrix applied to all instances.
- * @param instanceTransforms Pointer to an array of transformation matrices for each instance, allowing unique transformations. Cannot be NULL.
- * @param transformsStride The stride (in bytes) между последовательными матрицами преобразования в массиве.
- *                         Set to 0 if the matrices are tightly packed (stride equals sizeof(Matrix)).
- *                         If matrices are embedded in a struct, set to the size of the struct or the actual byte offset between elements.
- * @param instanceColors Pointer to an array of colors for each instance, allowing unique colors. Can be NULL if no per-instance colors are needed.
- * @param colorsStride The stride (in bytes) между последовательными цветами в массиве.
- *                     Set to 0 if the colors are tightly packed (stride equals sizeof(Color)).
- *                     If colors are embedded in a struct, set to the size of the struct or the actual byte offset between elements.
- * @param instanceCount The number of instances to render. Must be greater than 0.
+ * @param model Model to render.
+ * @param player Animation player controlling the model's pose.
+ * @param position Position of the model.
+ * @param scale Uniform scale factor.
  *}
-procedure R3D_DrawModelInstancedPro(const model: PR3D_Model;
-  const globalAabb: PBoundingBox; globalTransform: TMatrix;
-  const instanceTransforms: PMatrix; transformsStride: Integer;
-  const instanceColors: PColor; colorsStride: Integer;
-  instanceCount: Integer); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelInstancedPro';
+procedure R3D_DrawAnimatedModel(model: TR3D_Model; player: TR3D_AnimationPlayer;
+  position: TVector3; scale: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModel';
 
 {*
- * @brief Draws a decal using a transformation matrix.
+ * @brief Queues an animated model draw command with rotation and non-uniform scale.
  *
- * This function renders a decal in 3D space at the given position.
+ * Executed during R3D_End().
  *
- * @param decal A pointer to the decal to render.
- * @param transform A transformation matrix that defines how to position, rotate, and scale the decal.
+ * @param model Model to render.
+ * @param player Animation player controlling the model's pose.
+ * @param position Position of the model.
+ * @param rotation Rotation quaternion.
+ * @param scale Non-uniform scale vector.
  *}
-procedure R3D_DrawDecal(const decal: PR3D_Decal; transform: TMatrix); cdecl;
+procedure R3D_DrawAnimatedModelEx(model: TR3D_Model; player: TR3D_AnimationPlayer;
+  position: TVector3; rotation: TQuaternion; scale: TVector3); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModelEx';
+
+{*
+ * @brief Queues an animated model draw command using a full transform matrix.
+ *
+ * Executed during R3D_End().
+ *
+ * @param model Model to render.
+ * @param player Animation player controlling the model's pose.
+ * @param transform Full transformation matrix.
+ *}
+procedure R3D_DrawAnimatedModelPro(model: TR3D_Model; player: TR3D_AnimationPlayer;
+  transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModelPro';
+
+{*
+ * @brief Queues an instanced animated model draw command.
+ *
+ * Draws multiple animated instances using the provided instance buffer.
+ * Executed during R3D_End().
+ *
+ * @param model Model to render.
+ * @param player Animation player controlling the model's pose.
+ * @param instances Instance buffer containing instance data.
+ * @param count Number of instances to draw.
+ *}
+procedure R3D_DrawAnimatedModelInstanced(model: TR3D_Model; player: TR3D_AnimationPlayer;
+  instances: TR3D_InstanceBuffer; count: Integer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModelInstanced';
+
+{*
+ * @brief Queues an instanced animated model draw command with an additional transform.
+ *
+ * The transform is applied to all instances. Executed during R3D_End().
+ *
+ * @param model Model to render.
+ * @param player Animation player controlling the model's pose.
+ * @param instances Instance buffer containing instance data.
+ * @param count Number of instances to draw.
+ * @param transform Additional transformation matrix applied to all instances.
+ *}
+procedure R3D_DrawAnimatedModelInstancedEx(model: TR3D_Model; player: TR3D_AnimationPlayer;
+  instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModelInstancedEx';
+
+{*
+ * @brief Queues a decal draw command.
+ *
+ * The decal is transformed by the given matrix.
+ * Executed during R3D_End().
+ *
+ * @param decal Decal to render.
+ * @param transform Transformation matrix.
+ *}
+procedure R3D_DrawDecal(decal: TR3D_Decal; transform: TMatrix); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecal';
 
 {*
- * @brief Draws a decal with instancing support.
+ * @brief Queues an instanced decal draw command.
  *
- * This function renders a decal multiple times with different transformation matrices
- * for each instance.
+ * Draws multiple decals using the provided instance buffer.
+ * Executed during R3D_End().
  *
- * @param decal A pointer to the decal to render. Cannot be NULL.
- * @param instanceTransforms Array of transformation matrices for each instance. Cannot be NULL.
- * @param instanceCount The number of instances to render. Must be greater than 0.
+ * @param decal Decal to render.
+ * @param instances Instance buffer containing instance data.
+ * @param count Number of instances to draw.
  *}
-procedure R3D_DrawDecalInstanced(const decal: PR3D_Decal;
-  const instanceTransforms: PMatrix; instanceCount: Integer); cdecl;
+procedure R3D_DrawDecalInstanced(decal: TR3D_Decal;
+  instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalInstanced';
-
-{*
- * @brief Renders the current state of a CPU-based particle system.
- *
- * This function draws the particles of a CPU-simulated particle system
- * in their current state. It does not modify the simulation or update
- * particle properties such as position, velocity, or lifetime.
- *
- * @param system A pointer to the `R3D_ParticleSystem` to be rendered.
- *               The particle system must be properly initialized and updated
- *               to the desired state before calling this function.
- * @param mesh A pointer to the mesh used to represent each particle. Cannot be NULL.
- * @param material A pointer to the material applied to the particle mesh. Can be NULL, default material will be used.
- *}
-procedure R3D_DrawParticleSystem(const system: PR3D_ParticleSystem;
-  const mesh: PR3D_Mesh; const material: PR3D_Material); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawParticleSystem';
-
-{*
- * @brief Renders the current state of a CPU-based particle system with a global transformation.
- *
- * This function is similar to `R3D_DrawParticleSystem`, but it applies an additional
- * global transformation to all particles. This is useful for rendering particle effects
- * in a transformed space (e.g., attached to a moving object).
- *
- * @param system A pointer to the `R3D_ParticleSystem` to be rendered.
- *               The particle system must be properly initialized and updated
- *               to the desired state before calling this function.
- * @param mesh A pointer to the mesh used to represent each particle. Cannot be NULL.
- * @param material A pointer to the material applied to the particle mesh. Can be NULL, default material will be used.
- * @param transform A transformation matrix applied to all particles.
- *}
-procedure R3D_DrawParticleSystemEx(const system: PR3D_ParticleSystem;
-  const mesh: PR3D_Mesh; const material: PR3D_Material; transform: TMatrix); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawParticleSystemEx';

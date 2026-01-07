@@ -71,30 +71,31 @@ type
 {*
  * @brief Creates a 3D mesh from CPU-side mesh data.
  * @param type Primitive type used to interpret vertex data.
- * @param data Pointer to the R3D_MeshData containing vertices and indices (cannot be NULL).
+ * @param data R3D_MeshData containing vertices and indices (cannot be NULL).
  * @param aabb Optional pointer to a bounding box. If NULL, it will be computed automatically.
  * @param usage Hint on how the mesh will be used.
  * @return Created R3D_Mesh.
  * @note The function copies all vertex and index data into GPU buffers.
  *}
-function R3D_LoadMesh(&type: TR3D_PrimitiveType; const data: PR3D_MeshData;
+function R3D_LoadMesh(&type: TR3D_PrimitiveType; data: TR3D_MeshData;
   const aabb: PBoundingBox; usage: TR3D_MeshUsage): TR3D_Mesh; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadMesh';
+
 
 {*
  * @brief Destroys a 3D mesh and frees its resources.
- * @param mesh Pointer to the R3D_Mesh to destroy.
+ * @param mesh R3D_Mesh to destroy.
  *}
-procedure R3D_UnloadMesh(mesh: PR3D_Mesh); cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadMesh';
+procedure R3D_UnloadMesh(mesh: TR3D_Mesh); cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadMesh';
 
 {*
  * @brief Check if a mesh is valid for rendering.
  *
  * Returns true if the mesh has a valid VAO and VBO.
  *
- * @param mesh Pointer to the mesh to check.
+ * @param mesh The mesh to check.
  * @return true if valid, false otherwise.
  *}
-function R3D_IsMeshValid(const mesh: PR3D_Mesh): Boolean; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsMeshValid';
+function R3D_IsMeshValid(const mesh: TR3D_Mesh): Boolean; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsMeshValid';
 
 {*
  * @brief Generate a quad mesh with orientation.
@@ -238,10 +239,14 @@ function R3D_GenMeshCubicmap(cubicmap: TImage; cubeSize: TVector3): TR3D_Mesh;
  * If `aabb` is provided, it will be used as the mesh's bounding box; if null,
  * the bounding box is automatically recalculated from the vertex data.
  *
- * @param mesh Pointer to the mesh structure to upload or update.
- * @param data Pointer to the mesh data (vertices and indices) to upload.
+ * @param mesh Pointer to the mesh structure to update.
+ * @param data Mesh data (vertices and indices) to upload.
  * @param aabb Optional bounding box; if null, it is recalculated automatically.
  * @return Returns true if the update is successful, false otherwise.
  *}
-function R3D_UpdateMesh(mesh: PR3D_Mesh; const data: PR3D_MeshData;
+function R3D_UpdateMesh(mesh: PR3D_Mesh; data: TR3D_MeshData;
   const aabb: PBoundingBox): Boolean; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UpdateMesh';
+
+
+
+

@@ -1,96 +1,88 @@
 program DecalExample;
 
-{$mode objfpc}{$H+}
-
 uses
-  Math, SysUtils,
-  raylib, r3d, raymath;
+  SysUtils, Math, raylib, r3d, raymath;
 
 const
-  MAXDECALS = 256;
   RESOURCES_PATH = 'resources/';
-  SCREEN_WIDTH = 800;
-  SCREEN_HEIGHT = 600;
+  MAXDECALS = 256;
+  DEG2RAD = PI / 180.0;
 
 var
-  // === Resources ===
-  MeshPlane: TR3D_Mesh;
-  MaterialWalls: TR3D_Material;
-  Texture: TTexture2D;
-  Decal: TR3D_Decal;
-  Camera: TCamera3D;
-  Light: TR3D_Light;
+  ScreenWidth, ScreenHeight: Integer;
+  materialWalls, decalMaterial: TR3D_Material;
+  decal: TR3D_Decal;
+  roomSize: Single;
+  meshPlane: TR3D_Mesh;
+  matRoom: array[0..5] of TMatrix;
+  light: TR3D_Light;
+  camera: TCamera3D;
+  decalScale: TVector3;
+  targetDecalTransform: TMatrix;
+  instances: TR3D_InstanceBuffer;
+  decalCount, decalIndex, i: Integer;
+  targetPosition: TVector3;
+  delta: Single;
+  hitRay: TRay;
+  hitPoint, hitNormal: TVector3;
+  decalRotation: TQuaternion;
+  bgColor: TColor;
 
-  // === Data ===
-  RoomSize: Single = 32.0;
-  MatRoom: array[0..5] of TMatrix;
-
-  DecalScale: TVector3 = (x: 3.0; y: 3.0; z: 3.0);
-
-  DecalTransforms: array[0..MAXDECALS-1] of TMatrix;
-  TargetDecalTransform: TMatrix;/// = IDENTITY_MATRIX;
-  DecalCount: Integer = 0;
-  DecalIndex: Integer = 0;
-  TargetPosition: TVector3;
-
-// === Helper Functions ===
-
-function RayCubeIntersection(Ray: TRay; CubePosition, CubeSize: TVector3;
-  out IntersectionPoint, Normal: TVector3): Boolean;
+function RayCubeIntersection(ray: TRay; cubePosition, cubeSize: TVector3;
+  var intersectionPoint, normal: TVector3): Boolean;
 var
-  HalfSize, MinPos, MaxPos: TVector3;
-  tMin, tMax, tYMin, tYMax, tZMin, tZMax, Temp: Single;
+  halfSize, min, max: TVector3;
+  tMin, tMax, tYMin, tYMax, tZMin, tZMax, temp: Single;
 begin
-  Result := False;
+  halfSize := Vector3Create(cubeSize.x / 2, cubeSize.y / 2, cubeSize.z / 2);
 
-  HalfSize.x := CubeSize.x / 2;
-  HalfSize.y := CubeSize.y / 2;
-  HalfSize.z := CubeSize.z / 2;
+  min := Vector3Create(cubePosition.x - halfSize.x, cubePosition.y - halfSize.y, cubePosition.z - halfSize.z);
+  max := Vector3Create(cubePosition.x + halfSize.x, cubePosition.y + halfSize.y, cubePosition.z + halfSize.z);
 
-  MinPos.x := CubePosition.x - HalfSize.x;
-  MinPos.y := CubePosition.y - HalfSize.y;
-  MinPos.z := CubePosition.z - HalfSize.z;
-
-  MaxPos.x := CubePosition.x + HalfSize.x;
-  MaxPos.y := CubePosition.y + HalfSize.y;
-  MaxPos.z := CubePosition.z + HalfSize.z;
-
-  tMin := (MinPos.x - Ray.position.x) / Ray.direction.x;
-  tMax := (MaxPos.x - Ray.position.x) / Ray.direction.x;
+  tMin := (min.x - ray.position.x) / ray.direction.x;
+  tMax := (max.x - ray.position.x) / ray.direction.x;
 
   if tMin > tMax then
   begin
-    Temp := tMin;
+    temp := tMin;
     tMin := tMax;
-    tMax := Temp;
+    tMax := temp;
   end;
 
-  tYMin := (MinPos.y - Ray.position.y) / Ray.direction.y;
-  tYMax := (MaxPos.y - Ray.position.y) / Ray.direction.y;
+  tYMin := (min.y - ray.position.y) / ray.direction.y;
+  tYMax := (max.y - ray.position.y) / ray.direction.y;
 
   if tYMin > tYMax then
   begin
-    Temp := tYMin;
+    temp := tYMin;
     tYMin := tYMax;
-    tYMax := Temp;
+    tYMax := temp;
   end;
 
-  if (tMin > tYMax) or (tYMin > tMax) then Exit(False);
+  if (tMin > tYMax) or (tYMin > tMax) then
+  begin
+    Result := False;
+    Exit;
+  end;
 
   if tYMin > tMin then tMin := tYMin;
   if tYMax < tMax then tMax := tYMax;
 
-  tZMin := (MinPos.z - Ray.position.z) / Ray.direction.z;
-  tZMax := (MaxPos.z - Ray.position.z) / Ray.direction.z;
+  tZMin := (min.z - ray.position.z) / ray.direction.z;
+  tZMax := (max.z - ray.position.z) / ray.direction.z;
 
   if tZMin > tZMax then
   begin
-    Temp := tZMin;
+    temp := tZMin;
     tZMin := tZMax;
-    tZMax := Temp;
+    tZMax := temp;
   end;
 
-  if (tMin > tZMax) or (tZMin > tMax) then Exit(False);
+  if (tMin > tZMax) or (tZMin > tMax) then
+  begin
+    Result := False;
+    Exit;
+  end;
 
   if tZMin > tMin then tMin := tZMin;
   if tZMax < tMax then tMax := tZMax;
@@ -98,221 +90,204 @@ begin
   if tMin < 0 then
   begin
     tMin := tMax;
-    if tMin < 0 then Exit(False);
+    if tMin < 0 then
+    begin
+      Result := False;
+      Exit;
+    end;
   end;
 
-  IntersectionPoint.x := Ray.position.x + Ray.direction.x * tMin;
-  IntersectionPoint.y := Ray.position.y + Ray.direction.y * tMin;
-  IntersectionPoint.z := Ray.position.z + Ray.direction.z * tMin;
+  intersectionPoint := Vector3Create(
+    ray.position.x + ray.direction.x * tMin,
+    ray.position.y + ray.direction.y * tMin,
+    ray.position.z + ray.direction.z * tMin
+  );
 
-  // Определение нормали пересечения
-  Normal := Vector3Zero();
+  normal := Vector3Zero();
 
-  if Abs(IntersectionPoint.x - MinPos.x) < 0.001 then
-    Normal.x := -1.0  // Левая грань
-  else if Abs(IntersectionPoint.x - MaxPos.x) < 0.001 then
-    Normal.x := 1.0;  // Правая грань
+  if Abs(intersectionPoint.x - min.x) < 0.001 then
+    normal.x := -1.0  // Left face
+  else if Abs(intersectionPoint.x - max.x) < 0.001 then
+    normal.x := 1.0;  // Right face
 
-  if Abs(IntersectionPoint.y - MinPos.y) < 0.001 then
-    Normal.y := -1.0  // Нижняя грань
-  else if Abs(IntersectionPoint.y - MaxPos.y) < 0.001 then
-    Normal.y := 1.0;  // Верхняя грань
+  if Abs(intersectionPoint.y - min.y) < 0.001 then
+    normal.y := -1.0  // Bottom face
+  else if Abs(intersectionPoint.y - max.y) < 0.001 then
+    normal.y := 1.0;  // Top face
 
-  if Abs(IntersectionPoint.z - MinPos.z) < 0.001 then
-    Normal.z := -1.0  // Ближняя грань
-  else if Abs(IntersectionPoint.z - MaxPos.z) < 0.001 then
-    Normal.z := 1.0;  // Дальняя грань
+  if Abs(intersectionPoint.z - min.z) < 0.001 then
+    normal.z := -1.0  // Near face
+  else if Abs(intersectionPoint.z - max.z) < 0.001 then
+    normal.z := 1.0;  // Far face
 
   Result := True;
 end;
 
-procedure DrawTransformedCube(Transform: TMatrix; Color: TColor);
+function MatrixTransform(position: TVector3; rotation: TQuaternion; scale: TVector3): TMatrix;
 var
-  Vertices: array[0..7] of TVector3 = (
-    (x: -0.5; y: -0.5; z: -0.5),
-    (x:  0.5; y: -0.5; z: -0.5),
-    (x:  0.5; y:  0.5; z: -0.5),
-    (x: -0.5; y:  0.5; z: -0.5),
-    (x: -0.5; y: -0.5; z:  0.5),
-    (x:  0.5; y: -0.5; z:  0.5),
-    (x:  0.5; y:  0.5; z:  0.5),
-    (x: -0.5; y:  0.5; z:  0.5)
-  );
-  TransformedVertices: array[0..7] of TVector3;
-  I: Integer;
+  xx, yy, zz, xy, xz, yz, wx, wy, wz: Single;
 begin
-  // Трансформация вершин
-  for I := 0 to 7 do
-  begin
-    TransformedVertices[I] := Vector3Transform(Vertices[I], Transform);
-  end;
+  xx := rotation.x * rotation.x;
+  yy := rotation.y * rotation.y;
+  zz := rotation.z * rotation.z;
+  xy := rotation.x * rotation.y;
+  xz := rotation.x * rotation.z;
+  yz := rotation.y * rotation.z;
+  wx := rotation.w * rotation.x;
+  wy := rotation.w * rotation.y;
+  wz := rotation.w * rotation.z;
 
-  // Отрисовка ребер куба
-  for I := 0 to 3 do
-  begin
-    // Нижняя грань
-    DrawLine3D(TransformedVertices[I], TransformedVertices[(I + 1) mod 4], Color);
-    // Верхняя грань
-    DrawLine3D(TransformedVertices[I + 4], TransformedVertices[(I + 1) mod 4 + 4], Color);
-    // Боковые ребра
-    DrawLine3D(TransformedVertices[I], TransformedVertices[I + 4], Color);
-  end;
+  Result := MatrixIdentity();
+  Result.m0 := scale.x * (1.0 - 2.0 * (yy + zz));
+  Result.m1 := scale.y * 2.0 * (xy - wz);
+  Result.m2 := scale.z * 2.0 * (xz + wy);
+  Result.m3 := position.x;
+
+  Result.m4 := scale.x * 2.0 * (xy + wz);
+  Result.m5 := scale.y * (1.0 - 2.0 * (xx + zz));
+  Result.m6 := scale.z * 2.0 * (yz - wx);
+  Result.m7 := position.y;
+
+  Result.m8 := scale.x * 2.0 * (xz - wy);
+  Result.m9 := scale.y * 2.0 * (yz + wx);
+  Result.m10 := scale.z * (1.0 - 2.0 * (xx + yy));
+  Result.m11 := position.z;
+
+  Result.m12 := 0.0;
+  Result.m13 := 0.0;
+  Result.m14 := 0.0;
+  Result.m15 := 1.0;
 end;
 
-// === Example ===
-
-procedure InitExample;
 begin
-  // --- Initialize R3D with its internal resolution ---
-  R3D_Init(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+  // Initialize window
+  ScreenWidth := 800;
+  ScreenHeight := 450;
+  InitWindow(ScreenWidth, ScreenHeight, '[r3d] - Decal example');
   SetTargetFPS(60);
-    // Инициализация матрицы
-  TargetDecalTransform := MatrixIdentity();
-  // --- Load textures ---
-  Texture := LoadTexture(RESOURCES_PATH + 'decal.png');
 
-  // --- Create materials ---
-  MaterialWalls := R3D_GetDefaultMaterial();
-  MaterialWalls.albedo.color := DARKGRAY;
+  // Initialize R3D
+  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
 
-  Decal.material := R3D_GetDefaultMaterial();
-  Decal.material.albedo.texture := Texture;
+  // Create wall material
+  materialWalls := R3D_GetDefaultMaterial();
+  materialWalls.albedo.color := GRAY;
 
+  // Create decal material
+  decalMaterial := R3D_GetDefaultMaterial();
+  decalMaterial.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'decal.png'), WHITE);
 
-  // --- Create a plane along with the transformation matrices to place them to represent a room ---
-  MeshPlane := R3D_GenMeshPlane(RoomSize, RoomSize, 1, 1);
+  decal.material := decalMaterial;
 
-  MatRoom[0] := MatrixMultiply(MatrixRotateZ(90.0 * DEG2RAD), MatrixTranslate(RoomSize / 2.0, 0.0, 0.0));
-  MatRoom[1] := MatrixMultiply(MatrixRotateZ(-90.0 * DEG2RAD), MatrixTranslate(-RoomSize / 2.0, 0.0, 0.0));
-  MatRoom[2] := MatrixMultiply(MatrixRotateX(90.0 * DEG2RAD), MatrixTranslate(0.0, 0.0, -RoomSize / 2.0));
-  MatRoom[3] := MatrixMultiply(MatrixRotateX(-90.0 * DEG2RAD), MatrixTranslate(0.0, 0.0, RoomSize / 2.0));
-  MatRoom[4] := MatrixMultiply(MatrixRotateX(180.0 * DEG2RAD), MatrixTranslate(0.0, RoomSize / 2.0, 0.0));
-  MatRoom[5] := MatrixTranslate(0.0, -RoomSize / 2.0, 0.0);
+  // Create room mesh and transforms
+  roomSize := 32.0;
+  meshPlane := R3D_GenMeshPlane(roomSize, roomSize, 1, 1);
 
-  // --- Setup the scene lighting ---
-  Light := R3D_CreateLight(R3D_LIGHT_OMNI);
-  R3D_SetLightEnergy(Light, 2.0);
-  R3D_SetLightActive(Light, True);
+  matRoom[0] := MatrixMultiply(MatrixRotateZ(90.0 * DEG2RAD), MatrixTranslate(roomSize / 2.0, 0.0, 0.0));
+  matRoom[1] := MatrixMultiply(MatrixRotateZ(-90.0 * DEG2RAD), MatrixTranslate(-roomSize / 2.0, 0.0, 0.0));
+  matRoom[2] := MatrixMultiply(MatrixRotateX(90.0 * DEG2RAD), MatrixTranslate(0.0, 0.0, -roomSize / 2.0));
+  matRoom[3] := MatrixMultiply(MatrixRotateX(-90.0 * DEG2RAD), MatrixTranslate(0.0, 0.0, roomSize / 2.0));
+  matRoom[4] := MatrixMultiply(MatrixRotateX(180.0 * DEG2RAD), MatrixTranslate(0.0, roomSize / 2.0, 0.0));
+  matRoom[5] := MatrixTranslate(0.0, -roomSize / 2.0, 0.0);
 
-  // --- Setup the camera ---
-  Camera.position := Vector3Create(0.0, 0.0, 0.0);
-  Camera.target := Vector3Create(RoomSize / 2.0, 0.0, 0.0);
-  Camera.up := Vector3Create(0.0, 1.0, 0.0);
-  Camera.fovy := 70;
-  Camera.projection := CAMERA_PERSPECTIVE;
+  // Setup light
+  light := R3D_CreateLight(R3D_LIGHT_OMNI);
+  R3D_SetLightEnergy(light, 2.0);
+  R3D_SetLightActive(light, True);
 
-  //DisableCursor();
-end;
+  // Setup camera
+  camera.position := Vector3Create(0.0, 0.0, 0.0);
+  camera.target := Vector3Create(1.0, 0.0, 0.0);
+  camera.up := Vector3Create(0.0, 1.0, 0.0);
+  camera.fovy := 70;
+  camera.projection := CAMERA_PERSPECTIVE;
 
-procedure UpdateExample(Delta: Single);
-var
-  HitRay: TRay;
-  HitPoint, HitNormal: TVector3;
-  Translation, Scaling, Rotation: TMatrix;
-begin
-  UpdateCamera(@Camera, CAMERA_FREE);
+  DisableCursor();
 
-  // --- Find intersection point of camera target on cube ---
-  HitRay.position := Camera.position;
-  HitRay.direction := Vector3Normalize(Vector3Subtract(Camera.target, Camera.position));
+  // Decal state
+  decalScale := Vector3Create(3.0, 3.0, 3.0);
+  targetDecalTransform := MatrixIdentity();
+  instances := R3D_LoadInstanceBuffer(MAXDECALS, R3D_INSTANCE_POSITION or R3D_INSTANCE_ROTATION or R3D_INSTANCE_SCALE);
+  decalCount := 0;
+  decalIndex := 0;
+  targetPosition := Vector3Zero();
 
-  if RayCubeIntersection(HitRay, Vector3Zero(),
-    Vector3Create(RoomSize, RoomSize, RoomSize), HitPoint, HitNormal) then
-  begin
-    TargetPosition := HitPoint;
-  end;
-
-  // --- Create transformation matrix at intersection point ---
-  Translation := MatrixTranslate(TargetPosition.x, TargetPosition.y, TargetPosition.z);
-  Scaling := MatrixScale(DecalScale.x, DecalScale.y, DecalScale.z);
-
-  // Определение вращения на основе нормали
-  if Abs(HitNormal.x + 1.0) < 0.001 then
-    Rotation := MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, 90.0 * DEG2RAD))
-  else if Abs(HitNormal.x - 1.0) < 0.001 then
-    Rotation := MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, -90.0 * DEG2RAD))
-  else if Abs(HitNormal.y + 1.0) < 0.001 then
-    Rotation := MatrixRotateY(180.0 * DEG2RAD)
-  else if Abs(HitNormal.y - 1.0) < 0.001 then
-    Rotation := MatrixRotateZ(180.0 * DEG2RAD)
-  else if Abs(HitNormal.z + 1.0) < 0.001 then
-    Rotation := MatrixRotateX(90.0 * DEG2RAD)
-  else if Abs(HitNormal.z - 1.0) < 0.001 then
-    Rotation := MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, 0))
-  else
-    Rotation := MatrixIdentity();
-
-  TargetDecalTransform := MatrixMultiply(MatrixMultiply(Scaling, Rotation), Translation);
-
-  // --- Input ---
-  if IsMouseButtonPressed(MOUSE_BUTTON_LEFT) then
-  begin
-    DecalTransforms[DecalIndex] := TargetDecalTransform;
-    Inc(DecalIndex);
-    if DecalIndex >= MAXDECALS then DecalIndex := 0;
-    if DecalCount < MAXDECALS then Inc(DecalCount);
-  end;
-end;
-
-procedure DrawExample;
-var
-  I: Integer;
-begin
-  R3D_Begin(Camera);
-
-  // --- Draw the faces of our "room" ---
-  for I := 0 to 5 do
-  begin
-    R3D_DrawMesh(@MeshPlane, @MaterialWalls, MatRoom[I]);
-  end;
-
-  // --- Draw applied decals ---
-  if DecalCount > 0 then
-  begin
-    R3D_DrawDecalInstanced(@Decal, @DecalTransforms[0], DecalCount);
-  end;
-
-  // --- Draw targeting decal ---
-  R3D_DrawDecal(@Decal, TargetDecalTransform);
-
-  R3D_End();
-
-  // --- Show decal projection box ---
-  BeginMode3D(Camera);
-    DrawTransformedCube(TargetDecalTransform, WHITE);
-  EndMode3D();
-
-  DrawText('LEFT CLICK TO APPLY DECAL', 10, 10, 20, LIME);
-end;
-
-procedure CloseExample;
-begin
-  R3D_UnloadMesh(@MeshPlane);
-  UnloadTexture(Texture);
-  R3D_UnloadMaterial(@MaterialWalls);
-  R3D_UnloadMaterial(@Decal.material);
-  R3D_Close();
-end;
-
-begin
-  // Инициализация окна
-  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, '[r3d] - Decal example');
-
-  // Инициализация примера
-  InitExample;
-
-  // Главный цикл
+  // Main loop
   while not WindowShouldClose() do
   begin
-    UpdateExample(GetFrameTime());
+    delta := GetFrameTime();
 
+    UpdateCamera(@camera, CAMERA_FREE);
+
+    // Compute ray from camera to target
+    hitRay.position := camera.position;
+    hitRay.direction := Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+
+    hitPoint := Vector3Zero();
+    hitNormal := Vector3Zero();
+    if RayCubeIntersection(hitRay, Vector3Zero(), Vector3Create(roomSize, roomSize, roomSize), hitPoint, hitNormal) then
+    begin
+      targetPosition := hitPoint;
+    end;
+
+    // Compute decal rotation
+    decalRotation := QuaternionIdentity();
+    if hitNormal.x = -1.0 then
+      decalRotation := QuaternionFromMatrix(MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, 90.0 * DEG2RAD)))
+    else if hitNormal.x = 1.0 then
+      decalRotation := QuaternionFromMatrix(MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, -90.0 * DEG2RAD)))
+    else if hitNormal.y = -1.0 then
+      decalRotation := QuaternionFromMatrix(MatrixRotateY(180.0 * DEG2RAD))
+    else if hitNormal.y = 1.0 then
+      decalRotation := QuaternionFromMatrix(MatrixRotateZ(180.0 * DEG2RAD))
+    else if hitNormal.z = -1.0 then
+      decalRotation := QuaternionFromMatrix(MatrixRotateX(90.0 * DEG2RAD))
+    else if hitNormal.z = 1.0 then
+      decalRotation := QuaternionFromMatrix(MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, 0)));
+
+    // Apply decal on mouse click
+    if IsMouseButtonPressed(MOUSE_BUTTON_LEFT) then
+    begin
+      R3D_UploadInstances(instances, R3D_INSTANCE_POSITION, decalIndex, 1, @targetPosition);
+      R3D_UploadInstances(instances, R3D_INSTANCE_ROTATION, decalIndex, 1, @decalRotation);
+      R3D_UploadInstances(instances, R3D_INSTANCE_SCALE, decalIndex, 1, @decalScale);
+      decalIndex := (decalIndex + 1) mod MAXDECALS;
+      if decalCount < MAXDECALS then Inc(decalCount);
+    end;
+
+    // Draw scene
     BeginDrawing();
-      ClearBackground(BLACK);
-      DrawExample;
+      ClearBackground(RAYWHITE);
+
+      R3D_Begin(camera);
+
+        for  i := 0 to 5 do
+        begin
+          R3D_DrawMeshPro(meshPlane, materialWalls, matRoom[i]);
+        end;
+
+        if decalCount > 0 then
+        begin
+          R3D_DrawDecalInstanced(decal, instances, decalCount);
+        end;
+
+        R3D_DrawDecal(decal, MatrixTransform(targetPosition, decalRotation, decalScale));
+
+      R3D_End();
+
+      BeginMode3D(camera);
+        DrawCubeWires(targetPosition, decalScale.x, decalScale.y, decalScale.z, WHITE);
+      EndMode3D();
+
+      DrawText('LEFT CLICK TO APPLY DECAL', 10, 10, 20, LIME);
+
     EndDrawing();
   end;
 
-  // Очистка ресурсов
-  CloseExample;
+  // Cleanup
+  R3D_UnloadMaterial(decalMaterial);
+  R3D_UnloadMesh(meshPlane);
+  R3D_Close();
+
   CloseWindow();
 end.

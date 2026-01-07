@@ -9,9 +9,9 @@
 #ifndef R3D_ENVIRONMENT_H
 #define R3D_ENVIRONMENT_H
 
+#include "./r3d_ambient_map.h"
 #include "./r3d_platform.h"
-#include "./r3d_skybox.h"
-#include <raylib.h>
+#include "./r3d_cubemap.h"
 
 /**
  * @defgroup Environment
@@ -54,31 +54,33 @@
 #define R3D_ENVIRONMENT_BASE                            \
     R3D_LITERAL(R3D_Environment) {                      \
         .background = {                                 \
-            .color = {80, 80, 80, 255},                 \
+            .color = GRAY,                              \
             .energy = 1.0f,                             \
             .sky = {0},                                 \
             .rotation = {0.0f, 0.0f, 0.0f, 1.0f},       \
         },                                              \
         .ambient = {                                    \
-            .color = {0, 0, 0, 255},                    \
+            .color = BLACK,                             \
             .energy = 1.0f,                             \
-            .reflect = 1.0f,                            \
         },                                              \
         .ssao = {                                       \
+            .sampleCount = 16,                          \
             .intensity = 1.0f,                          \
-            .power = 1.0f,                              \
-            .radius = 0.5f,                             \
-            .bias = 0.025,                              \
+            .power = 1.5f,                              \
+            .radius = 0.35f,                            \
+            .bias = 0.007f,                             \
             .lightAffect = 0.0f,                        \
             .enabled = false,                           \
         },                                              \
         .ssil = {                                       \
             .sampleCount = 4,                           \
             .sliceCount = 4,                            \
-            .sampleRadius = 5.0f,                       \
+            .sampleRadius = 2.0f,                       \
             .hitThickness = 0.5f,                       \
             .aoPower = 1.0f,                            \
             .energy = 1.0f,                             \
+            .convergence = 0.5f,                        \
+            .bounce = 0.5f,                             \
             .enabled = false,                           \
         },                                              \
         .bloom = {                                      \
@@ -184,9 +186,9 @@ typedef enum R3D_Tonemap {
  * @brief Background and skybox configuration.
  */
 typedef struct R3D_EnvBackground {
-    Color color;            ///< Background color when skybox is disabled
+    Color color;            ///< Background color when there is no skybox
     float energy;           ///< Energy multiplier applied to background (skybox or color)
-    R3D_Skybox sky;         ///< Skybox asset (used if ID is non-zero)
+    R3D_Cubemap sky;        ///< Skybox asset (used if ID is non-zero)
     Quaternion rotation;    ///< Skybox rotation (pitch, yaw, roll as quaternion)
 } R3D_EnvBackground;
 
@@ -194,9 +196,9 @@ typedef struct R3D_EnvBackground {
  * @brief Ambient lighting configuration.
  */
 typedef struct R3D_EnvAmbient {
-    Color color;            ///< Ambient light color when skybox is disabled
-    float energy;           ///< Energy multiplier for ambient light (skybox or color)
-    float reflect;          ///< Reflection intensity from skybox (no effect if skybox disabled)
+    Color color;            ///< Ambient light color when there is no ambient map
+    float energy;           ///< Energy multiplier for ambient light (map or color)
+    R3D_AmbientMap map;     ///< IBL environment map, can be generated from skybox
 } R3D_EnvAmbient;
 
 /**
@@ -205,10 +207,11 @@ typedef struct R3D_EnvAmbient {
  * Darkens areas where surfaces are close together, such as corners and crevices.
  */
 typedef struct R3D_EnvSSAO {
+    int sampleCount;        ///< Number of samples to compute SSAO (default: 16)
     float intensity;        ///< Base occlusion strength multiplier (default: 1.0)
-    float power;            ///< Exponential falloff for sharper darkening (default: 1.0)
-    float radius;           ///< Sampling radius in world space (default: 0.5)
-    float bias;             ///< Depth bias to prevent self-shadowing artifacts (default: 0.025)
+    float power;            ///< Exponential falloff for sharper darkening (default: 1.5)
+    float radius;           ///< Sampling radius in world space (default: 0.25)
+    float bias;             ///< Depth bias to prevent self-shadowing, good value is ~2% of the radius (default: 0.007)
     float lightAffect;      ///< How much SSAO affects direct lighting [0.0-1.0] (default: 0.0)
     bool enabled;           ///< Enable/disable SSAO effect (default: false)
 } R3D_EnvSSAO;
@@ -225,6 +228,18 @@ typedef struct R3D_EnvSSIL {
     float hitThickness;     ///< Thickness threshold for occluders (default: 0.5)
     float aoPower;          ///< Exponential falloff for visibility factor (too high = more noise) (default: 1.0)
     float energy;           ///< Multiplier for indirect light intensity (default: 1.0)
+    float bounce;           /**< Bounce feeback factor. (default: 0.5)
+                              *  Simulates light bounces by re-injecting the SSIL from the previous frame into the current direct light.
+                              *  Be careful not to make the factor too high in order to avoid a feedback loop.
+                              */
+    float convergence;      /**< Temporal convergence factor (0 disables it, default 0.5).
+                              *  Smooths sudden light flashes by blending with previous frames.
+                              *  Higher values produce smoother results but may cause ghosting.
+                              *  Tip: The faster the screen changes, the higher the convergence can be acceptable.
+                              *  Requires an additional history buffer (so require more memory). 
+                              *  If multiple SSIL passes are done in the same frame, the history may be inconsistent, 
+                              *  in that case, enable SSIL/convergence for only one pass per frame.
+                              */
     bool enabled;           ///< Enable/disable SSIL effect (default: false)
 } R3D_EnvSSIL;
 
@@ -336,7 +351,7 @@ typedef struct R3D_Environment {
  *
  * Example: `float intensity = R3D_ENVIRONMENT_GET(bloom.intensity);`
  */
-#define R3D_ENVIRONMENT_GET(member)         (R3D_GetEnvironment()->member)
+#define R3D_ENVIRONMENT_GET(member) (R3D_GetEnvironment()->member)
 
 /**
  * @brief Quick write access to environment members.
@@ -346,7 +361,7 @@ typedef struct R3D_Environment {
  *
  * Example: `R3D_ENVIRONMENT_SET(bloom.intensity, 0.05f);`
  */
-#define R3D_ENVIRONMENT_SET(member, ...)    ((R3D_GetEnvironment()->member) = (__VA_ARGS__))
+#define R3D_ENVIRONMENT_SET(member, ...) ((R3D_GetEnvironment()->member) = (__VA_ARGS__))
 
 // ========================================
 // PUBLIC API

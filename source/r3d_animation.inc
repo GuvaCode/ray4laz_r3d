@@ -89,7 +89,9 @@ type
     states: PR3D_AnimationState;        ///< Array of active animation states (for each animation).
     animLib: TR3D_AnimationLib;         ///< Animation library providing available animations.
     skeleton: TR3D_Skeleton;            ///< Target skeleton to animate.
-    currentPose: PMatrix;               ///< Array of bone transforms representing the blended pose.
+    localPose: PMatrix;                 ///< Array of bone transforms representing the blended pose.
+    globalPose: PMatrix;                ///< Array of bone transforms containing the boneOffsets*localPose.
+    texGlobalPose: UInt32;              ///< Texture ID that contains the global pose for GPU skinning. This is a 1D Texture RGBA32F 4*boneCount.
   end;
 
 // ========================================
@@ -122,55 +124,64 @@ function R3D_LoadAnimationLibFromMemory(const data: Pointer; size: LongWord;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadAnimationLibFromMemory';
 
 {*
- * @brief Frees memory allocated for model animations.
- * @param animLib Pointer to the animation library to free.
+* @brief Releases all resources associated with an animation library.
+* @param animLib Animation library to unload.
  *}
-procedure R3D_UnloadAnimationLib(animLib: PR3D_AnimationLib); cdecl;
+procedure R3D_UnloadAnimationLib(animLib: TR3D_AnimationLib); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadAnimationLib';
 
 {*
- * @brief Retrieves the index of a named animation within an animation library.
- * @param animLib Pointer to the animation library.
- * @param name Name of the animation to look for (case-sensitive).
- * @return Zero-based index of the matching animation, or -1 if not found.
+ * @brief Returns the index of an animation by name.
+ * @param animLib Animation library to search.
+ * @param name Name of the animation (case-sensitive).
+ * @return Zero-based index if found, or -1 if not found.
  *}
-function R3D_GetAnimationIndex(const animLib: PR3D_AnimationLib;
+function R3D_GetAnimationIndex(animLib: TR3D_AnimationLib;
   const name: PAnsiChar): Integer; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetAnimationIndex';
 
 {*
- * @brief Finds a named animation in an array of animations.
- * @param animLib Pointer to the animation library.
- * @param name Name of the animation to find (case-sensitive).
- * @return Pointer to the matching animation, or NULL if not found.
+ * @brief Retrieves an animation by name.
+ * @param animLib Animation library to search.
+ * @param name Name of the animation (case-sensitive).
+ * @return Pointer to the animation, or NULL if not found.
  *}
-function R3D_GetAnimation(const animLib: PR3D_AnimationLib;
+function R3D_GetAnimation(animLib: TR3D_AnimationLib;
   const name: PAnsiChar): PR3D_Animation; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetAnimation';
+
+{*
+ * @brief Determines whether an animation player is valid.
+ *
+ * @param player Animation player to check.
+ * @return true if the player is valid, false otherwise.
+ *}
+function R3D_IsAnimationPlayerValid(player: TR3D_AnimationPlayer): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsAnimationPlayerValid';
 
 // ----------------------------------------
 // ANIMATION: Animation Player Functions
 // ----------------------------------------
 
 {*
- * @brief Creates a new animation player for a skeleton and animation library.
- *
- * Allocates internal structures for managing animation states and poses.
- *
- * @param skeleton Pointer to the target skeleton.
- * @param animLib Pointer to the animation library containing available animations.
- * @return Pointer to a newly created animation player, or NULL on failure.
+  * @brief Creates an animation player for a skeleton and animation library.
+  *
+  * Allocates the internal data required to manage animation state and poses.
+  *
+  * @param skeleton Skeleton used by the player.
+  * @param animLib Animation library providing available animations.
+  * @return Newly created animation player, or zeroed struct on failure.
  *}
-function R3D_LoadAnimationPlayer(const skeleton: PR3D_Skeleton;
-  const animLib: PR3D_AnimationLib): PR3D_AnimationPlayer; cdecl;
+function R3D_LoadAnimationPlayer(skeleton: TR3D_Skeleton;
+  animLib: TR3D_AnimationLib): TR3D_AnimationPlayer; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadAnimationPlayer';
 
 {*
- * @brief Destroys an animation player and frees its allocated resources.
+ * @brief Releases all resources used by an animation player.
  *
- * @param player Pointer to the animation player to destroy.
+ * @param player Animation player to unload.
  *}
-procedure R3D_UnloadAnimationPlayer(player: PR3D_AnimationPlayer); cdecl;
+procedure R3D_UnloadAnimationPlayer(player: TR3D_AnimationPlayer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadAnimationPlayer';
 
 {*
