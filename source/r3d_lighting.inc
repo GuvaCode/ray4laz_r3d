@@ -9,7 +9,8 @@ type
   TR3D_LightType = (
     R3D_LIGHT_DIR,    ///< Directional light, affects the entire scene with parallel rays.
     R3D_LIGHT_SPOT,   ///< Spot light, emits light in a cone shape.
-    R3D_LIGHT_OMNI    ///< Omni light, emits light in all directions from a single point.
+    R3D_LIGHT_OMNI,   ///< Omni light, emits light in all directions from a single point.
+    R3D_LIGHT_TYPE_COUNT
   );
 
 {*
@@ -394,26 +395,28 @@ procedure R3D_SetLightOuterCutOff(id: TR3D_Light; degrees: Single); cdecl;
 // ----------------------------------------
 
 {*
- * @brief Enables shadow casting for a light and sets its shadow map resolution.
+ * @brief Enables shadow rendering for a light.
  *
- * Allocates a shadow map at the given resolution and enables shadow rendering.
- * This function can be called multiple times to resize the shadow map, but doing so
- * reallocates GPU resources and has a performance cost.
+ * Turns on shadow rendering for the light. The engine will allocate a shadow
+ * map if needed, or reuse one previously allocated for another light.
+ *
+ * Shadow map resolutions are fixed: 2048x2048 for spot and point lights,
+ * and 4096x4096 for directional lights.
  *
  * @param id The ID of the light.
- * @param resolution The shadow map resolution.
  *
- * @note Shadow maps are memory-intensive. High resolutions (e.g. 4K) consume significant
- * GPU memory; creating many high-resolution shadow maps may lead crashes...
+ * @note Creating too many shadow-casting lights can exhaust GPU memory and
+ * potentially crash the graphics driver. Disabling shadows on one light and
+ * enabling them on another is free, since existing shadow maps are reused.
  *}
-procedure R3D_EnableShadow(id: TR3D_Light; resolution: Integer); cdecl;
+procedure R3D_EnableShadow(id: TR3D_Light); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EnableShadow';
 
 {*
- * @brief Disables shadow casting for a light.
+ * @brief Disables shadow rendering for a light.
  *
- * Disables shadow rendering for the light. The shadow map is preserved in memory,
- * and may be reused later, even if the light itself is destroyed.
+ * Turns off shadow rendering for the light. The associated shadow map is
+ * kept in memory and may later be reused by another light.
  *
  * @param id The ID of the light.
  *}

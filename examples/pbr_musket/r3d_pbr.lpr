@@ -25,7 +25,10 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), R3D_FLAG_FXAA);
+  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA);
+
+
 
   // Tonemapping
   R3D_GetEnvironment^.tonemap.mode := R3D_TONEMAP_FILMIC;

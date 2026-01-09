@@ -28,9 +28,9 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D with flags
-  flags := R3D_FLAG_TRANSPARENT_SORTING or R3D_FLAG_FXAA;
+  flags := R3D_FLAG_TRANSPARENT_SORTING;
   R3D_Init(GetScreenWidth(), GetScreenHeight(), flags);
-
+  R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA);
   // Set environment
   R3D_GetEnvironment^.background.color := DARKGRAY;
   R3D_GetEnvironment^.ambient.color := DARKGRAY;

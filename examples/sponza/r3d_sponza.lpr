@@ -127,10 +127,12 @@ begin
     // Toggle FXAA
     if IsKeyPressed(KEY_FIVE) then
     begin
-      if R3D_HasState(R3D_FLAG_FXAA) then
-        R3D_ClearState(R3D_FLAG_FXAA)
-      else
-        R3D_SetState(R3D_FLAG_FXAA);
+      if R3D_GetAntiAliasing() = R3D_ANTI_ALIASING_DISABLED then
+      R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA) else
+        R3D_SetAntiAliasing(R3D_ANTI_ALIASING_DISABLED);
+
+
+
     end;
 
     // Cycle tonemapping (left mouse button - previous)

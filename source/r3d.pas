@@ -34,28 +34,26 @@ const
   {$IFDEF WINDOWS} 'libr3d.dll'; {$IFEND}
   {$IFDEF LINUX} 'libr3d.so'; {$IFEND}
 
-  {$I r3d_core.inc}    // +
-  {$I r3d_culling.inc} //+
+  {$I r3d_core.inc}
+  {$I r3d_culling.inc}
 
-  // {$I r3d_curves.inc}
+  {$I r3d_cubemap.inc}
+  {$I r3d_ambient_map.inc}
 
-  {$I r3d_cubemap.inc} // adding
-  {$I r3d_ambient_map.inc} // adding
-
-  {$I r3d_probe.inc} // adding
-  {$I r3d_environment.inc} //+
+  {$I r3d_probe.inc}
+  {$I r3d_environment.inc}
   {$I r3d_lighting.inc}
-  {$I r3d_material.inc}//+
-  {$I r3d_decal.inc}  //+
+  {$I r3d_material.inc}
+  {$I r3d_decal.inc}
   {$I r3d_skeleton.inc}
-  {$I r3d_animation.inc}  // +
-  {$I r3d_mesh_data.inc}  //+
-  {$I r3d_mesh.inc} //+
-  {$I r3d_model.inc} //?
-  // {$I r3d_particles.inc}
-  {$I r3d_utils.inc} //+
-  {$I r3d_instance.inc} // adding
-  {$I r3d_draw.inc}    //+
+  {$I r3d_animation.inc}
+  {$I r3d_mesh_data.inc}
+  {$I r3d_mesh.inc}
+  {$I r3d_model.inc}
+
+  {$I r3d_utils.inc}
+  {$I r3d_instance.inc}
+  {$I r3d_draw.inc}
 
 
   function R3D_CubemapSkyBase: TR3D_CubemapSky;
