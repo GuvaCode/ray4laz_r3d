@@ -175,7 +175,7 @@ begin
 
   // Create decal material
   decalMaterial := R3D_GetDefaultMaterial();
-  decalMaterial.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'decal.png'), WHITE);
+  decalMaterial.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/decal.png'), WHITE);
 
   decal.material := decalMaterial;
 

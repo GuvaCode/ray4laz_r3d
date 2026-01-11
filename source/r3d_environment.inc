@@ -66,6 +66,7 @@ type
   TR3D_EnvBackground = record
     color: TColor;            ///< Background color when there is no skybox
     energy: Single;           ///< Energy multiplier applied to background (skybox or color)
+    skyBlur: Single;          ///< Sky blur factor [0,1], based on mipmaps, very fast
     sky: TR3D_Cubemap;        ///< Skybox asset (used if ID is non-zero)
     rotation: TQuaternion;    ///< Skybox rotation (pitch, yaw, roll as quaternion)
   end;
@@ -233,90 +234,8 @@ type
  * Example: `R3D_GetEnvironment()^.bloom.intensity := 0.05;`
  *}
 
-{*
- * @brief Default environment configuration.
- *
- * Initializes an R3D_Environment structure with sensible default values for all
- * rendering parameters. Use this as a starting point for custom configurations.
- *}
-{const
-  R3D_ENVIRONMENT_BASE: TR3D_Environment = (
-    background: (
-      color: (r: 128; g: 128; b: 128; a: 255);  // GRAY
-      energy: 1.0;
-      sky: (id: 0);
-      rotation: (x: 0.0; y: 0.0; z: 0.0; w: 1.0)
-    );
-    ambient: (
-      color: (r: 0; g: 0; b: 0; a: 255);  // BLACK
-      energy: 1.0;
-      map: (id: 0)
-    );
-    ssao: (
-      sampleCount: 16;
-      intensity: 1.0;
-      power: 1.5;
-      radius: 0.35;
-      bias: 0.007;
-      lightAffect: 0.0;
-      enabled: False
-    );
-    ssil: (
-      sampleCount: 4;
-      sliceCount: 4;
-      sampleRadius: 2.0;
-      hitThickness: 0.5;
-      aoPower: 1.0;
-      energy: 1.0;
-      convergence: 0.5;
-      bounce: 0.5;
-      enabled: False
-    );
-    bloom: (
-      mode: R3D_BLOOM_DISABLED;
-      levels: 0.5;
-      intensity: 0.05;
-      threshold: 0.0;
-      softThreshold: 0.5;
-      filterRadius: 1.0
-    );
-    ssr: (
-      maxRaySteps: 64;
-      binarySearchSteps: 8;
-      rayMarchLength: 8.0;
-      depthThickness: 0.2;
-      depthTolerance: 0.005;
-      edgeFadeStart: 0.7;
-      edgeFadeEnd: 1.0;
-      enabled: False
-    );
-    fog: (
-      mode: R3D_FOG_DISABLED;
-      color: (r: 255; g: 255; b: 255; a: 255);  // WHITE
-      start: 1.0;
-      end_: 50.0;
-      density: 0.05;
-      skyAffect: 0.5
-    );
-    dof: (
-      mode: R3D_DOF_DISABLED;
-      focusPoint: 10.0;
-      focusScale: 1.0;
-      maxBlurSize: 20.0;
-      debugMode: False
-    );
-    tonemap: (
-      mode: R3D_TONEMAP_LINEAR;
-      exposure: 1.0;
-      white: 1.0
-    );
-    color: (
-      brightness: 1.0;
-      contrast: 1.0;
-      saturation: 1.0
-    )
-  );
- }
+
+
 // ========================================
 // PUBLIC API
 // ========================================

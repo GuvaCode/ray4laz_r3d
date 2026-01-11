@@ -12,7 +12,7 @@ type
    * - R3D_AMBIENT_ILLUMINATION -> generate diffuse irradiance
    * - R3D_AMBIENT_REFLECTION   -> generate specular prefiltered map
    *}
-  R3D_AmbientFlag = cuint32;
+  TR3D_AmbientFlag = cuint32;
 
 const
   R3D_AMBIENT_ILLUMINATION    = (1 shl 0);
@@ -41,7 +41,7 @@ type
    * but serve different shading purposes.
    *}
   TR3D_AmbientMap = record
-    flags: R3D_AmbientFlag;  ///< Components generated for this map
+    flags: TR3D_AmbientFlag;  ///< Components generated for this map
     irradiance: cuint32;     ///< Diffuse IBL cubemap (may be 0 if not generated)
     prefilter: cuint32;      ///< Specular prefiltered cubemap (may be 0 if not generated)
   end;
@@ -50,6 +50,22 @@ type
 // ========================================
 // PUBLIC API
 // ========================================
+
+{*
+ * @brief Loads a ambient map from an image file.
+ *
+ * The layout parameter tells how faces are arranged inside the source image.
+ *}
+function R3D_LoadAmbientMap(const fileName: PChar; layout: TR3D_CubemapLayout; flag: TR3D_AmbientFlag): TR3D_AmbientMap; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadAmbientMap';
+
+{*
+ * @brief Builds a ambient map from an existing Image.
+ *
+ * Same behavior as R3D_LoadAmbientMap(), but without loading from disk.
+ *}
+function R3D_LoadAmbientMapFromImage(image: TImage; layout: TR3D_CubemapLayout; flag: TR3D_AmbientFlag): TR3D_AmbientMap; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadAmbientMapFromImage';
 
 {*
  * @brief Generates an ambient map from a cubemap.
@@ -64,7 +80,7 @@ type
  * @param flags   Which components to generate (irradiance, reflection, or both).
  * @return A fully initialized ambient map.
  *}
-function R3D_GenAmbientMap(cubemap: TR3D_Cubemap; flags: R3D_AmbientFlag): TR3D_AmbientMap; cdecl;
+function R3D_GenAmbientMap(cubemap: TR3D_Cubemap; flags: TR3D_AmbientFlag): TR3D_AmbientMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenAmbientMap';
 
 {*

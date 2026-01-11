@@ -49,7 +49,7 @@ begin
   meshBillboard.shadowCastMode := R3D_SHADOW_CAST_ON_DOUBLE_SIDED;
 
   matBillboard := R3D_GetDefaultMaterial();
-  matBillboard.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'tree.png'), WHITE);
+  matBillboard.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/tree.png'), WHITE);
   matBillboard.billboardMode := R3D_BILLBOARD_Y_AXIS;
 
   // Create transforms for instanced billboards
@@ -77,7 +77,7 @@ begin
   light := R3D_CreateLight(R3D_LIGHT_DIR);
   R3D_SetLightDirection(light, Vector3Create(-1, -1, -1));
   R3D_SetShadowDepthBias(light, 0.01);
-  R3D_EnableShadow(light, 4096);
+  R3D_EnableShadow(light);
   R3D_SetLightActive(light, True);
   R3D_SetLightRange(light, 32.0);
 

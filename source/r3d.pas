@@ -58,6 +58,7 @@ const
 
   function R3D_CubemapSkyBase: TR3D_CubemapSky;
   function R3D_GetBaseMaterial: TR3D_Material;
+  function R3D_GetEnvironment_base: TR3D_Environment;
 
 implementation
 
@@ -109,6 +110,118 @@ begin
   Result.uvScale := Vector2Create(1.0, 1.0);
   Result.alphaCutoff := 0.01;
 
+end;
+
+function R3D_GetEnvironment_base: TR3D_Environment;
+begin
+  Result := Default(TR3D_Environment);
+
+  with Result do
+  begin
+    // Background
+    with background do
+    begin
+      color := GRAY;
+      energy := 1.0;
+      skyBlur := 0.0;
+      sky := Default(TR3D_Cubemap);
+      rotation := QuaternionCreate(0.0, 0.0, 0.0, 1.0);
+    end;
+
+    // Ambient
+    with ambient do
+    begin
+      color := BLACK;
+      energy := 1.0;
+    end;
+
+    // SSAO
+    with ssao do
+    begin
+      sampleCount := 16;
+      intensity := 1.0;
+      power := 1.5;
+      radius := 0.35;
+      bias := 0.007;
+      lightAffect := 0.0;
+      enabled := False;
+    end;
+
+    // SSIL
+    with ssil do
+    begin
+      sampleCount := 4;
+      sliceCount := 4;
+      sampleRadius := 2.0;
+      hitThickness := 0.5;
+      aoPower := 1.0;
+      energy := 1.0;
+      convergence := 0.5;
+      bounce := 0.5;
+      enabled := False;
+    end;
+
+    // Bloom
+    with bloom do
+    begin
+      mode := R3D_BLOOM_DISABLED;
+      levels := 0.5;
+      intensity := 0.05;
+      threshold := 0.0;
+      softThreshold := 0.5;
+      filterRadius := 1.0;
+    end;
+
+    // SSR
+    with ssr do
+    begin
+      maxRaySteps := 64;
+      binarySearchSteps := 8;
+      rayMarchLength := 8.0;
+      depthThickness := 0.2;
+      depthTolerance := 0.005;
+      edgeFadeStart := 0.7;
+      edgeFadeEnd := 1.0;
+      enabled := False;
+    end;
+
+    // Fog
+    with fog do
+    begin
+      mode := R3D_FOG_DISABLED;
+      color := ColorCreate(255, 255, 255, 255);
+      start := 1.0;
+      end_ := 50.0;
+      density := 0.05;
+      skyAffect := 0.5;
+    end;
+
+    // DOF
+    with dof do
+    begin
+      mode := R3D_DOF_DISABLED;
+      focusPoint := 10.0;
+      focusScale := 1.0;
+      maxBlurSize := 20.0;
+      debugMode := False;
+    end;
+
+    // Tonemap
+    with tonemap do
+    begin
+      mode := R3D_TONEMAP_LINEAR;
+      exposure := 1.0;
+      white := 1.0;
+    end;
+
+    // Color
+    with color do
+    begin
+      brightness := 1.0;
+      contrast := 1.0;
+      saturation := 1.0;
+    end;
+  end;
 end;
 
 
