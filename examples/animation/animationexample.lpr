@@ -58,8 +58,17 @@ begin
   // Load animations
   modelAnims := R3D_LoadAnimationLib(RESOURCES_PATH + 'models/CesiumMan.glb');
   modelPlayer := R3D_LoadAnimationPlayer(model.skeleton, modelAnims);
-  modelPlayer.states[0].weight := 1.0;
-  modelPlayer.states[0].loop := True;
+
+  //modelPlayer.states[0].weight := 1.0;
+  //modelPlayer.states[0].loop := True;
+
+ // Setup animation playing
+ R3D_SetAnimationWeight(@modelPlayer, 0, 1.0);
+ R3D_SetAnimationLoop(@modelPlayer, 0, true);
+ R3D_PlayAnimation(@modelPlayer, 0);
+
+
+
 
   // Create model instances
   instances := R3D_LoadInstanceBuffer(4, R3D_INSTANCE_POSITION);

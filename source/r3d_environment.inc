@@ -93,7 +93,6 @@ type
     power: Single;            ///< Exponential falloff for sharper darkening (default: 1.5)
     radius: Single;           ///< Sampling radius in world space (default: 0.35)
     bias: Single;             ///< Depth bias to prevent self-shadowing, good value is ~2% of the radius (default: 0.007)
-    lightAffect: Single;      ///< How much SSAO affects direct lighting [0.0-1.0] (default: 0.0)
     enabled: Boolean;         ///< Enable/disable SSAO effect (default: false)
   end;
 

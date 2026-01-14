@@ -70,7 +70,6 @@
             .power = 1.5f,                              \
             .radius = 0.35f,                            \
             .bias = 0.007f,                             \
-            .lightAffect = 0.0f,                        \
             .enabled = false,                           \
         },                                              \
         .ssil = {                                       \
@@ -214,7 +213,6 @@ typedef struct R3D_EnvSSAO {
     float power;            ///< Exponential falloff for sharper darkening (default: 1.5)
     float radius;           ///< Sampling radius in world space (default: 0.25)
     float bias;             ///< Depth bias to prevent self-shadowing, good value is ~2% of the radius (default: 0.007)
-    float lightAffect;      ///< How much SSAO affects direct lighting [0.0-1.0] (default: 0.0)
     bool enabled;           ///< Enable/disable SSAO effect (default: false)
 } R3D_EnvSSAO;
 
@@ -363,7 +361,7 @@ typedef struct R3D_Environment {
  *
  * Example: `R3D_ENVIRONMENT_SET(bloom.intensity, 0.05f);`
  */
-#define R3D_ENVIRONMENT_SET(member, ...) ((R3D_GetEnvironment()->member) = (__VA_ARGS__))
+#define R3D_ENVIRONMENT_SET(member, ...) (R3D_GetEnvironment()->member = (__VA_ARGS__))
 
 // ========================================
 // PUBLIC API

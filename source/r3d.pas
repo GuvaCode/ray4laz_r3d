@@ -47,6 +47,7 @@ const
   {$I r3d_decal.inc}
   {$I r3d_skeleton.inc}
   {$I r3d_animation.inc}
+  {$I r3d_animation_player.inc}
   {$I r3d_mesh_data.inc}
   {$I r3d_mesh.inc}
   {$I r3d_model.inc}
@@ -143,7 +144,6 @@ begin
       power := 1.5;
       radius := 0.35;
       bias := 0.007;
-      lightAffect := 0.0;
       enabled := False;
     end;
 
