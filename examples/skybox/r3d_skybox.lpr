@@ -30,7 +30,7 @@ begin
 
   // Load and generate skyboxes
   skyProcedural := R3D_GenCubemapSky(512, R3D_CubemapSkyBase);
-  skyPanorama := R3D_LoadCubemap(PAnsiChar(RESOURCES_PATH + 'sky/skybox1.png'), R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
+  skyPanorama := R3D_LoadCubemap(PAnsiChar(RESOURCES_PATH + 'panorama/sky.hdr'), R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
 
   // Generate ambient maps
   ambientProcedural := R3D_GenAmbientMap(skyProcedural, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);

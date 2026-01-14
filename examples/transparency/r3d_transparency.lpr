@@ -55,7 +55,7 @@ begin
   light := R3D_CreateLight(R3D_LIGHT_SPOT);
   R3D_LightLookAt(light, Vector3Create(0, 10, 5), Vector3Create(0, 0, 0));
   R3D_SetLightActive(light, true);
-  R3D_EnableShadow(light, 4096);
+  R3D_EnableShadow(light);
 
   // Main loop
   while not WindowShouldClose() do

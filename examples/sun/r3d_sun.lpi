@@ -9,7 +9,7 @@
         <MainUnitHasScaledStatement Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="r3d_instanced"/>
+      <Title Value="r3d_sun"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -33,15 +33,16 @@
     </RequiredPackages>
     <Units>
       <Unit>
-        <Filename Value="r3d_instanced.lpr"/>
+        <Filename Value="r3d_sun.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="SunExample"/>
       </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="../../binary/r3d_instanced"/>
+      <Filename Value="../../binary/r3d_sun"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

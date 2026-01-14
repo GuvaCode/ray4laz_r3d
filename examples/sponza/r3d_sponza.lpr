@@ -9,17 +9,12 @@ const
 var
   ScreenWidth, ScreenHeight: Integer;
   sponza: TR3D_Model;
-  skybox: TR3D_Cubemap;
-  ambient: TR3D_AmbientMap;
   lights: array[0..1] of TR3D_Light;
   camera: TCamera3D;
-  skyEnabled: Boolean;
+  i: Integer;
   tonemap: TR3D_Tonemap;
   tonemapText: string;
-  emptyCubemap: TR3D_Cubemap;
-  emptyAmbientMap: TR3D_AmbientMap;
-  i: Integer;
-  tonemapInt, tonemapCount: Integer;
+  currentAA: TR3D_AntiAliasing;
 
 begin
   // Initialize window
@@ -32,25 +27,16 @@ begin
   R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
 
   // Post-processing setup
-  R3D_GetEnvironment^.bloom.mode := R3D_BLOOM_MIX;
-  R3D_GetEnvironment^.ssao.enabled := True;
+  R3D_GetEnvironment()^.bloom.mode := R3D_BLOOM_MIX;
+  R3D_GetEnvironment()^.ssao.enabled := True;
 
   // Background and ambient
-  R3D_GetEnvironment^.background.color := SKYBLUE;
-  R3D_GetEnvironment^.ambient.color := GRAY;
+  R3D_GetEnvironment()^.background.color := SKYBLUE;
+  R3D_GetEnvironment()^.ambient.color := GRAY;
 
   // Load Sponza model
   R3D_SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_8X);
-  sponza := R3D_LoadModel(PAnsiChar(RESOURCES_PATH + 'sponza.glb'));
-
-  // Load skybox (disabled by default)
-  skybox := R3D_LoadCubemap(PAnsiChar(RESOURCES_PATH + 'sky/skybox3.png'), R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
-  ambient := R3D_GenAmbientMap(skybox, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
-  skyEnabled := False;
-
-  // Initialize empty structures
-  FillChar(emptyCubemap, SizeOf(emptyCubemap), 0);
-  FillChar(emptyAmbientMap, SizeOf(emptyAmbientMap), 0);
+  sponza := R3D_LoadModel(PAnsiChar(RESOURCES_PATH + 'models/Sponza.glb'));
 
   // Setup lights
   for i := 0 to 1 do
@@ -63,7 +49,7 @@ begin
     R3D_SetLightActive(lights[i], True);
     R3D_SetLightEnergy(lights[i], 4.0);
     R3D_SetShadowUpdateMode(lights[i], R3D_SHADOW_UPDATE_MANUAL);
-    R3D_EnableShadow(lights[i], 4096);
+    R3D_EnableShadow(lights[i]);
   end;
 
   // Setup camera
@@ -81,78 +67,57 @@ begin
   begin
     UpdateCamera(@camera, CAMERA_FREE);
 
-    // Toggle skybox
-    if IsKeyPressed(KEY_ZERO) then
-    begin
-      if skyEnabled then
-      begin
-        R3D_GetEnvironment^.background.sky := emptyCubemap;
-        R3D_GetEnvironment^.ambient.map := emptyAmbientMap;
-      end
-      else
-      begin
-        R3D_GetEnvironment^.background.sky := skybox;
-        R3D_GetEnvironment^.ambient.map := ambient;
-      end;
-      skyEnabled := not skyEnabled;
-    end;
-
     // Toggle SSAO
     if IsKeyPressed(KEY_ONE) then
     begin
-      R3D_GetEnvironment^.ssao.enabled := not R3D_GetEnvironment^.ssao.enabled;
+      R3D_GetEnvironment()^.ssao.enabled := not R3D_GetEnvironment()^.ssao.enabled;
     end;
 
     // Toggle SSIL
     if IsKeyPressed(KEY_TWO) then
     begin
-      R3D_GetEnvironment^.ssil.enabled := not R3D_GetEnvironment^.ssil.enabled;
+      R3D_GetEnvironment()^.ssil.enabled := not R3D_GetEnvironment()^.ssil.enabled;
     end;
 
     // Toggle SSR
     if IsKeyPressed(KEY_THREE) then
     begin
-      R3D_GetEnvironment^.ssr.enabled := not R3D_GetEnvironment^.ssr.enabled;
+      R3D_GetEnvironment()^.ssr.enabled := not R3D_GetEnvironment()^.ssr.enabled;
     end;
 
     // Toggle fog
     if IsKeyPressed(KEY_FOUR) then
     begin
-      if R3D_GetEnvironment^.fog.mode = R3D_FOG_DISABLED then
-        R3D_GetEnvironment^.fog.mode := R3D_FOG_EXP
+      if R3D_GetEnvironment()^.fog.mode = R3D_FOG_DISABLED then
+        R3D_GetEnvironment()^.fog.mode := R3D_FOG_EXP
       else
-        R3D_GetEnvironment^.fog.mode := R3D_FOG_DISABLED;
+        R3D_GetEnvironment()^.fog.mode := R3D_FOG_DISABLED;
     end;
 
     // Toggle FXAA
     if IsKeyPressed(KEY_FIVE) then
     begin
-      if R3D_GetAntiAliasing() = R3D_ANTI_ALIASING_DISABLED then
-      R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA) else
+      currentAA := R3D_GetAntiAliasing();
+      if currentAA = R3D_ANTI_ALIASING_DISABLED then
+        R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA)
+      else
         R3D_SetAntiAliasing(R3D_ANTI_ALIASING_DISABLED);
-
-
-
     end;
 
     // Cycle tonemapping (left mouse button - previous)
     if IsMouseButtonPressed(MOUSE_BUTTON_LEFT) then
     begin
-      tonemap := R3D_GetEnvironment^.tonemap.mode;
-      tonemapInt := Integer(tonemap);
-      tonemapCount := Integer(R3D_TONEMAP_COUNT);
-      tonemapInt := (tonemapInt + tonemapCount - 1) mod tonemapCount;
-      R3D_GetEnvironment^.tonemap.mode := TR3D_Tonemap(tonemapInt);
+      tonemap := R3D_GetEnvironment()^.tonemap.mode;
+      R3D_GetEnvironment()^.tonemap.mode :=
+        TR3D_Tonemap((Integer(tonemap) + Integer(R3D_TONEMAP_COUNT) - 1) mod Integer(R3D_TONEMAP_COUNT));
     end;
 
     // Cycle tonemapping (right mouse button - next)
     if IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) then
     begin
-      tonemap := R3D_GetEnvironment^.tonemap.mode;
-      tonemapInt := Integer(tonemap);
-      tonemapCount := Integer(R3D_TONEMAP_COUNT);
-      tonemapInt := (tonemapInt + 1) mod tonemapCount;
-      R3D_GetEnvironment^.tonemap.mode := TR3D_Tonemap(tonemapInt);
+      tonemap := R3D_GetEnvironment()^.tonemap.mode;
+      R3D_GetEnvironment()^.tonemap.mode :=
+        TR3D_Tonemap((Integer(tonemap) + 1) mod Integer(R3D_TONEMAP_COUNT));
     end;
 
     BeginDrawing();
@@ -170,7 +135,7 @@ begin
       EndMode3D();
 
       // Display tonemapping
-      tonemap := R3D_GetEnvironment^.tonemap.mode;
+      tonemap := R3D_GetEnvironment()^.tonemap.mode;
       case tonemap of
         R3D_TONEMAP_LINEAR:   tonemapText := '< TONEMAP LINEAR >';
         R3D_TONEMAP_REINHARD: tonemapText := '< TONEMAP REINHARD >';
@@ -191,8 +156,6 @@ begin
 
   // Cleanup
   R3D_UnloadModel(sponza, True);
-  R3D_UnloadAmbientMap(ambient);
-  R3D_UnloadCubemap(skybox);
   R3D_Close();
 
   CloseWindow();

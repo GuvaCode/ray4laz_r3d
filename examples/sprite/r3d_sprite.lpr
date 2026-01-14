@@ -1,7 +1,5 @@
 program SpriteExample;
 
-{$mode objfpc}{$H+}
-
 uses
   Math, SysUtils,
   raylib,
@@ -9,32 +7,19 @@ uses
   raymath;
 
 const
-  RESOURCES_PATH = './';
+  RESOURCES_PATH = 'resources/';
 
 procedure GetTexCoordScaleOffset(var uvScale, uvOffset: TVector2; xFrameCount, yFrameCount: Integer; currentFrame: Single);
-var frameIndex,  frameX, frameY: Integer;
+var
+  frameIndex, frameX, frameY: Integer;
 begin
   uvScale.x := 1.0 / xFrameCount;
   uvScale.y := 1.0 / yFrameCount;
 
-  // Смещение целочисленного деления в положительную сторону
-  if currentFrame < 0 then
-    currentFrame := currentFrame - 0.5
-  else
-    currentFrame := currentFrame + 0.5;
-
-  // Приведение к целому с округлением
-  frameIndex := Trunc(currentFrame) mod (xFrameCount * yFrameCount);
-  if frameIndex < 0 then
-    frameIndex := frameIndex + (xFrameCount * yFrameCount);
-
+  // Используем округление до ближайшего целого как в C-версии
+  frameIndex := Trunc(currentFrame + 0.5) mod (xFrameCount * yFrameCount);
   frameX := frameIndex mod xFrameCount;
-  if frameX < 0 then
-    frameX := frameX + xFrameCount;
-
-   frameY := frameIndex div xFrameCount;
-  if frameY < 0 then
-    frameY := 0;
+  frameY := frameIndex div xFrameCount;
 
   uvOffset.x := frameX * uvScale.x;
   uvOffset.y := frameY * uvScale.y;
@@ -60,9 +45,9 @@ begin
   R3D_SetTextureFilter(TEXTURE_FILTER_POINT);
 
   // Set background/ambient color
- // R3D_ENVIRONMENT_SET(background.color, ColorCreate(102, 191, 255, 255));
- // R3D_ENVIRONMENT_SET(ambient.color, ColorCreate(10, 19, 25, 255));
- // R3D_ENVIRONMENT_SET(tonemap.mode, R3D_TONEMAP_FILMIC);
+  R3D_GetEnvironment()^.background.color := ColorCreate(102, 191, 255, 255);
+  R3D_GetEnvironment()^.ambient.color := ColorCreate(10, 19, 25, 255);
+  R3D_GetEnvironment()^.tonemap.mode := R3D_TONEMAP_FILMIC;
 
   // Create ground mesh and material
   meshGround := R3D_GenMeshPlane(200, 200, 1, 1);
@@ -74,15 +59,15 @@ begin
   meshSprite.shadowCastMode := R3D_SHADOW_CAST_ON_DOUBLE_SIDED;
 
   matSprite := R3D_GetDefaultMaterial();
-  matSprite.albedo := R3D_LoadAlbedoMap(PChar('resources/spritesheet.png'), WHITE);
+  matSprite.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/spritesheet.png'), WHITE);
   matSprite.billboardMode := R3D_BILLBOARD_Y_AXIS;
 
   // Setup spotlight
   light := R3D_CreateLight(R3D_LIGHT_SPOT);
   R3D_LightLookAt(light, Vector3Create(0, 10, 10), Vector3Create(0, 0, 0));
   R3D_SetLightRange(light, 64.0);
-  R3D_EnableShadow(light, 1024);
-  R3D_SetLightActive(light, true);
+  R3D_EnableShadow(light);
+  R3D_SetLightActive(light, True);
 
   // Setup camera
   camera.position := Vector3Create(0, 2, 5);

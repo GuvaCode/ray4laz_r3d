@@ -10,8 +10,30 @@ var
   light: TR3D_Light;
   camera: TCamera3D;
   i: Integer;
-  keep, linear: Boolean;
-  keepText, filterText: string;
+  aspect: TR3D_AspectMode;
+  upscale: TR3D_UpscaleMode;
+
+function GetAspectModeName(mode: TR3D_AspectMode): string;
+begin
+  case mode of
+    R3D_ASPECT_EXPAND: Result := 'EXPAND';
+    R3D_ASPECT_KEEP: Result := 'KEEP';
+  else
+    Result := 'UNKNOWN';
+  end;
+end;
+
+function GetUpscaleModeName(mode: TR3D_UpscaleMode): string;
+begin
+  case mode of
+    R3D_UPSCALE_NEAREST: Result := 'NEAREST';
+    R3D_UPSCALE_LINEAR: Result := 'LINEAR';
+    R3D_UPSCALE_BICUBIC: Result := 'BICUBIC';
+    R3D_UPSCALE_LANCZOS: Result := 'LANCZOS';
+  else
+    Result := 'UNKNOWN';
+  end;
+end;
 
 begin
   // Initialize window
@@ -44,6 +66,10 @@ begin
   camera.fovy := 60;
   camera.projection := CAMERA_PERSPECTIVE;
 
+  // Current blit state
+  aspect := R3D_ASPECT_EXPAND;
+  upscale := R3D_UPSCALE_NEAREST;
+
   // Main loop
   while not WindowShouldClose() do
   begin
@@ -52,19 +78,15 @@ begin
     // Toggle aspect keep
     if IsKeyPressed(KEY_R) then
     begin
-      if R3D_HasState(R3D_FLAG_ASPECT_KEEP) then
-        R3D_ClearState(R3D_FLAG_ASPECT_KEEP)
-      else
-        R3D_SetState(R3D_FLAG_ASPECT_KEEP);
+      aspect := TR3D_AspectMode((Integer(aspect) + 1) mod 2);
+      R3D_SetAspectMode(aspect);
     end;
 
-    // Toggle linear filtering
+    // Toggle upscale filtering
     if IsKeyPressed(KEY_F) then
     begin
-      if R3D_HasState(R3D_FLAG_BLIT_LINEAR) then
-        R3D_ClearState(R3D_FLAG_BLIT_LINEAR)
-      else
-        R3D_SetState(R3D_FLAG_BLIT_LINEAR);
+      upscale := TR3D_UpscaleMode((Integer(upscale) + 1) mod 4);
+      R3D_SetUpscaleMode(upscale);
     end;
 
     BeginDrawing();
@@ -79,21 +101,8 @@ begin
       R3D_End();
 
       // Draw info
-      keep := R3D_HasState(R3D_FLAG_ASPECT_KEEP);
-      linear := R3D_HasState(R3D_FLAG_BLIT_LINEAR);
-
-      if keep then
-        keepText := 'KEEP'
-      else
-        keepText := 'EXPAND';
-
-      if linear then
-        filterText := 'LINEAR'
-      else
-        filterText := 'NEAREST';
-
-      DrawText(PAnsiChar('Resize mode: ' + keepText), 10, 10, 20, RAYWHITE);
-      DrawText(PAnsiChar('Filter mode: ' + filterText), 10, 40, 20, RAYWHITE);
+      DrawText(PAnsiChar('Resize mode: ' + GetAspectModeName(aspect)), 10, 10, 20, RAYWHITE);
+      DrawText(PAnsiChar('Filter mode: ' + GetUpscaleModeName(upscale)), 10, 40, 20, RAYWHITE);
 
     EndDrawing();
   end;

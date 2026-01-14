@@ -55,7 +55,7 @@
     </Linking>
     <Other>
       <CustomOptions Value="-Xr
- -k&quot;-rpath=libs&quot;
+-k&quot;-rpath=\$$ORIGIN&quot;
 -k-lr3d"/>
     </Other>
   </CompilerOptions>
