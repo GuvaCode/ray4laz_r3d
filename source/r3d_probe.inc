@@ -5,24 +5,26 @@
 // ENUM TYPES
 // ========================================
 
-type
-  {*
-   * @brief Available probe types.
-   *
-   * Probes capture lighting information used for indirect illumination
-   * and reflections in the scene.
-   *}
-  TR3D_ProbeType = (
-    R3D_PROBE_ILLUMINATION,     ///< Captures diffuse indirect lighting only
-    R3D_PROBE_REFLECTION,       ///< Captures reflection data only
-    R3D_PROBE_COMBINED          ///< Captures both diffuse and reflection data
-  );
+
+{*
+ * @brief Bit-flags controlling what components are generated.
+ *
+ * - R3D_PROBE_ILLUMINATION -> generate diffuse irradiance
+ * - R3D_PROBE_REFLECTION   -> generate specular prefiltered map
+ *}
+ type //uint32_t
+   PR3D_ProbeFlags = ^TR3D_ProbeFlags;
+   TR3D_ProbeFlags = uint32;
+   const
+     R3D_PROBE_ILLUMINATION = (1 shl 0);
+     R3D_PROBE_REFLECTION = (1 shl 1);
 
   {*
    * @brief Modes for updating probes.
    *
    * Controls how often probe captures are refreshed.
    *}
+  type
   TR3D_ProbeUpdateMode = (
     R3D_PROBE_UPDATE_ONCE,      ///< Updated only when its state or content changes
     R3D_PROBE_UPDATE_ALWAYS     ///< Updated during every frames
@@ -52,10 +54,10 @@ type
  * The returned probe must be destroyed using ::R3D_DestroyProbe
  * when it is no longer needed.
  *
- * @param type Probe type to create.
+ * @param flags IBL components that the probe must support.
  * @return A valid probe ID, or a negative value on failure.
  *}
-function R3D_CreateProbe(atype: TR3D_ProbeType): TR3D_Probe; cdecl;
+function R3D_CreateProbe(flags: TR3D_ProbeFlags): TR3D_Probe; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CreateProbe';
 
 {*
@@ -76,12 +78,12 @@ function R3D_IsProbeExist(id: TR3D_Probe): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsProbeExist';
 
 {*
- * @brief Returns the probe type.
- *
- * @param id Probe ID.
- * @return The type assigned to the probe.
+* @brief Returns the probe flags.
+*
+* @param id Probe ID.
+* @return The flags assigned to the probe.
  *}
-function R3D_GetProbeType(id: TR3D_Probe): TR3D_ProbeType; cdecl;
+function R3D_GetProbeFlags(id: TR3D_Probe): TR3D_ProbeFlags; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetProbeType';
 
 {*

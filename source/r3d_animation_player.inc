@@ -49,12 +49,13 @@ type
 
   TR3D_AnimationPlayer = record
     states: PR3D_AnimationState;      ///< Array of active animation states, one per animation.
-    animLib: TR3D_AnimationLib;        ///< Animation library providing the available animations.
-    skeleton: TR3D_Skeleton;           ///< Skeleton to animate.
+    animLib: TR3D_AnimationLib;       ///< Animation library providing the available animations.
+    skeleton: TR3D_Skeleton;          ///< Skeleton to animate.
 
-    localPose: PMatrix;               ///< Array of bone transforms representing the blended local pose.
-    globalPose: PMatrix;              ///< Array of bone transforms multiplied by bone offsets for GPU skinning.
-    texGlobalPose: Cardinal;          ///< GPU texture ID storing the global pose as a 1D RGBA32F texture.
+    localPose: PMatrix;          ///< Array of bone transforms representing the blended local pose.
+    modelPose: PMatrix;          ///< Array of bone transforms in model space, obtained by hierarchical accumulation.
+    skinBuffer: PMatrix;         ///< Array of final skinning matrices (invBind * modelPose), sent to the GPU.
+    skinTexture: Uint32;       ///< GPU texture ID storing the skinning matrices as a 1D RGBA16F texture.
 
     eventCallback: R3D_AnimationEventCallback; ///< Callback function to receive animation events.
     eventUserData: Pointer;                     ///< Optional user data pointer passed to the callback.
@@ -235,18 +236,44 @@ procedure R3D_AdvanceAnimationPlayerTime(player: PR3D_AnimationPlayer; dt: Singl
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_AdvanceAnimationPlayerTime';
 
 {*
- * @brief Calculates the current blended skeleton pose.
+ * @brief Calculates the current blended local pose of the skeleton.
  *
- * Interpolates keyframes and blends all active animations according to their weights.
+ * Interpolates keyframes and blends all active animations according to their weights,
+ * but only computes the local transforms of each bone relative to its parent.
  * Does NOT advance animation time.
  *
- * @param player Animation player.
+ * @param player Animation player whose local pose will be updated.
+ *}
+procedure R3D_CalculateAnimationPlayerLocalPose(player: PR3D_AnimationPlayer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CalculateAnimationPlayerLocalPose';
+
+{*
+ * @brief Calculates the current blended model (global) pose of the skeleton.
+ *
+ * Interpolates keyframes and blends all active animations according to their weights,
+ * but only computes the global transforms of each bone in model space.
+ * This assumes the local pose is already up-to-date.
+ * Does NOT advance animation time.
+ *
+ * @param player Animation player whose model pose will be updated.
+ *}
+procedure R3D_CalculateAnimationPlayerModelPose(player: PR3D_AnimationPlayer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CalculateAnimationPlayerModelPose';
+
+{*
+ * @brief Calculates the current blended skeleton pose (local and model).
+ *
+ * Interpolates keyframes and blends all active animations according to their weights,
+ * then computes both local and model transforms for the entire skeleton.
+ * Does NOT advance animation time.
+ *
+ * @param player Animation player whose local and model poses will be updated.
  *}
 procedure R3D_CalculateAnimationPlayerPose(player: PR3D_AnimationPlayer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CalculateAnimationPlayerPose';
 
 {*
- * @brief Uploads the current global pose array to the internal GPU texture.
+ * @brief Calculates the skinning matrices and uploads them to the GPU.
  *
  * @param player Animation player.
  *}

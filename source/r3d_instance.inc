@@ -15,7 +15,7 @@ type
   {*
    * @brief Bitmask defining which instance attributes are present.
    *}
-TR3D_InstanceFlag = cint;
+TR3D_InstanceFlags = cint;
 const
   R3D_INSTANCE_POSITION = (1 shl 0);    //< Vector3
   R3D_INSTANCE_ROTATION = (1 shl 1);    //< Quaternion
@@ -52,7 +52,7 @@ type
  * @param flags Attribute mask to allocate.
  * @return Initialized instance buffer.
  *}
-function R3D_LoadInstanceBuffer(capacity: cint; flags: TR3D_InstanceFlag): TR3D_InstanceBuffer; cdecl;
+function R3D_LoadInstanceBuffer(capacity: cint; flags: TR3D_InstanceFlags): TR3D_InstanceBuffer; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadInstanceBuffer';
 
 {*
@@ -68,7 +68,7 @@ procedure R3D_UnloadInstanceBuffer(buffer: TR3D_InstanceBuffer); cdecl;
  * @param count Number of instances.
  * @param data Source pointer.
  *}
-procedure R3D_UploadInstances(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFlag;
+procedure R3D_UploadInstances(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFlags;
   offset: cint; count: cint; data: Pointer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UploadInstances';
 
@@ -77,13 +77,13 @@ procedure R3D_UploadInstances(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFl
  * @param flag Attribute to map (single bit).
  * @return Writable pointer, or NULL on error.
  *}
-function R3D_MapInstances(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFlag): Pointer; cdecl;
+function R3D_MapInstances(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFlags): Pointer; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_MapInstances';
 
 {*
  * @brief Unmap one or more previously mapped attribute buffers.
  * @param flags Bitmask of attributes to unmap.
  *}
-procedure R3D_UnmapInstances(buffer: TR3D_InstanceBuffer; flags: TR3D_InstanceFlag); cdecl;
+procedure R3D_UnmapInstances(buffer: TR3D_InstanceBuffer; flags: TR3D_InstanceFlags); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnmapInstances';
 

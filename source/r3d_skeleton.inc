@@ -25,12 +25,14 @@ type
     bones: PR3D_BoneInfo;  ///< Array of bone descriptors defining the hierarchy and names.
     boneCount: Integer;    ///< Total number of bones in the skeleton.
 
-    boneOffsets: PMatrix;  ///< Inverse bind matrices, one per bone. Transform vertices from mesh space to bone space (used in skinning).
-    bindLocal: PMatrix;    ///< Bind pose transforms in local bone space (relative to parent).
-    bindPose: PMatrix;     ///< Bind pose transforms in model space (global). Used as the default pose when not animated.
-    texBindPose: Uint32;   ///< Texture ID that contains the bind pose for GPU skinning. This is a 1D Texture RGBA32F 4*boneCount.
+    localBind: PMatrix;      ///< Bind pose matrices relative to parent
+    modelBind: PMatrix;      ///< Bind pose matrices in model/global space
+    invBind: PMatrix;        ///< Inverse bind matrices (model space) for skinning
+    rootBind: TMatrix;        ///< Root correction if local bind is not identity
 
+    skinTexture: uint32;   ///< Texture ID that contains the bind pose for GPU skinning. This is a 1D Texture RGBA16F 4*boneCount.
   end;
+
 
 // ========================================
 // PUBLIC API
@@ -81,3 +83,26 @@ procedure R3D_UnloadSkeleton(skeleton: TR3D_Skeleton); cdecl;
 *}
 function R3D_IsSkeletonValid(const skeleton: TR3D_Skeleton): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsSkeletonValid';
+
+{*
+ * @brief Returns the index of the bone with the given name.
+ *
+ * @param skeleton Skeleton to search in.
+ * @param boneName Name of the bone to find.
+ * @return Index of the bone, or a negative value if not found.
+ *}
+ function R3D_GetSkeletonBoneIndex(skeleton: TR3D_Skeleton; const boneName: PChar): Integer; cdecl;
+   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetSkeletonBoneIndex';
+
+{*
+ * @brief Returns a pointer to the bone with the given name.
+ *
+ * @param skeleton Skeleton to search in.
+ * @param boneName Name of the bone to find.
+ * @return Pointer to the bone, or NULL if not found.
+ *}
+ function R3D_GetSkeletonBone(Skeleton: TR3D_Skeleton; const boneName: PChar): PR3D_BoneInfo; cdecl;
+   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetSkeletonBoneIndex';
+
+
+

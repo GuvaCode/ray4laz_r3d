@@ -5,123 +5,36 @@ uses
 
 const
   RESOURCES_PATH = 'resources/';
-  MAXDECALS = 256;
+  MAXDECALS = 32;
   DEG2RAD = PI / 180.0;
+
+type
+  PSurface = ^TSurface;
+  TSurface = record
+    position: TVector3;
+    normal: TVector3;
+    rotation: TMatrix;
+    translation: TMatrix;
+  end;
 
 var
   ScreenWidth, ScreenHeight: Integer;
-  materialWalls, decalMaterial: TR3D_Material;
+  materialRoom: TR3D_Material;
   decal: TR3D_Decal;
   roomSize: Single;
   meshPlane: TR3D_Mesh;
-  matRoom: array[0..5] of TMatrix;
+  surfaces: array[0..5] of TSurface;
   light: TR3D_Light;
   camera: TCamera3D;
   decalScale: TVector3;
-  targetDecalTransform: TMatrix;
+  targetDecalTransform, transform: TMatrix;
   instances: TR3D_InstanceBuffer;
   decalCount, decalIndex, i: Integer;
-  targetPosition: TVector3;
+  hitPoint: TVector3;
   delta: Single;
   hitRay: TRay;
-  hitPoint, hitNormal: TVector3;
   decalRotation: TQuaternion;
   bgColor: TColor;
-
-function RayCubeIntersection(ray: TRay; cubePosition, cubeSize: TVector3;
-  var intersectionPoint, normal: TVector3): Boolean;
-var
-  halfSize, min, max: TVector3;
-  tMin, tMax, tYMin, tYMax, tZMin, tZMax, temp: Single;
-begin
-  halfSize := Vector3Create(cubeSize.x / 2, cubeSize.y / 2, cubeSize.z / 2);
-
-  min := Vector3Create(cubePosition.x - halfSize.x, cubePosition.y - halfSize.y, cubePosition.z - halfSize.z);
-  max := Vector3Create(cubePosition.x + halfSize.x, cubePosition.y + halfSize.y, cubePosition.z + halfSize.z);
-
-  tMin := (min.x - ray.position.x) / ray.direction.x;
-  tMax := (max.x - ray.position.x) / ray.direction.x;
-
-  if tMin > tMax then
-  begin
-    temp := tMin;
-    tMin := tMax;
-    tMax := temp;
-  end;
-
-  tYMin := (min.y - ray.position.y) / ray.direction.y;
-  tYMax := (max.y - ray.position.y) / ray.direction.y;
-
-  if tYMin > tYMax then
-  begin
-    temp := tYMin;
-    tYMin := tYMax;
-    tYMax := temp;
-  end;
-
-  if (tMin > tYMax) or (tYMin > tMax) then
-  begin
-    Result := False;
-    Exit;
-  end;
-
-  if tYMin > tMin then tMin := tYMin;
-  if tYMax < tMax then tMax := tYMax;
-
-  tZMin := (min.z - ray.position.z) / ray.direction.z;
-  tZMax := (max.z - ray.position.z) / ray.direction.z;
-
-  if tZMin > tZMax then
-  begin
-    temp := tZMin;
-    tZMin := tZMax;
-    tZMax := temp;
-  end;
-
-  if (tMin > tZMax) or (tZMin > tMax) then
-  begin
-    Result := False;
-    Exit;
-  end;
-
-  if tZMin > tMin then tMin := tZMin;
-  if tZMax < tMax then tMax := tZMax;
-
-  if tMin < 0 then
-  begin
-    tMin := tMax;
-    if tMin < 0 then
-    begin
-      Result := False;
-      Exit;
-    end;
-  end;
-
-  intersectionPoint := Vector3Create(
-    ray.position.x + ray.direction.x * tMin,
-    ray.position.y + ray.direction.y * tMin,
-    ray.position.z + ray.direction.z * tMin
-  );
-
-  normal := Vector3Zero();
-
-  if Abs(intersectionPoint.x - min.x) < 0.001 then
-    normal.x := -1.0  // Left face
-  else if Abs(intersectionPoint.x - max.x) < 0.001 then
-    normal.x := 1.0;  // Right face
-
-  if Abs(intersectionPoint.y - min.y) < 0.001 then
-    normal.y := -1.0  // Bottom face
-  else if Abs(intersectionPoint.y - max.y) < 0.001 then
-    normal.y := 1.0;  // Top face
-
-  if Abs(intersectionPoint.z - min.z) < 0.001 then
-    normal.z := -1.0  // Near face
-  else if Abs(intersectionPoint.z - max.z) < 0.001 then
-    normal.z := 1.0;  // Far face
-
-  Result := True;
-end;
 
 function MatrixTransform(position: TVector3; rotation: TQuaternion; scale: TVector3): TMatrix;
 var
@@ -159,6 +72,40 @@ begin
   Result.m15 := 1.0;
 end;
 
+function RayIntersectsSurface(ray: TRay; surface: PSurface; size: Single;
+  var intersectionOut: TVector3): Boolean;
+var
+  d, t: Single;
+  intersectionPoint, topLeft, bottomRight: TVector3;
+begin
+  d := -Vector3DotProduct(surface^.normal, surface^.position);
+  t := -(Vector3DotProduct(surface^.normal, ray.position) + d) /
+        Vector3DotProduct(surface^.normal, ray.direction);
+
+  if t > 0 then
+  begin
+    // Calculate the intersection point
+    intersectionPoint := Vector3Add(ray.position, Vector3Scale(ray.direction, t));
+
+    topLeft := Vector3Subtract(surface^.position,
+      Vector3Create(size / 2.0, 0.0, size / 2.0));
+    bottomRight := Vector3Add(surface^.position,
+      Vector3Create(size / 2.0, 0.0, size / 2.0));
+
+    // Check if the intersection point is within the bounds of the surface
+    if (intersectionPoint.x >= topLeft.x) and (intersectionPoint.x <= bottomRight.x) and
+       (intersectionPoint.z >= topLeft.z) and (intersectionPoint.z <= bottomRight.z) then
+    begin
+      // Offset the intersection point
+      intersectionOut := intersectionPoint;
+      Result := True;
+      Exit;
+    end;
+  end;
+
+  Result := False;
+end;
+
 begin
   // Initialize window
   ScreenWidth := 800;
@@ -169,35 +116,84 @@ begin
   // Initialize R3D
   R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
 
-  // Create wall material
-  materialWalls := R3D_GetDefaultMaterial();
-  materialWalls.albedo.color := GRAY;
+  // Create decal
+  // Инициализируем структуру decal нулями или используем R3D_GetDefaultDecal если есть такая функция
+  FillChar(decal, SizeOf(decal), 0);
+  decal := R3D_DECAL_BASE;
+  // Если есть R3D_GetDefaultDecal, используйте его:
+  // decal := R3D_GetDefaultDecal();
+  {
+  // Заполняем поля вручную согласно R3D_DECAL_BASE
+  decal.albedo.texture := 0;
+  decal.albedo.color := WHITE;
+  decal.emission.texture := 0;
+  decal.emission.color := WHITE;
+  decal.emission.energy := 0.0;
+  decal.normal.texture := 0;
+  decal.normal.scale := 1.0;
+  decal.orm.texture := 0;
+  decal.orm.occlusion := 1.0;
+  decal.orm.roughness := 1.0;
+  decal.orm.metalness := 0.0;
+  decal.uvOffset := Vector2Create(0.0, 0.0);
+  decal.uvScale := Vector2Create(1.0, 1.0);
+  decal.alphaCutoff := 0.01;
+  decal.normalThreshold := 0;
+  decal.fadeWidth := 0;
+ }
+  // Загружаем текстуры
+  decal.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/decal.png'), WHITE);
+  decal.normal := R3D_LoadNormalMap(PAnsiChar(RESOURCES_PATH + 'images/decal_normal.png'), 1.0);
+  decal.normalThreshold := 89.0;
 
-  // Create decal material
-  decalMaterial := R3D_GetDefaultMaterial();
-  decalMaterial.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/decal.png'), WHITE);
-
-  decal.material := decalMaterial;
-
-  // Create room mesh and transforms
-  roomSize := 32.0;
+  // Create room mesh, material and data
+  roomSize := 25.0;
   meshPlane := R3D_GenMeshPlane(roomSize, roomSize, 1, 1);
 
-  matRoom[0] := MatrixMultiply(MatrixRotateZ(90.0 * DEG2RAD), MatrixTranslate(roomSize / 2.0, 0.0, 0.0));
-  matRoom[1] := MatrixMultiply(MatrixRotateZ(-90.0 * DEG2RAD), MatrixTranslate(-roomSize / 2.0, 0.0, 0.0));
-  matRoom[2] := MatrixMultiply(MatrixRotateX(90.0 * DEG2RAD), MatrixTranslate(0.0, 0.0, -roomSize / 2.0));
-  matRoom[3] := MatrixMultiply(MatrixRotateX(-90.0 * DEG2RAD), MatrixTranslate(0.0, 0.0, roomSize / 2.0));
-  matRoom[4] := MatrixMultiply(MatrixRotateX(180.0 * DEG2RAD), MatrixTranslate(0.0, roomSize / 2.0, 0.0));
-  matRoom[5] := MatrixTranslate(0.0, -roomSize / 2.0, 0.0);
+  materialRoom := R3D_GetDefaultMaterial();
+  materialRoom.albedo.color := GRAY;
+
+  // Setup surfaces (walls, floor, ceiling)
+  surfaces[0].position := Vector3Create(0.0, roomSize / 2, 0.0);
+  surfaces[0].normal := Vector3Create(0.0, -1.0, 0.0);
+  surfaces[0].rotation := MatrixRotateX(180.0 * DEG2RAD);
+  surfaces[0].translation := MatrixTranslate(0.0, roomSize / 2, 0.0);
+
+  surfaces[1].position := Vector3Create(0.0, -roomSize / 2, 0.0);
+  surfaces[1].normal := Vector3Create(0.0, 1.0, 0.0);
+  surfaces[1].rotation := MatrixIdentity();
+  surfaces[1].translation := MatrixTranslate(0.0, -roomSize / 2, 0.0);
+
+  surfaces[2].position := Vector3Create(roomSize / 2, 0.0, 0.0);
+  surfaces[2].normal := Vector3Create(-1.0, 0.0, 0.0);
+  surfaces[2].rotation := MatrixRotateZ(90.0 * DEG2RAD);
+  surfaces[2].translation := MatrixTranslate(roomSize / 2, 0.0, 0.0);
+
+  surfaces[3].position := Vector3Create(-roomSize / 2, 0.0, 0.0);
+  surfaces[3].normal := Vector3Create(1.0, 0.0, 0.0);
+  surfaces[3].rotation := MatrixRotateZ(-90.0 * DEG2RAD);
+  surfaces[3].translation := MatrixTranslate(-roomSize / 2, 0.0, 0.0);
+
+  surfaces[4].position := Vector3Create(0.0, 0.0, roomSize / 2);
+  surfaces[4].normal := Vector3Create(0.0, 0.0, -1.0);
+  surfaces[4].rotation := MatrixRotateX(-90.0 * DEG2RAD);
+  surfaces[4].translation := MatrixTranslate(0.0, 0.0, roomSize / 2);
+
+  surfaces[5].position := Vector3Create(0.0, 0.0, -roomSize / 2);
+  surfaces[5].normal := Vector3Create(0.0, 0.0, 1.0);
+  surfaces[5].rotation := MatrixRotateX(90.0 * DEG2RAD);
+  surfaces[5].translation := MatrixTranslate(0.0, 0.0, -roomSize / 2);
 
   // Setup light
   light := R3D_CreateLight(R3D_LIGHT_OMNI);
+  R3D_SetLightPosition(light, Vector3Create(roomSize * 0.3, roomSize * 0.3, roomSize * 0.3));
   R3D_SetLightEnergy(light, 2.0);
   R3D_SetLightActive(light, True);
+  //R3D_ENVIRONMENT_SET(ambient.color, DARKGRAY);
 
   // Setup camera
   camera.position := Vector3Create(0.0, 0.0, 0.0);
-  camera.target := Vector3Create(1.0, 0.0, 0.0);
+  camera.target := Vector3Create(0.0, 0.0, 1.0);
   camera.up := Vector3Create(0.0, 1.0, 0.0);
   camera.fovy := 70;
   camera.projection := CAMERA_PERSPECTIVE;
@@ -205,12 +201,13 @@ begin
   DisableCursor();
 
   // Decal state
-  decalScale := Vector3Create(3.0, 3.0, 3.0);
+  decalScale := Vector3Create(5.0, 5.0, 5.0);
   targetDecalTransform := MatrixIdentity();
-  instances := R3D_LoadInstanceBuffer(MAXDECALS, R3D_INSTANCE_POSITION or R3D_INSTANCE_ROTATION or R3D_INSTANCE_SCALE);
+  instances := R3D_LoadInstanceBuffer(MAXDECALS,
+    R3D_INSTANCE_POSITION or R3D_INSTANCE_ROTATION or R3D_INSTANCE_SCALE);
   decalCount := 0;
   decalIndex := 0;
-  targetPosition := Vector3Zero();
+  hitPoint := Vector3Zero();
 
   // Main loop
   while not WindowShouldClose() do
@@ -223,32 +220,23 @@ begin
     hitRay.position := camera.position;
     hitRay.direction := Vector3Normalize(Vector3Subtract(camera.target, camera.position));
 
+    // Check ray intersection
     hitPoint := Vector3Zero();
-    hitNormal := Vector3Zero();
-    if RayCubeIntersection(hitRay, Vector3Zero(), Vector3Create(roomSize, roomSize, roomSize), hitPoint, hitNormal) then
-    begin
-      targetPosition := hitPoint;
-    end;
-
-    // Compute decal rotation
     decalRotation := QuaternionIdentity();
-    if hitNormal.x = -1.0 then
-      decalRotation := QuaternionFromMatrix(MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, 90.0 * DEG2RAD)))
-    else if hitNormal.x = 1.0 then
-      decalRotation := QuaternionFromMatrix(MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, -90.0 * DEG2RAD)))
-    else if hitNormal.y = -1.0 then
-      decalRotation := QuaternionFromMatrix(MatrixRotateY(180.0 * DEG2RAD))
-    else if hitNormal.y = 1.0 then
-      decalRotation := QuaternionFromMatrix(MatrixRotateZ(180.0 * DEG2RAD))
-    else if hitNormal.z = -1.0 then
-      decalRotation := QuaternionFromMatrix(MatrixRotateX(90.0 * DEG2RAD))
-    else if hitNormal.z = 1.0 then
-      decalRotation := QuaternionFromMatrix(MatrixRotateXYZ(Vector3Create(-90.0 * DEG2RAD, 180.0 * DEG2RAD, 0)));
+
+    for i := 0 to 5 do
+    begin
+      if RayIntersectsSurface(hitRay, @surfaces[i], roomSize, hitPoint) then
+      begin
+        decalRotation := QuaternionFromMatrix(surfaces[i].rotation);
+        Break;
+      end;
+    end;
 
     // Apply decal on mouse click
     if IsMouseButtonPressed(MOUSE_BUTTON_LEFT) then
     begin
-      R3D_UploadInstances(instances, R3D_INSTANCE_POSITION, decalIndex, 1, @targetPosition);
+      R3D_UploadInstances(instances, R3D_INSTANCE_POSITION, decalIndex, 1, @hitPoint);
       R3D_UploadInstances(instances, R3D_INSTANCE_ROTATION, decalIndex, 1, @decalRotation);
       R3D_UploadInstances(instances, R3D_INSTANCE_SCALE, decalIndex, 1, @decalScale);
       decalIndex := (decalIndex + 1) mod MAXDECALS;
@@ -261,9 +249,10 @@ begin
 
       R3D_Begin(camera);
 
-        for  i := 0 to 5 do
+        for i := 0 to 5 do
         begin
-          R3D_DrawMeshPro(meshPlane, materialWalls, matRoom[i]);
+          transform := MatrixMultiply(surfaces[i].rotation, surfaces[i].translation);
+          R3D_DrawMeshPro(meshPlane, materialRoom, transform);
         end;
 
         if decalCount > 0 then
@@ -271,12 +260,12 @@ begin
           R3D_DrawDecalInstanced(decal, instances, decalCount);
         end;
 
-        R3D_DrawDecal(decal, MatrixTransform(targetPosition, decalRotation, decalScale));
+        R3D_DrawDecal(decal, MatrixTransform(hitPoint, decalRotation, decalScale));
 
       R3D_End();
 
       BeginMode3D(camera);
-        DrawCubeWires(targetPosition, decalScale.x, decalScale.y, decalScale.z, WHITE);
+        DrawCubeWires(hitPoint, decalScale.x, decalScale.y, decalScale.z, WHITE);
       EndMode3D();
 
       DrawText('LEFT CLICK TO APPLY DECAL', 10, 10, 20, LIME);
@@ -285,8 +274,8 @@ begin
   end;
 
   // Cleanup
-  R3D_UnloadMaterial(decalMaterial);
   R3D_UnloadMesh(meshPlane);
+  R3D_UnloadDecalMaps(decal);
   R3D_Close();
 
   CloseWindow();

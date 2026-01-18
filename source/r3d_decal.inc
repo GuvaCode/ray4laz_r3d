@@ -1,15 +1,77 @@
 // R3D Decal Module.
+ {/**
+ * @brief Default decal configuration.
+ *
+ * Contains a R3D_Decal structure with sensible default values for all rendering parameters.
+ */ }
+{
+#define R3D_DECAL_BASE                                  \
+    R3D_LITERAL(R3D_Decal) {                            \
+        .albedo = {                                     \
+            .texture = {0},                             \
+            .color = {255, 255, 255, 255},              \
+        },                                              \
+        .emission = {                                   \
+            .texture = {0},                             \
+            .color = {255, 255, 255, 255},              \
+            .energy = 0.0f,                             \
+        },                                              \
+        .normal = {                                     \
+            .texture = {0},                             \
+            .scale = 1.0f,                              \
+        },                                              \
+        .orm = {                                        \
+            .texture = {0},                             \
+            .occlusion = 1.0f,                          \
+            .roughness = 1.0f,                          \
+            .metalness = 0.0f,                          \
+        },                                              \
+        .uvOffset = {0.0f, 0.0f},                       \
+        .uvScale = {1.0f, 1.0f},                        \
+        .alphaCutoff = 0.01f,                           \
+        .normalThreshold = 0,                           \
+        .fadeWidth = 0                                  \
+    }
+}
+
+
 
 {*
- * @brief Represents a decal and its properties.
- *
- * This structure defines a decal that can be projected onto geometry that has already been rendered.
- *
- * @note Decals are drawn using deferred screen space rendering and do not interact with any
- * forward rendered or non-opaque objects.
- *}
+* @brief Represents a decal and its properties.
+*
+* This structure defines a decal that can be projected onto geometry that has already been rendered.
+*
+* @note Decals are drawn using deferred screen space rendering and do not interact with any
+* forward rendered or non-opaque objects.
+*}
 type
   PR3D_Decal = ^TR3D_Decal;
   TR3D_Decal = record
-    material: TR3D_Material;  ///< The material used for rendering the decal.
+    albedo: TR3D_AlbedoMap;       ///< Albedo map
+    emission: TR3D_EmissionMap;   ///< Emission map
+    normal: TR3D_NormalMap;       ///< Normal map
+    orm: TR3D_OrmMap;             ///< Occlusion-Roughness-Metalness map
+
+    uvOffset: TVector2;           ///< UV offset (default: {0.0f, 0.0f})
+    uvScale: TVector2;            ///< UV scale (default: {1.0f, 1.0f})
+
+    alphaCutoff: Single;          ///< Alpha cutoff threshold (default: 0.01f)
+
+    normalThreshold: Single;      ///< Maximum angle against the surface normal to draw decal. 0.0f disables threshold. (default 0.0f)
+    fadeWidth: Single;            ///< The width of fading along the normal threshold (default 0.0f)
   end;
+
+
+{*
+ * @brief Unload all map textures assigned to a R3D_Decal.
+ *
+ * Frees all underlying textures in a R3D_Decal that are not a default texture.
+ *
+* @param decal to unload maps from.
+*}
+procedure R3D_UnloadDecalMaps(decal: TR3D_Decal); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadDecalMaps';
+
+
+
+

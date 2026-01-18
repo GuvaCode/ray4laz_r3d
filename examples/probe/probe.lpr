@@ -57,7 +57,7 @@ begin
   R3D_EnableShadow(light);
 
   // Create probe
-  probe := R3D_CreateProbe(R3D_PROBE_COMBINED);
+  probe := R3D_CreateProbe(R3D_PROBE_ILLUMINATION or R3D_PROBE_REFLECTION);
   R3D_SetProbePosition(probe, Vector3Create(0.0, 1.0, 0.0));
   R3D_SetProbeShadows(probe, True);
   R3D_SetProbeFalloff(probe, 0.5);

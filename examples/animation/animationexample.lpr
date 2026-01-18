@@ -38,14 +38,19 @@ begin
   cubemap := R3D_LoadCubemap(RESOURCES_PATH + 'panorama/indoor.hdr', R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
 
   // Use R3D_GetEnvironment()^ instead of R3D_ENVIRONMENT_SET
-  R3D_GetEnvironment()^.background.skyBlur := 0.3;
-  R3D_GetEnvironment()^.background.energy := 0.6;
-  R3D_GetEnvironment()^.background.sky := cubemap;
+  R3D_ENVIRONMENT_SET('background.skyBlur',0.3);
+  //R3D_GetEnvironment()^.background.skyBlur := 0.3;
+  R3D_ENVIRONMENT_SET('background.energy',0.6);
+  //R3D_GetEnvironment()^.background.energy := 0.6;
+  R3D_ENVIRONMENT_SET('background.sky', cubemap);
+  //R3D_GetEnvironment()^.background.sky := cubemap;
 
   // Setup environment ambient
   ambientMap := R3D_GenAmbientMap(cubemap, R3D_AMBIENT_ILLUMINATION);
-  R3D_GetEnvironment()^.ambient.map := ambientMap;
-  R3D_GetEnvironment()^.ambient.energy := 0.25;
+  R3D_ENVIRONMENT_SET('ambient.map', ambientMap);
+ // R3D_GetEnvironment()^.ambient.map := ambientMap;
+ R3D_ENVIRONMENT_SET('ambient.energy', 0.25);
+ //R3D_GetEnvironment()^.ambient.energy := 0.25;
 
   // Setup tonemapping
   R3D_GetEnvironment()^.tonemap.mode := R3D_TONEMAP_FILMIC;
@@ -67,9 +72,6 @@ begin
  R3D_SetAnimationLoop(@modelPlayer, 0, true);
  R3D_PlayAnimation(@modelPlayer, 0);
 
-
-
-
   // Create model instances
   instances := R3D_LoadInstanceBuffer(4, R3D_INSTANCE_POSITION);
   positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION);
@@ -80,9 +82,10 @@ begin
     x := 0;
     while x < 2 do
     begin
-      positions[z * 2 + x].x := x - 0.5;
-      positions[z * 2 + x].y := 0.0;
-      positions[z * 2 + x].z := z - 0.5;
+      positions[z*2 + x] := Vector3Create(x - 0.5, 0.0, z - 0.5);
+    //  positions[z * 2 + x].x := x - 0.5;
+     // positions[z * 2 + x].y := 0.0;
+     // positions[z * 2 + x].z := z - 0.5;
       Inc(x);
     end;
     Inc(z);
