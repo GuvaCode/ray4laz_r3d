@@ -29,32 +29,30 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_Init(GetScreenWidth(), GetScreenHeight());
   R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA);
 
   // Setup environment sky
-  cubemap := R3D_LoadCubemap(RESOURCES_PATH + 'panorama/indoor.hdr', R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
-
-  // Use R3D_GetEnvironment()^ instead of R3D_ENVIRONMENT_SET
-  R3D_GetEnvironment()^.background.skyBlur := 0.775;
-  R3D_GetEnvironment()^.background.sky := cubemap;
+  cubemap := R3D_LoadCubemap(PAnsiChar(RESOURCES_PATH + 'panorama/indoor.hdr'), R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
+  R3D_ENVIRONMENT_SET('background.skyBlur', 0.775);
+  R3D_ENVIRONMENT_SET('background.sky', cubemap);
 
   // Setup environment ambient
   ambientMap := R3D_GenAmbientMap(cubemap, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
-  R3D_GetEnvironment()^.ambient.map := ambientMap;
+  R3D_ENVIRONMENT_SET('ambient.map', ambientMap);
 
   // Setup bloom
-  R3D_GetEnvironment()^.bloom.mode := R3D_BLOOM_MIX;
-  R3D_GetEnvironment()^.bloom.intensity := 0.02;
+  R3D_ENVIRONMENT_SET('bloom.mode', R3D_BLOOM_MIX);
+  R3D_ENVIRONMENT_SET('bloom.intensity', 0.02);
 
   // Setup tonemapping
-  R3D_GetEnvironment()^.tonemap.mode := R3D_TONEMAP_FILMIC;
-  R3D_GetEnvironment()^.tonemap.exposure := 0.5;
-  R3D_GetEnvironment()^.tonemap.white := 4.0;
+  R3D_ENVIRONMENT_SET('tonemap.mode', R3D_TONEMAP_FILMIC);
+  R3D_ENVIRONMENT_SET('tonemap.exposure', 0.5);
+  R3D_ENVIRONMENT_SET('tonemap.white', 4.0);
 
   // Load model
   R3D_SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_4X);
-  model := R3D_LoadModel(RESOURCES_PATH + 'models/DamagedHelmet.glb');
+  model := R3D_LoadModel(PAnsiChar(RESOURCES_PATH + 'models/DamagedHelmet.glb'));
   modelMatrix := MatrixIdentity();
   modelScale := 1.0;
 

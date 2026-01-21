@@ -31,7 +31,7 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D with FXAA
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_Init(GetScreenWidth(), GetScreenHeight());
   R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA);
 
   // Setup environment sky

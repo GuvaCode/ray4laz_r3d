@@ -65,7 +65,7 @@ begin
   SetTargetFPS(60);
 
   // Инициализация R3D
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_Init(GetScreenWidth(), GetScreenHeight());
 
   // Получаем указатель на environment
   env := R3D_GetEnvironment();

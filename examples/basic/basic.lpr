@@ -60,7 +60,7 @@ end;
 procedure TRayApplication.Init;
 var light: TR3D_Light;
 begin
-  R3D_Init(GetScreenWidth, GetScreenHeight, 0);
+  R3D_Init(GetScreenWidth, GetScreenHeight);
   SetTargetFPS(60);
 
   plane := R3D_GenMeshPlane(1000, 1000, 1, 1);

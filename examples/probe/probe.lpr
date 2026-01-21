@@ -27,7 +27,7 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_Init(GetScreenWidth(), GetScreenHeight());
 
   // Setup environment sky
   cubemap := R3D_LoadCubemap(RESOURCES_PATH + 'panorama/indoor.hdr', R3D_CUBEMAP_LAYOUT_AUTO_DETECT);

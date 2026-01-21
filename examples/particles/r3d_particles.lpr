@@ -36,14 +36,13 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_Init(GetScreenWidth(), GetScreenHeight());
 
   // Set environment
   bgColor := ColorCreate(4, 4, 4, 255);
- // R3D_ENVIRONMENT_SET(background.color, bgColor);
- R3D_GetEnvironment^.background.color := bgColor;
- // R3D_ENVIRONMENT_SET(bloom.mode, R3D_BLOOM_ADDITIVE);
- R3D_GetEnvironment^.bloom.mode := R3D_BLOOM_ADDITIVE;
+  R3D_ENVIRONMENT_SET('background.color', bgColor);
+  R3D_ENVIRONMENT_SET('bloom.mode', R3D_BLOOM_ADDITIVE);
+
 
   // Generate a gradient as emission texture for our particles
   image := GenImageGradientRadial(64, 64, 0.0, WHITE, BLACK);

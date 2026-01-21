@@ -28,7 +28,7 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_Init(GetScreenWidth(), GetScreenHeight());
 
   // Create meshes and material
   plane := R3D_GenMeshPlane(1000, 1000, 1, 1);

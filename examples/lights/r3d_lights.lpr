@@ -36,7 +36,7 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_Init(GetScreenWidth(), GetScreenHeight());
 
   // Set ambient light
   // Use R3D_GetEnvironment()^ instead of R3D_ENVIRONMENT_SET
