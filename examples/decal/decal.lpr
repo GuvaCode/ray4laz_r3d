@@ -6,7 +6,6 @@ uses
 const
   RESOURCES_PATH = 'resources/';
   MAXDECALS = 32;
-  DEG2RAD = PI / 180.0;
 
 type
   PSurface = ^TSurface;
@@ -34,7 +33,6 @@ var
   delta: Single;
   hitRay: TRay;
   decalRotation: TQuaternion;
-  bgColor: TColor;
 
 function MatrixTransform(position: TVector3; rotation: TQuaternion; scale: TVector3): TMatrix;
 var
@@ -187,7 +185,6 @@ begin
     R3D_INSTANCE_POSITION or R3D_INSTANCE_ROTATION or R3D_INSTANCE_SCALE);
   decalCount := 0;
   decalIndex := 0;
-  hitPoint := Vector3Zero();
 
   // Main loop
   while not WindowShouldClose() do
