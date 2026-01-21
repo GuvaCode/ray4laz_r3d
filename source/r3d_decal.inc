@@ -1,10 +1,9 @@
 // R3D Decal Module.
- {/**
+{/**
  * @brief Default decal configuration.
  *
  * Contains a R3D_Decal structure with sensible default values for all rendering parameters.
- */ }
-{
+ */
 #define R3D_DECAL_BASE                                  \
     R3D_LITERAL(R3D_Decal) {                            \
         .albedo = {                                     \
@@ -30,7 +29,8 @@
         .uvScale = {1.0f, 1.0f},                        \
         .alphaCutoff = 0.01f,                           \
         .normalThreshold = 0,                           \
-        .fadeWidth = 0                                  \
+        .fadeWidth = 0,                                 \
+        .applyColor = true                              \
     }
 }
 
@@ -51,16 +51,27 @@ type
     emission: TR3D_EmissionMap;   ///< Emission map
     normal: TR3D_NormalMap;       ///< Normal map
     orm: TR3D_OrmMap;             ///< Occlusion-Roughness-Metalness map
-
     uvOffset: TVector2;           ///< UV offset (default: {0.0f, 0.0f})
     uvScale: TVector2;            ///< UV scale (default: {1.0f, 1.0f})
-
     alphaCutoff: Single;          ///< Alpha cutoff threshold (default: 0.01f)
-
-    normalThreshold: Single;      ///< Maximum angle against the surface normal to draw decal. 0.0f disables threshold. (default 0.0f)
-    fadeWidth: Single;            ///< The width of fading along the normal threshold (default 0.0f)
+    normalThreshold: Single;      ///< Maximum angle against the surface normal to draw decal. 0.0f disables threshold. (default: 0.0f)
+    fadeWidth: Single;            ///< The width of fading along the normal threshold (default: 0.0f)
+    applyColor: Boolean;          ///< Indicates that the albedo color will not be rendered, only the alpha component of the albedo will be used as a mask. (default: true)
   end;
 
+ {
+ typedef struct R3D_Decal {
+    R3D_AlbedoMap albedo;       ///< Albedo map
+    R3D_EmissionMap emission;   ///< Emission map
+    R3D_NormalMap normal;       ///< Normal map
+    R3D_OrmMap orm;             ///< Occlusion-Roughness-Metalness map
+    Vector2 uvOffset;           ///< UV offset (default: {0.0f, 0.0f})
+    Vector2 uvScale;            ///< UV scale (default: {1.0f, 1.0f})
+    float alphaCutoff;          ///< Alpha cutoff threshold (default: 0.01f)
+    float normalThreshold;      ///< Maximum angle against the surface normal to draw decal. 0.0f disables threshold. (default: 0.0f)
+    float fadeWidth;            ///< The width of fading along the normal threshold (default: 0.0f)
+    bool applyColor;            ///< Indicates that the albedo color will not be rendered, only the alpha component of the albedo will be used as a mask. (default: true)
+} R3D_Decal;}
 
 {*
  * @brief Unload all map textures assigned to a R3D_Decal.

@@ -1,17 +1,5 @@
 // R3D Core Module.
 {*
- * @brief Flags to configure the rendering engine behavior.
- *
- * These flags control various aspects of the rendering pipeline.
- *}
-type
-  TR3D_Flags = LongWord;
-const
-  R3D_FLAG_NONE                   = 0;           ///< No special rendering flags
-  R3D_FLAG_TRANSPARENT_SORTING    = (1 shl 0);   ///< Back-to-front sorting of transparent objects for correct blending of non-discarded fragments.
-  R3D_FLAG_OPAQUE_SORTING         = (1 shl 1);   ///< Front-to-back sorting of opaque objects to optimize depth testing at the cost of additional sorting.
-
-{*
  * @brief Bitfield type used to specify rendering layers for 3D objects.
  *
  * This type is used by `R3D_Mesh` and `R3D_Sprite` objects to indicate
@@ -138,15 +126,12 @@ type
 {*
  * @brief Initializes the rendering engine.
  *
- * This function sets up the internal rendering system with the provided resolution
- * and state flags, which define the internal behavior. These flags can be modified
- * later via R3D_SetState.
+ * This function sets up the internal rendering system with the provided resolution.
  *
  * @param resWidth Width of the internal resolution.
  * @param resHeight Height of the internal resolution.
- * @param flags Flags indicating internal behavior (modifiable via R3D_SetState).
  *}
-procedure R3D_Init(resWidth, resHeight: Integer; flags: TR3D_Flags); cdecl;
+procedure R3D_Init(resWidth, resHeight: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_Init';
 
 {*
@@ -157,37 +142,6 @@ procedure R3D_Init(resWidth, resHeight: Integer; flags: TR3D_Flags); cdecl;
  *}
 procedure R3D_Close; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_Close';
-
-{*
- * @brief Checks if a specific internal state flag is set.
- *
- * @param flags The state flags to check.
- * @return True if the flags are set, false otherwise.
- *}
-function R3D_HasState(flag: TR3D_Flags): Boolean; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_HasState';
-
-{*
- * @brief Sets internal state flags for the rendering engine.
- *
- * This function modifies the behavior of the rendering engine by setting one or more
- * state flags. Flags can be later cleared with R3D_ClearState.
- *
- * @param flags The flags to set.
- *}
-procedure R3D_SetState(flags: TR3D_Flags); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetState';
-
-{*
- * @brief Clears specific internal state flags.
- *
- * This function clears one or more previously set state flags, modifying the
- * behavior of the rendering engine accordingly.
- *
- * @param flags The flags to clear.
- *}
-procedure R3D_ClearState(flags: TR3D_Flags); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ClearState';
 
 {*
  * @brief Gets the current internal resolution.

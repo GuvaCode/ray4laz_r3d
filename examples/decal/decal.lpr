@@ -77,19 +77,23 @@ function RayIntersectsSurface(ray: TRay; surface: PSurface; size: Single;
 var
   d, t: Single;
   intersectionPoint, topLeft, bottomRight: TVector3;
+  surfaceNormal, surfacePosition: TVector3;
 begin
-  d := -Vector3DotProduct(surface^.normal, surface^.position);
-  t := -(Vector3DotProduct(surface^.normal, ray.position) + d) /
-        Vector3DotProduct(surface^.normal, ray.direction);
+  surfaceNormal := surface^.normal;
+  surfacePosition := surface^.position;
+
+  d := -Vector3DotProduct(surfaceNormal, surfacePosition);
+  t := -(Vector3DotProduct(surfaceNormal, ray.position) + d) /
+        Vector3DotProduct(surfaceNormal, ray.direction);
 
   if t > 0 then
   begin
     // Calculate the intersection point
     intersectionPoint := Vector3Add(ray.position, Vector3Scale(ray.direction, t));
 
-    topLeft := Vector3Subtract(surface^.position,
+    topLeft := Vector3Subtract(surfacePosition,
       Vector3Create(size / 2.0, 0.0, size / 2.0));
-    bottomRight := Vector3Add(surface^.position,
+    bottomRight := Vector3Add(surfacePosition,
       Vector3Create(size / 2.0, 0.0, size / 2.0));
 
     // Check if the intersection point is within the bounds of the surface
@@ -114,34 +118,10 @@ begin
   SetTargetFPS(60);
 
   // Initialize R3D
-  R3D_Init(GetScreenWidth(), GetScreenHeight(), 0);
+  R3D_Init(GetScreenWidth(), GetScreenHeight());
 
   // Create decal
-  // Инициализируем структуру decal нулями или используем R3D_GetDefaultDecal если есть такая функция
-  FillChar(decal, SizeOf(decal), 0);
   decal := R3D_DECAL_BASE;
-  // Если есть R3D_GetDefaultDecal, используйте его:
-  // decal := R3D_GetDefaultDecal();
-  {
-  // Заполняем поля вручную согласно R3D_DECAL_BASE
-  decal.albedo.texture := 0;
-  decal.albedo.color := WHITE;
-  decal.emission.texture := 0;
-  decal.emission.color := WHITE;
-  decal.emission.energy := 0.0;
-  decal.normal.texture := 0;
-  decal.normal.scale := 1.0;
-  decal.orm.texture := 0;
-  decal.orm.occlusion := 1.0;
-  decal.orm.roughness := 1.0;
-  decal.orm.metalness := 0.0;
-  decal.uvOffset := Vector2Create(0.0, 0.0);
-  decal.uvScale := Vector2Create(1.0, 1.0);
-  decal.alphaCutoff := 0.01;
-  decal.normalThreshold := 0;
-  decal.fadeWidth := 0;
- }
-  // Загружаем текстуры
   decal.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/decal.png'), WHITE);
   decal.normal := R3D_LoadNormalMap(PAnsiChar(RESOURCES_PATH + 'images/decal_normal.png'), 1.0);
   decal.normalThreshold := 89.0;
@@ -189,7 +169,7 @@ begin
   R3D_SetLightPosition(light, Vector3Create(roomSize * 0.3, roomSize * 0.3, roomSize * 0.3));
   R3D_SetLightEnergy(light, 2.0);
   R3D_SetLightActive(light, True);
-  //R3D_ENVIRONMENT_SET(ambient.color, DARKGRAY);
+  R3D_ENVIRONMENT_SET('ambient.color', DARKGRAY);
 
   // Setup camera
   camera.position := Vector3Create(0.0, 0.0, 0.0);
