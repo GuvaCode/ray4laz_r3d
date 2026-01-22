@@ -30,20 +30,18 @@ begin
   R3D_Init(GetScreenWidth(), GetScreenHeight());
 
   // Setup environment sky
-  cubemap := R3D_LoadCubemap(RESOURCES_PATH + 'panorama/indoor.hdr', R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
-
-  // Use R3D_GetEnvironment()^ instead of R3D_ENVIRONMENT_SET
-  R3D_GetEnvironment()^.background.skyBlur := 0.3;
-  R3D_GetEnvironment()^.background.energy := 0.6;
-  R3D_GetEnvironment()^.background.sky := cubemap;
+  cubemap := R3D_LoadCubemap(PAnsiChar(RESOURCES_PATH + 'panorama/indoor.hdr'), R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
+  R3D_ENVIRONMENT_SET('background.skyBlur', 0.3);
+  R3D_ENVIRONMENT_SET('background.energy', 0.6);
+  R3D_ENVIRONMENT_SET('background.sky', cubemap);
 
   // Setup environment ambient
   ambientMap := R3D_GenAmbientMap(cubemap, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
-  R3D_GetEnvironment()^.ambient.map := ambientMap;
-  R3D_GetEnvironment()^.ambient.energy := 0.25;
+  R3D_ENVIRONMENT_SET('ambient.map', ambientMap);
+  R3D_ENVIRONMENT_SET('ambient.energy', 0.25);
 
   // Setup tonemapping
-  R3D_GetEnvironment()^.tonemap.mode := R3D_TONEMAP_FILMIC;
+  R3D_ENVIRONMENT_SET('tonemap.mode', R3D_TONEMAP_FILMIC);
 
   // Create meshes
   plane := R3D_GenMeshPlane(30, 30, 1, 1);
@@ -52,22 +50,22 @@ begin
 
   // Create light
   light := R3D_CreateLight(R3D_LIGHT_SPOT);
-  R3D_LightLookAt(light, Vector3Create(0.0, 10.0, 5.0), Vector3Create(0.0, 0.0, 0.0));
+  R3D_LightLookAt(light, Vector3Create(0, 10, 5), Vector3Create(0, 0, 0));
   R3D_SetLightActive(light, True);
   R3D_EnableShadow(light);
 
   // Create probe
   probe := R3D_CreateProbe(R3D_PROBE_ILLUMINATION or R3D_PROBE_REFLECTION);
-  R3D_SetProbePosition(probe, Vector3Create(0.0, 1.0, 0.0));
+  R3D_SetProbePosition(probe, Vector3Create(0, 1, 0));
   R3D_SetProbeShadows(probe, True);
   R3D_SetProbeFalloff(probe, 0.5);
   R3D_SetProbeActive(probe, True);
 
   // Setup camera
-  camera.position := Vector3Create(0.0, 3.0, 6.0);
-  camera.target := Vector3Create(0.0, 0.5, 0.0);
-  camera.up := Vector3Create(0.0, 1.0, 0.0);
-  camera.fovy := 60.0;
+  camera.position := Vector3Create(0, 3.0, 6.0);
+  camera.target := Vector3Create(0, 0.5, 0);
+  camera.up := Vector3Create(0, 1, 0);
+  camera.fovy := 60;
   camera.projection := CAMERA_PERSPECTIVE;
 
   // Main loop
@@ -88,7 +86,7 @@ begin
         begin
           material.orm.roughness := Abs(i) * 0.4;
           material.orm.metalness := 1.0 - Abs(i);
-          R3D_DrawMesh(sphere, material, Vector3Create(i * 3.0, 1.0, 0.0), 2.0);
+          R3D_DrawMesh(sphere, material, Vector3Create(i * 3.0, 1.0, 0), 2.0);
         end;
 
       R3D_End();
@@ -105,3 +103,4 @@ begin
 
   CloseWindow();
 end.
+

@@ -126,10 +126,11 @@ function R3D_GenMeshPlane(width, length: Single; resX, resZ: Integer): TR3D_Mesh
  * @brief Generate a polygon mesh.
  * @param sides Number of sides (min 3).
  * @param radius Radius of the polygon.
+ * @param frontDir Direction vector for the polygon's front face.
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataPoly
  *}
-function R3D_GenMeshPoly(sides: Integer; radius: Single): TR3D_Mesh;
+function R3D_GenMeshPoly(sides: Integer; radius: Single; frontDir: TVector3): TR3D_Mesh;
   cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshPoly';
 
 {*
@@ -142,6 +143,20 @@ function R3D_GenMeshPoly(sides: Integer; radius: Single): TR3D_Mesh;
  *}
 function R3D_GenMeshCube(width, height, length: Single): TR3D_Mesh;
   cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCube';
+
+{*
+ * @brief Generate a subdivided cube mesh.
+ * @param width Width along X axis.
+ * @param height Height along Y axis.
+ * @param length Length along Z axis.
+ * @param resX Subdivisions along X axis.
+ * @param resY Subdivisions along Y axis.
+ * @param resZ Subdivisions along Z axis.
+ * @return Mesh ready for rendering.
+ * @see R3D_GenMeshDataCubeEx
+ *}
+function R3D_GenMeshCubeEx(width, height, length: Single; resX, resY, resZ: Integer): TR3D_Mesh;
+  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCubeEx';
 
 {*
  * @brief Generate a sphere mesh.
@@ -167,25 +182,15 @@ function R3D_GenMeshHemiSphere(radius: Single; rings, slices: Integer): TR3D_Mes
 
 {*
  * @brief Generate a cylinder mesh.
- * @param radius Cylinder base radius.
+ * @param bottomRadius Bottom radius.
+ * @param topRadius Top radius.
  * @param height Height along Y axis.
  * @param slices Radial subdivisions.
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataCylinder
  *}
-function R3D_GenMeshCylinder(radius, height: Single; slices: Integer): TR3D_Mesh;
+function R3D_GenMeshCylinder(bottomRadius, topRadius, height: Single; slices: Integer): TR3D_Mesh;
   cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCylinder';
-
-{*
- * @brief Generate a cone mesh.
- * @param radius Cone base radius.
- * @param height Height along Y axis.
- * @param slices Radial subdivisions.
- * @return Mesh ready for rendering.
- * @see R3D_GenMeshDataCone
- *}
-function R3D_GenMeshCone(radius, height: Single; slices: Integer): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCone';
 
 {*
  * @brief Generate a torus mesh.

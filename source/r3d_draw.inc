@@ -53,9 +53,8 @@ procedure R3D_EndCluster; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EndCluster';
 
 {*
- * @brief Queues a mesh draw command.
+ * @brief Queues a mesh draw command with position and uniform scale.
  *
- * Draws the mesh at the given position and uniform scale.
  * The command is executed during R3D_End().
  *
  * @param mesh Mesh to render.
@@ -68,9 +67,9 @@ procedure R3D_DrawMesh(mesh: TR3D_Mesh; material: TR3D_Material;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMesh';
 
 {*
- * @brief Queues a mesh draw command with rotation and non-uniform scale.
+ * @brief Queues a mesh draw command with position, rotation and non-uniform scale.
  *
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param mesh Mesh to render.
  * @param material Material to apply to the mesh.
@@ -85,7 +84,7 @@ procedure R3D_DrawMeshEx(mesh: TR3D_Mesh; material: TR3D_Material;
 {*
  * @brief Queues a mesh draw command using a full transform matrix.
  *
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param mesh Mesh to render.
  * @param material Material to apply to the mesh.
@@ -99,7 +98,7 @@ procedure R3D_DrawMeshPro(mesh: TR3D_Mesh; material: TR3D_Material;
  * @brief Queues an instanced mesh draw command.
  *
  * Draws multiple instances using the provided instance buffer.
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param mesh Mesh to render.
  * @param material Material to apply to the mesh.
@@ -113,7 +112,8 @@ procedure R3D_DrawMeshInstanced(mesh: TR3D_Mesh; material: TR3D_Material;
 {*
  * @brief Queues an instanced mesh draw command with an additional transform.
  *
- * The transform is applied to all instances. Executed during R3D_End().
+ * The transform is applied to all instances.
+ * The command is executed during R3D_End().
  *
  * @param mesh Mesh to render.
  * @param material Material to apply to the mesh.
@@ -126,10 +126,9 @@ procedure R3D_DrawMeshInstancedEx(mesh: TR3D_Mesh; material: TR3D_Material;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshInstancedEx';
 
 {*
- * @brief Queues a model draw command.
+ * @brief Queues a model draw command with position and uniform scale.
  *
- * Draws the model at the given position and uniform scale.
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param position Position of the model.
@@ -139,9 +138,9 @@ procedure R3D_DrawModel(model: TR3D_Model; position: TVector3; scale: Single); c
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModel';
 
 {*
- * @brief Queues a model draw command with rotation and non-uniform scale.
+ * @brief Queues a model draw command with position, rotation and non-uniform scale.
  *
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param position Position of the model.
@@ -155,7 +154,7 @@ procedure R3D_DrawModelEx(model: TR3D_Model; position: TVector3;
 {*
  * @brief Queues a model draw command using a full transform matrix.
  *
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param transform Full transformation matrix.
@@ -167,7 +166,7 @@ procedure R3D_DrawModelPro(model: TR3D_Model; transform: TMatrix); cdecl;
  * @brief Queues an instanced model draw command.
  *
  * Draws multiple instances using the provided instance buffer.
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param instances Instance buffer containing instance data.
@@ -180,7 +179,8 @@ procedure R3D_DrawModelInstanced(model: TR3D_Model;
 {*
  * @brief Queues an instanced model draw command with an additional transform.
  *
- * The transform is applied to all instances. Executed during R3D_End().
+ * The transform is applied to all instances.
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param instances Instance buffer containing instance data.
@@ -195,7 +195,7 @@ procedure R3D_DrawModelInstancedEx(model: TR3D_Model;
  * @brief Queues an animated model draw command.
  *
  * Uses the provided animation player to compute the pose.
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param player Animation player controlling the model's pose.
@@ -207,9 +207,10 @@ procedure R3D_DrawAnimatedModel(model: TR3D_Model; player: TR3D_AnimationPlayer;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModel';
 
 {*
- * @brief Queues an animated model draw command with rotation and non-uniform scale.
+ * @brief Queues an animated model draw command with position, rotation and non-uniform scale.
  *
- * Executed during R3D_End().
+ * Uses the provided animation player to compute the pose.
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param player Animation player controlling the model's pose.
@@ -224,7 +225,7 @@ procedure R3D_DrawAnimatedModelEx(model: TR3D_Model; player: TR3D_AnimationPlaye
 {*
  * @brief Queues an animated model draw command using a full transform matrix.
  *
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param player Animation player controlling the model's pose.
@@ -238,7 +239,7 @@ procedure R3D_DrawAnimatedModelPro(model: TR3D_Model; player: TR3D_AnimationPlay
  * @brief Queues an instanced animated model draw command.
  *
  * Draws multiple animated instances using the provided instance buffer.
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param player Animation player controlling the model's pose.
@@ -252,7 +253,8 @@ procedure R3D_DrawAnimatedModelInstanced(model: TR3D_Model; player: TR3D_Animati
 {*
  * @brief Queues an instanced animated model draw command with an additional transform.
  *
- * The transform is applied to all instances. Executed during R3D_End().
+ * The transform is applied to all instances.
+ * The command is executed during R3D_End().
  *
  * @param model Model to render.
  * @param player Animation player controlling the model's pose.
@@ -265,22 +267,47 @@ procedure R3D_DrawAnimatedModelInstancedEx(model: TR3D_Model; player: TR3D_Anima
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModelInstancedEx';
 
 {*
- * @brief Queues a decal draw command.
+ * @brief Queues a decal draw command with position and uniform scale.
  *
- * The decal is transformed by the given matrix.
- * Executed during R3D_End().
+ * The command is executed during R3D_End().
  *
  * @param decal Decal to render.
- * @param transform Transformation matrix.
+ * @param position Position of the decal.
+ * @param scale Uniform scale factor.
  *}
-procedure R3D_DrawDecal(decal: TR3D_Decal; transform: TMatrix); cdecl;
+procedure R3D_DrawDecal(decal: TR3D_Decal; position: TVector3; scale: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecal';
+
+{*
+ * @brief Queues a decal draw command with position, rotation and non-uniform scale.
+ *
+ * The command is executed during R3D_End().
+ *
+ * @param decal Decal to render.
+ * @param position Position of the decal.
+ * @param rotation Rotation quaternion.
+ * @param scale Non-uniform scale vector.
+ *}
+procedure R3D_DrawDecalEx(decal: TR3D_Decal; position: TVector3;
+  rotation: TQuaternion; scale: TVector3); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalEx';
+
+{*
+ * @brief Queues a decal draw command using a full transform matrix.
+ *
+ * The command is executed during R3D_End().
+ *
+ * @param decal Decal to render.
+ * @param transform Full transformation matrix.
+ *}
+procedure R3D_DrawDecalPro(decal: TR3D_Decal; transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalPro';
 
 {*
  * @brief Queues an instanced decal draw command.
  *
- * Draws multiple decals using the provided instance buffer.
- * Executed during R3D_End().
+ * Draws multiple instances using the provided instance buffer.
+ * The command is executed during R3D_End().
  *
  * @param decal Decal to render.
  * @param instances Instance buffer containing instance data.
@@ -289,3 +316,19 @@ procedure R3D_DrawDecal(decal: TR3D_Decal; transform: TMatrix); cdecl;
 procedure R3D_DrawDecalInstanced(decal: TR3D_Decal;
   instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalInstanced';
+
+{*
+ * @brief Queues an instanced decal draw command with an additional transform.
+ *
+ * The transform is applied to all instances.
+ * The command is executed during R3D_End().
+ *
+ * @param decal Decal to render.
+ * @param instances Instance buffer containing instance data.
+ * @param count Number of instances to draw.
+ * @param transform Additional transformation matrix applied to all instances.
+ *}
+procedure R3D_DrawDecalInstancedEx(decal: TR3D_Decal;
+  instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalInstancedEx';
+

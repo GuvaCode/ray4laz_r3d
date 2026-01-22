@@ -1,259 +1,129 @@
 program DecalExample;
 
 uses
-  SysUtils, Math, raylib, r3d, raymath;
+  SysUtils, raylib, r3d, raymath;
 
 const
   RESOURCES_PATH = 'resources/';
-  MAXDECALS = 32;
-
-type
-  PSurface = ^TSurface;
-  TSurface = record
-    position: TVector3;
-    normal: TVector3;
-    rotation: TMatrix;
-    translation: TMatrix;
-  end;
 
 var
-  ScreenWidth, ScreenHeight: Integer;
-  materialRoom: TR3D_Material;
+  plane, sphere, cylinder: TR3D_Mesh;
+  material: TR3D_Material;
   decal: TR3D_Decal;
-  roomSize: Single;
-  meshPlane: TR3D_Mesh;
-  surfaces: array[0..5] of TSurface;
+  instances: TR3D_InstanceBuffer;
+  positions: PVector3;
   light: TR3D_Light;
   camera: TCamera3D;
-  decalScale: TVector3;
-  targetDecalTransform, transform: TMatrix;
-  instances: TR3D_InstanceBuffer;
-  decalCount, decalIndex, i: Integer;
+  mousePos: TVector2;
+  ray: TRay;
   hitPoint: TVector3;
-  delta: Single;
-  hitRay: TRay;
-  decalRotation: TQuaternion;
-
-function MatrixTransform(position: TVector3; rotation: TQuaternion; scale: TVector3): TMatrix;
-var
-  xx, yy, zz, xy, xz, yz, wx, wy, wz: Single;
-begin
-  xx := rotation.x * rotation.x;
-  yy := rotation.y * rotation.y;
-  zz := rotation.z * rotation.z;
-  xy := rotation.x * rotation.y;
-  xz := rotation.x * rotation.z;
-  yz := rotation.y * rotation.z;
-  wx := rotation.w * rotation.x;
-  wy := rotation.w * rotation.y;
-  wz := rotation.w * rotation.z;
-
-  Result := MatrixIdentity();
-  Result.m0 := scale.x * (1.0 - 2.0 * (yy + zz));
-  Result.m1 := scale.y * 2.0 * (xy - wz);
-  Result.m2 := scale.z * 2.0 * (xz + wy);
-  Result.m3 := position.x;
-
-  Result.m4 := scale.x * 2.0 * (xy + wz);
-  Result.m5 := scale.y * (1.0 - 2.0 * (xx + zz));
-  Result.m6 := scale.z * 2.0 * (yz - wx);
-  Result.m7 := position.y;
-
-  Result.m8 := scale.x * 2.0 * (xz - wy);
-  Result.m9 := scale.y * 2.0 * (yz + wx);
-  Result.m10 := scale.z * (1.0 - 2.0 * (xx + yy));
-  Result.m11 := position.z;
-
-  Result.m12 := 0.0;
-  Result.m13 := 0.0;
-  Result.m14 := 0.0;
-  Result.m15 := 1.0;
-end;
-
-function RayIntersectsSurface(ray: TRay; surface: PSurface; size: Single;
-  var intersectionOut: TVector3): Boolean;
-var
-  d, t: Single;
-  intersectionPoint, topLeft, bottomRight: TVector3;
-  surfaceNormal, surfacePosition: TVector3;
-begin
-  surfaceNormal := surface^.normal;
-  surfacePosition := surface^.position;
-
-  d := -Vector3DotProduct(surfaceNormal, surfacePosition);
-  t := -(Vector3DotProduct(surfaceNormal, ray.position) + d) /
-        Vector3DotProduct(surfaceNormal, ray.direction);
-
-  if t > 0 then
-  begin
-    // Calculate the intersection point
-    intersectionPoint := Vector3Add(ray.position, Vector3Scale(ray.direction, t));
-
-    topLeft := Vector3Subtract(surfacePosition,
-      Vector3Create(size / 2.0, 0.0, size / 2.0));
-    bottomRight := Vector3Add(surfacePosition,
-      Vector3Create(size / 2.0, 0.0, size / 2.0));
-
-    // Check if the intersection point is within the bounds of the surface
-    if (intersectionPoint.x >= topLeft.x) and (intersectionPoint.x <= bottomRight.x) and
-       (intersectionPoint.z >= topLeft.z) and (intersectionPoint.z <= bottomRight.z) then
-    begin
-      // Offset the intersection point
-      intersectionOut := intersectionPoint;
-      Result := True;
-      Exit;
-    end;
-  end;
-
-  Result := False;
-end;
 
 begin
   // Initialize window
-  ScreenWidth := 800;
-  ScreenHeight := 450;
-  InitWindow(ScreenWidth, ScreenHeight, '[r3d] - Decal example');
+  InitWindow(800, 450, '[r3d] - Decal example');
   SetTargetFPS(60);
 
   // Initialize R3D
   R3D_Init(GetScreenWidth(), GetScreenHeight());
 
+  // Create meshes
+  plane := R3D_GenMeshPlane(5.0, 5.0, 1, 1);
+  sphere := R3D_GenMeshSphere(0.5, 64, 64);
+  cylinder := R3D_GenMeshCylinder(0.5, 0.5, 1, 64);
+  material := R3D_GetDefaultMaterial();
+  material.albedo.color := GRAY;
+
   // Create decal
   decal := R3D_DECAL_BASE;
+  R3D_SetTextureFilter(TEXTURE_FILTER_BILINEAR);
   decal.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/decal.png'), WHITE);
   decal.normal := R3D_LoadNormalMap(PAnsiChar(RESOURCES_PATH + 'images/decal_normal.png'), 1.0);
-  decal.normalThreshold := 89.0;
+  decal.normalThreshold := 45.0;
+  decal.fadeWidth := 20.0;
 
-  // Create room mesh, material and data
-  roomSize := 25.0;
-  meshPlane := R3D_GenMeshPlane(roomSize, roomSize, 1, 1);
+  // Create data for instanced drawing
+  instances := R3D_LoadInstanceBuffer(3, R3D_INSTANCE_POSITION);
+  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION);
+  positions[0] := Vector3Create(-1.25, 0, 1);
+  positions[1] := Vector3Create(0, 0, 1);
+  positions[2] := Vector3Create(1.25, 0, 1);
+  R3D_UnmapInstances(instances, R3D_INSTANCE_POSITION);
 
-  materialRoom := R3D_GetDefaultMaterial();
-  materialRoom.albedo.color := GRAY;
+  // Setup environment
+  R3D_ENVIRONMENT_SET('ambient.color', ColorCreate(10, 10, 10, 255));
 
-  // Setup surfaces (walls, floor, ceiling)
-  surfaces[0].position := Vector3Create(0.0, roomSize / 2, 0.0);
-  surfaces[0].normal := Vector3Create(0.0, -1.0, 0.0);
-  surfaces[0].rotation := MatrixRotateX(180.0 * DEG2RAD);
-  surfaces[0].translation := MatrixTranslate(0.0, roomSize / 2, 0.0);
-
-  surfaces[1].position := Vector3Create(0.0, -roomSize / 2, 0.0);
-  surfaces[1].normal := Vector3Create(0.0, 1.0, 0.0);
-  surfaces[1].rotation := MatrixIdentity();
-  surfaces[1].translation := MatrixTranslate(0.0, -roomSize / 2, 0.0);
-
-  surfaces[2].position := Vector3Create(roomSize / 2, 0.0, 0.0);
-  surfaces[2].normal := Vector3Create(-1.0, 0.0, 0.0);
-  surfaces[2].rotation := MatrixRotateZ(90.0 * DEG2RAD);
-  surfaces[2].translation := MatrixTranslate(roomSize / 2, 0.0, 0.0);
-
-  surfaces[3].position := Vector3Create(-roomSize / 2, 0.0, 0.0);
-  surfaces[3].normal := Vector3Create(1.0, 0.0, 0.0);
-  surfaces[3].rotation := MatrixRotateZ(-90.0 * DEG2RAD);
-  surfaces[3].translation := MatrixTranslate(-roomSize / 2, 0.0, 0.0);
-
-  surfaces[4].position := Vector3Create(0.0, 0.0, roomSize / 2);
-  surfaces[4].normal := Vector3Create(0.0, 0.0, -1.0);
-  surfaces[4].rotation := MatrixRotateX(-90.0 * DEG2RAD);
-  surfaces[4].translation := MatrixTranslate(0.0, 0.0, roomSize / 2);
-
-  surfaces[5].position := Vector3Create(0.0, 0.0, -roomSize / 2);
-  surfaces[5].normal := Vector3Create(0.0, 0.0, 1.0);
-  surfaces[5].rotation := MatrixRotateX(90.0 * DEG2RAD);
-  surfaces[5].translation := MatrixTranslate(0.0, 0.0, -roomSize / 2);
-
-  // Setup light
-  light := R3D_CreateLight(R3D_LIGHT_OMNI);
-  R3D_SetLightPosition(light, Vector3Create(roomSize * 0.3, roomSize * 0.3, roomSize * 0.3));
-  R3D_SetLightEnergy(light, 2.0);
+  // Create light
+  light := R3D_CreateLight(R3D_LIGHT_DIR);
+  R3D_SetLightDirection(light, Vector3Create(0.5, -1, -0.5));
+  R3D_SetShadowDepthBias(light, 0.005);
+  R3D_EnableShadow(light);
   R3D_SetLightActive(light, True);
-  R3D_ENVIRONMENT_SET('ambient.color', DARKGRAY);
 
   // Setup camera
-  camera.position := Vector3Create(0.0, 0.0, 0.0);
-  camera.target := Vector3Create(0.0, 0.0, 1.0);
-  camera.up := Vector3Create(0.0, 1.0, 0.0);
-  camera.fovy := 70;
+  camera.position := Vector3Create(0, 3, 3);
+  camera.target := Vector3Create(0, 0, 0);
+  camera.up := Vector3Create(0, 1, 0);
+  camera.fovy := 60;
   camera.projection := CAMERA_PERSPECTIVE;
 
+  // Capture mouse
   DisableCursor();
-
-  // Decal state
-  decalScale := Vector3Create(5.0, 5.0, 5.0);
-  targetDecalTransform := MatrixIdentity();
-  instances := R3D_LoadInstanceBuffer(MAXDECALS,
-    R3D_INSTANCE_POSITION or R3D_INSTANCE_ROTATION or R3D_INSTANCE_SCALE);
-  decalCount := 0;
-  decalIndex := 0;
 
   // Main loop
   while not WindowShouldClose() do
   begin
-    delta := GetFrameTime();
-
     UpdateCamera(@camera, CAMERA_FREE);
 
-    // Compute ray from camera to target
-    hitRay.position := camera.position;
-    hitRay.direction := Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+    // Get mouse position and ray for interaction
+    mousePos := GetMousePosition();
+    ray := GetMouseRay(mousePos, camera);
 
-    // Check ray intersection
-    hitPoint := Vector3Zero();
-    decalRotation := QuaternionIdentity();
-
-    for i := 0 to 5 do
+    // Simple ray-plane intersection for demo purposes
+    if ray.direction.y < 0 then
     begin
-      if RayIntersectsSurface(hitRay, @surfaces[i], roomSize, hitPoint) then
-      begin
-        decalRotation := QuaternionFromMatrix(surfaces[i].rotation);
-        Break;
-      end;
+      hitPoint.y := 0;
+      hitPoint.x := ray.position.x - (ray.position.y / ray.direction.y) * ray.direction.x;
+      hitPoint.z := ray.position.z - (ray.position.y / ray.direction.y) * ray.direction.z;
+    end
+    else
+    begin
+      hitPoint := Vector3Create(0, 0, 0);
     end;
 
-    // Apply decal on mouse click
-    if IsMouseButtonPressed(MOUSE_BUTTON_LEFT) then
-    begin
-      R3D_UploadInstances(instances, R3D_INSTANCE_POSITION, decalIndex, 1, @hitPoint);
-      R3D_UploadInstances(instances, R3D_INSTANCE_ROTATION, decalIndex, 1, @decalRotation);
-      R3D_UploadInstances(instances, R3D_INSTANCE_SCALE, decalIndex, 1, @decalScale);
-      decalIndex := (decalIndex + 1) mod MAXDECALS;
-      if decalCount < MAXDECALS then Inc(decalCount);
-    end;
-
-    // Draw scene
     BeginDrawing();
       ClearBackground(RAYWHITE);
 
       R3D_Begin(camera);
+        R3D_DrawMesh(plane, material, Vector3Create(0, 0, 0), 1.0);
+        R3D_DrawMesh(sphere, material, Vector3Create(-1, 0.5, -1), 1.0);
+        R3D_DrawMeshEx(cylinder, material, Vector3Create(1, 0.5, -1),
+          QuaternionFromEuler(0, 0, PI/2), Vector3Create(1, 1, 1));
 
-        for i := 0 to 5 do
-        begin
-          transform := MatrixMultiply(surfaces[i].rotation, surfaces[i].translation);
-          R3D_DrawMeshPro(meshPlane, materialRoom, transform);
-        end;
+        R3D_DrawDecal(decal, Vector3Create(-1, 1, -1), 1.0);
+        R3D_DrawDecalEx(decal, Vector3Create(1, 0.5, -0.5),
+          QuaternionFromEuler(PI/2, 0, 0), Vector3Create(1.25, 1.25, 1.25));
+        R3D_DrawDecalInstanced(decal, instances, 3);
 
-        if decalCount > 0 then
-        begin
-          R3D_DrawDecalInstanced(decal, instances, decalCount);
-        end;
-
-        R3D_DrawDecal(decal, MatrixTransform(hitPoint, decalRotation, decalScale));
-
+        // Draw decal at mouse hit point
+        R3D_DrawDecal(decal, hitPoint, 0.5);
       R3D_End();
 
-      BeginMode3D(camera);
-        DrawCubeWires(hitPoint, decalScale.x, decalScale.y, decalScale.z, WHITE);
-      EndMode3D();
-
-      DrawText('LEFT CLICK TO APPLY DECAL', 10, 10, 20, LIME);
+      DrawText('MOVE: WASD/Arrows, LOOK: Mouse, DECAL: Follows mouse', 10, 10, 20, LIME);
+      DrawText(TextFormat('Hit Point: %.2f, %.2f, %.2f', hitPoint.x, hitPoint.y, hitPoint.z),
+        10, 40, 20, LIME);
+      DrawFPS(10, 70);
 
     EndDrawing();
   end;
 
   // Cleanup
-  R3D_UnloadMesh(meshPlane);
+  R3D_UnloadMesh(plane);
+  R3D_UnloadMesh(sphere);
+  R3D_UnloadMesh(cylinder);
+  R3D_UnloadMaterial(material);
   R3D_UnloadDecalMaps(decal);
   R3D_Close();
 
   CloseWindow();
 end.
+
