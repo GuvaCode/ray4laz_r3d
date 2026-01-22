@@ -47,7 +47,7 @@
 type
   PR3D_Decal = ^TR3D_Decal;
   TR3D_Decal = record
-    albedo: TR3D_AlbedoMap;       ///< Albedo map
+    albedo: TR3D_AlbedoMap;       ///< Albedo map (if the texture is undefined, implicitly treat `applyColor` as false, with alpha = 1.0)
     emission: TR3D_EmissionMap;   ///< Emission map
     normal: TR3D_NormalMap;       ///< Normal map
     orm: TR3D_OrmMap;             ///< Occlusion-Roughness-Metalness map
@@ -59,19 +59,6 @@ type
     applyColor: Boolean;          ///< Indicates that the albedo color will not be rendered, only the alpha component of the albedo will be used as a mask. (default: true)
   end;
 
- {
- typedef struct R3D_Decal {
-    R3D_AlbedoMap albedo;       ///< Albedo map
-    R3D_EmissionMap emission;   ///< Emission map
-    R3D_NormalMap normal;       ///< Normal map
-    R3D_OrmMap orm;             ///< Occlusion-Roughness-Metalness map
-    Vector2 uvOffset;           ///< UV offset (default: {0.0f, 0.0f})
-    Vector2 uvScale;            ///< UV scale (default: {1.0f, 1.0f})
-    float alphaCutoff;          ///< Alpha cutoff threshold (default: 0.01f)
-    float normalThreshold;      ///< Maximum angle against the surface normal to draw decal. 0.0f disables threshold. (default: 0.0f)
-    float fadeWidth;            ///< The width of fading along the normal threshold (default: 0.0f)
-    bool applyColor;            ///< Indicates that the albedo color will not be rendered, only the alpha component of the albedo will be used as a mask. (default: true)
-} R3D_Decal;}
 
 {*
  * @brief Unload all map textures assigned to a R3D_Decal.

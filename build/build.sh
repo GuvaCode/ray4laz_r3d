@@ -37,7 +37,7 @@ cmake .. \
 
 cmake --build .
 
-cp libr3d.so ../../../libs/x86_64-linux/libr3d.so
+cp lib/libr3d.so ../../../libs/x86_64-linux/libr3d.so
 cd ../../
 
 
