@@ -260,3 +260,17 @@ function R3D_GetEnvironment: PR3D_Environment; cdecl;
  *}
 procedure R3D_SetEnvironment(env: PR3D_Environment); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetEnvironment';
+
+
+// Перегруженные версии для разных типов
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: Single); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: Integer); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: Boolean); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TColor); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Cubemap); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_AmbientMap); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TQuaternion); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Bloom); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Fog); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_DoF); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Tonemap); overload;

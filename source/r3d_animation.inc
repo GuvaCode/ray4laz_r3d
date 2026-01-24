@@ -67,7 +67,7 @@ type
 {*
  * @brief Loads animations from a model file.
  * @param filePath Path to the model file containing animations.
- * @return Animation library structure containing loaded animations.
+ * @return Pointer to an array of R3D_Animation, or NULL on failure.
  * @note Free the returned array using R3D_UnloadAnimationLib().
  *}
 function R3D_LoadAnimationLib(const filePath: PAnsiChar): TR3D_AnimationLib; cdecl;
@@ -78,7 +78,7 @@ function R3D_LoadAnimationLib(const filePath: PAnsiChar): TR3D_AnimationLib; cde
  * @param data Pointer to memory buffer containing model animation data.
  * @param size Size of the buffer in bytes.
  * @param hint Hint on the model format (can be NULL).
- * @return Animation library structure containing loaded animations.
+ * @return Pointer to an array of R3D_Animation, or NULL on failure.
  * @note Free the returned array using R3D_UnloadAnimationLib().
  *}
 function R3D_LoadAnimationLibFromMemory(const data: Pointer; size: LongWord;
@@ -86,8 +86,17 @@ function R3D_LoadAnimationLibFromMemory(const data: Pointer; size: LongWord;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadAnimationLibFromMemory';
 
 {*
-* @brief Releases all resources associated with an animation library.
-* @param animLib Animation library to unload.
+ * @brief Loads animations from an existing importer.
+ * @param importer Importer instance containing animation data.
+ * @return Pointer to an array of R3D_Animation, or NULL on failure.
+ * @note Free the returned array using R3D_UnloadAnimationLib().
+ *}
+function R3D_LoadAnimationLibFromImporter(const importer: PR3D_Importer): TR3D_AnimationLib; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadAnimationLibFromImporter';
+
+{*
+ * @brief Releases all resources associated with an animation library.
+ * @param animLib Animation library to unload.
  *}
 procedure R3D_UnloadAnimationLib(animLib: TR3D_AnimationLib); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadAnimationLib';
@@ -111,5 +120,3 @@ function R3D_GetAnimationIndex(animLib: TR3D_AnimationLib;
 function R3D_GetAnimation(animLib: TR3D_AnimationLib;
   const name: PAnsiChar): PR3D_Animation; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetAnimation';
-
-

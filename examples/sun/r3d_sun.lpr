@@ -33,7 +33,7 @@ begin
   R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA);
 
   // Create meshes and material
-  plane := R3D_GenMeshPlane(1000, 1000, 1, 1);
+  plane := R3D_GenMeshPlane(1000.0, 1000.0, 1, 1);
   sphere := R3D_GenMeshSphere(0.35, 16, 32);
   material := R3D_GetDefaultMaterial();
 
@@ -52,7 +52,7 @@ begin
     begin
       positions[idx] := Vector3Create(
         x * spacing - offsetX,
-        0,
+        0.0,
         y * spacing - offsetZ
       );
       Inc(idx);
@@ -62,15 +62,15 @@ begin
   R3D_UnmapInstances(instances, R3D_INSTANCE_POSITION);
 
   // Setup environment
-  skybox := R3D_GenCubemapSky(1024, R3D_CubemapSkyBase);
-  R3D_GetEnvironment()^.background.sky := skybox;
+  skybox := R3D_GenCubemapSky(1024, R3D_CUBEMAP_SKY_BASE);
+  R3D_ENVIRONMENT_SET('background.sky', skybox);
 
   ambientMap := R3D_GenAmbientMap(skybox, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
-  R3D_GetEnvironment()^.ambient.map := ambientMap;
+  R3D_ENVIRONMENT_SET('ambient.map', ambientMap);
 
   // Create directional light with shadows
   light := R3D_CreateLight(R3D_LIGHT_DIR);
-  R3D_SetLightDirection(light, Vector3Create(-1, -1, -1));
+  R3D_SetLightDirection(light, Vector3Create(-1.0, -1.0, -1.0));
   R3D_SetLightActive(light, True);
   R3D_SetLightRange(light, 16.0);
   R3D_SetShadowSoftness(light, 2.0);
@@ -78,10 +78,10 @@ begin
   R3D_EnableShadow(light);
 
   // Setup camera
-  camera.position := Vector3Create(0, 1, 0);
-  camera.target := Vector3Create(1, 1.25, 1);
-  camera.up := Vector3Create(0, 1, 0);
-  camera.fovy := 60;
+  camera.position := Vector3Create(0.0, 1.0, 0.0);
+  camera.target := Vector3Create(1.0, 1.25, 1.0);
+  camera.up := Vector3Create(0.0, 1.0, 0.0);
+  camera.fovy := 60.0;
   camera.projection := CAMERA_PERSPECTIVE;
 
   // Capture mouse
@@ -96,7 +96,7 @@ begin
       ClearBackground(RAYWHITE);
 
       R3D_Begin(camera);
-        R3D_DrawMesh(plane, material, Vector3Create(0, -0.5, 0), 1.0);
+        R3D_DrawMesh(plane, material, Vector3Create(0.0, -0.5, 0.0), 1.0);
         R3D_DrawMeshInstanced(sphere, material, instances, INSTANCE_COUNT);
       R3D_End();
 

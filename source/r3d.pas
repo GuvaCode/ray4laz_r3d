@@ -39,7 +39,7 @@ const
 
   {$I r3d_cubemap.inc}
   {$I r3d_ambient_map.inc}
-
+  {$I r3d_importer.inc}
   {$I r3d_probe.inc}
   {$I r3d_environment.inc}
   {$I r3d_lighting.inc}
@@ -56,190 +56,42 @@ const
   {$I r3d_instance.inc}
   {$I r3d_draw.inc}
 
-
-  function R3D_CubemapSkyBase: TR3D_CubemapSky;
-  function R3D_GetBaseMaterial: TR3D_Material;
-  function R3D_GetEnvironment_base: TR3D_Environment;
-  function R3D_DECAL_BASE: TR3D_Decal;
-
-  // Перегруженные версии для разных типов
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: Single); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: Integer); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: Boolean); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TColor); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Cubemap); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_AmbientMap); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TQuaternion); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Bloom); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Fog); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_DoF); overload;
-  procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Tonemap); overload;
-
 implementation
 
-function R3D_CubemapSkyBase: TR3D_CubemapSky;
+function R3D_MATERIAL_BASE: TR3D_Material; inline;
 begin
-  Result.skyTopColor := ColorCreate(98, 116, 140, 255);
-  Result.skyHorizonColor := ColorCreate(165, 167, 171, 255);
-  Result.skyHorizonCurve := 0.15;
-  Result.skyEnergy := 1.0;
-
-  Result.groundBottomColor := ColorCreate(51, 43, 34, 255);
-  Result.groundHorizonColor := ColorCreate(165, 167, 171, 255);
-  Result.groundHorizonCurve := 0.02;
-  Result.groundEnergy := 1.0;
-
-  Result.sunDirection := Vector3Create(-1.0, -1.0, -1.0);
-  Result.sunColor := WHITE;
-  Result.sunSize := 1.5 * DEG2RAD;
-  Result.sunCurve := 0.15;
-  Result.sunEnergy := 1.0;
-end;
-
-function R3D_GetBaseMaterial: TR3D_Material;
-
-begin
-//  whiteColor := ColorCreate(255, 255, 255, 255);
-
-  Result.albedo.color := ColorCreate(255, 255, 255, 255);;
-  Result.albedo.texture := R3D_GetWhiteTexture();
-
-  Result.emission.color := ColorCreate(255, 255, 255, 255);;
-  Result.emission.texture := R3D_GetWhiteTexture();
-  Result.emission.energy := 0.0;
-
-  Result.normal.texture := R3D_GetWhiteTexture();
-  Result.normal.scale := 1.0;
-
-  Result.orm.texture := R3D_GetWhiteTexture();
-  Result.orm.occlusion := 1.0;
-  Result.orm.roughness := 1.0;
-  Result.orm.metalness := 0.0;
-
-  Result.transparencyMode := R3D_TRANSPARENCY_DISABLED;
-  Result.billboardMode := R3D_BILLBOARD_DISABLED;
-  Result.blendMode := R3D_BLEND_MIX;
-  Result.cullMode := R3D_CULL_BACK;
-
-  Result.uvOffset := Vector2Create(0.0, 0.0);
-  Result.uvScale := Vector2Create(1.0, 1.0);
-  Result.alphaCutoff := 0.01;
-
-end;
-
-function R3D_GetEnvironment_base: TR3D_Environment;
-begin
-  Result := Default(TR3D_Environment);
-
+  Result := Default(TR3D_Material);
   with Result do
   begin
-    // Background
-    with background do
-    begin
-      color := GRAY;
-      energy := 1.0;
-      skyBlur := 0.0;
-      sky := Default(TR3D_Cubemap);
-      rotation := QuaternionCreate(0.0, 0.0, 0.0, 1.0);
-    end;
-
-    // Ambient
-    with ambient do
-    begin
-      color := BLACK;
-      energy := 1.0;
-      map := Default(TR3D_AmbientMap);
-    end;
-
-    // SSAO
-    with ssao do
-    begin
-      sampleCount := 16;
-      intensity := 1.0;
-      power := 1.5;
-      radius := 0.35;
-      bias := 0.007;
-      enabled := False;
-    end;
-
-    // SSIL
-    with ssil do
-    begin
-      sampleCount := 4;
-      sliceCount := 4;
-      sampleRadius := 2.0;
-      hitThickness := 0.5;
-      aoPower := 1.0;
-      energy := 1.0;
-      bounce := 0.5;
-      convergence := 0.5;
-      enabled := False;
-    end;
-
-    // Bloom
-    with bloom do
-    begin
-      mode := R3D_BLOOM_DISABLED;
-      levels := 0.5;
-      intensity := 0.05;
-      threshold := 0.0;
-      softThreshold := 0.5;
-      filterRadius := 1.0;
-    end;
-
-    // SSR
-    with ssr do
-    begin
-      maxRaySteps := 64;
-      binarySearchSteps := 8;
-      rayMarchLength := 8.0;
-      depthThickness := 0.2;
-      depthTolerance := 0.005;
-      edgeFadeStart := 0.7;
-      edgeFadeEnd := 1.0;
-      enabled := False;
-    end;
-
-    // Fog
-    with fog do
-    begin
-      mode := R3D_FOG_DISABLED;
-      color := ColorCreate(255, 255, 255, 255);
-      start := 1.0;
-      end_ := 50.0;
-      density := 0.05;
-      skyAffect := 0.5;
-    end;
-
-    // DOF
-    with dof do
-    begin
-      mode := R3D_DOF_DISABLED;
-      focusPoint := 10.0;
-      focusScale := 1.0;
-      maxBlurSize := 20.0;
-      debugMode := False;
-    end;
-
-    // Tonemap
-    with tonemap do
-    begin
-      mode := R3D_TONEMAP_LINEAR;
-      exposure := 1.0;
-      white := 1.0;
-    end;
-
-    // Color
-    with color do
-    begin
-      brightness := 1.0;
-      contrast := 1.0;
-      saturation := 1.0;
-    end;
+    // Albedo
+    albedo.texture := Default(TTexture2D);
+    albedo.color := ColorCreate(255, 255, 255, 255);
+    // Emission
+    emission.texture := Default(TTexture2D);
+    emission.color := ColorCreate(255, 255, 255, 255);
+    emission.energy := 0.0;
+    // Normal
+    normal.texture := Default(TTexture2D);
+    normal.scale := 1.0;
+    // ORM
+    orm.texture := Default(TTexture2D);
+    orm.occlusion := 1.0;
+    orm.roughness := 1.0;
+    orm.metalness := 0.0;
+    // Modes
+    transparencyMode := R3D_TRANSPARENCY_DISABLED;
+    billboardMode := R3D_BILLBOARD_DISABLED;
+    blendMode := R3D_BLEND_MIX;
+    cullMode := R3D_CULL_BACK;
+    // UV
+    uvOffset := Vector2Create(0.0, 0.0);
+    uvScale := Vector2Create(1.0, 1.0);
+    // Alpha
+    alphaCutoff := 0.01;
   end;
 end;
 
-function R3D_DECAL_BASE: TR3D_Decal;
+function R3D_DECAL_BASE: TR3D_Decal; inline;
 begin
   Result.albedo.texture := Default(TTexture);
   Result.albedo.color := WHITE;
@@ -261,6 +113,25 @@ begin
   Result.alphaCutoff := 0.01;
   Result.normalThreshold := 0;
   Result.fadeWidth := 0;
+end;
+
+function R3D_CUBEMAP_SKY_BASE: TR3D_CubemapSky; inline;
+begin
+  Result.skyTopColor := ColorCreate(98, 116, 140, 255);
+  Result.skyHorizonColor := ColorCreate(165, 167, 171, 255);
+  Result.skyHorizonCurve := 0.15;
+  Result.skyEnergy := 1.0;
+
+  Result.groundBottomColor := ColorCreate(51, 43, 34, 255);
+  Result.groundHorizonColor := ColorCreate(165, 167, 171, 255);
+  Result.groundHorizonCurve := 0.02;
+  Result.groundEnergy := 1.0;
+
+  Result.sunDirection := Vector3Create(-1.0, -1.0, -1.0);
+  Result.sunColor := WHITE;
+  Result.sunSize := 1.5 * DEG2RAD;
+  Result.sunCurve := 0.15;
+  Result.sunEnergy := 1.0;
 end;
 
 // Реализация для Single (числа с плавающей точкой)

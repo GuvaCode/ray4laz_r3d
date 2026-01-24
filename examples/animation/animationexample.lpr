@@ -118,7 +118,7 @@ begin
     BeginDrawing();
       ClearBackground(RAYWHITE);
       R3D_Begin(camera);
-        R3D_DrawMesh(plane, R3D_GetBaseMaterial, Vector3Zero(), 1.0);
+        R3D_DrawMesh(plane, R3D_MATERIAL_BASE, Vector3Zero(), 1.0);
         R3D_DrawAnimatedModel(model, modelPlayer, Vector3Zero(), 1.25);
         R3D_DrawAnimatedModelInstanced(model, modelPlayer, instances, 4);
       R3D_End();

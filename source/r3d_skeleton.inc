@@ -28,11 +28,10 @@ type
     localBind: PMatrix;      ///< Bind pose matrices relative to parent
     modelBind: PMatrix;      ///< Bind pose matrices in model/global space
     invBind: PMatrix;        ///< Inverse bind matrices (model space) for skinning
-    rootBind: TMatrix;        ///< Root correction if local bind is not identity
+    rootBind: TMatrix;       ///< Root correction if local bind is not identity
 
-    skinTexture: uint32;   ///< Texture ID that contains the bind pose for GPU skinning. This is a 1D Texture RGBA16F 4*boneCount.
+    skinTexture: LongWord;   ///< Texture ID that contains the bind pose for GPU skinning. This is a 1D Texture RGBA16F 4*boneCount.
   end;
-
 
 // ========================================
 // PUBLIC API
@@ -61,9 +60,20 @@ function R3D_LoadSkeleton(const filePath: PAnsiChar): TR3D_Skeleton; cdecl;
  * @param hint Optional format hint (can be NULL).
  * @return Return the loaded R3D_Skeleton.
  *}
-function R3D_LoadSkeletonFromData(const data: Pointer; size: LongWord;
+function R3D_LoadSkeletonFromMemory(const data: Pointer; size: LongWord;
   const hint: PAnsiChar): TR3D_Skeleton; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadSkeletonFromData';
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadSkeletonFromMemory';
+
+{*
+ * @brief Loads a skeleton hierarchy from an existing importer.
+ *
+ * Extracts the skeleton data from a previously loaded importer instance.
+ *
+ * @param importer Importer instance to extract the skeleton from.
+ * @return Return the loaded R3D_Skeleton.
+ *}
+function R3D_LoadSkeletonFromImporter(const importer: PR3D_Importer): TR3D_Skeleton; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadSkeletonFromImporter';
 
 {*
  * @brief Frees the memory allocated for a skeleton.
@@ -74,13 +84,13 @@ procedure R3D_UnloadSkeleton(skeleton: TR3D_Skeleton); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadSkeleton';
 
 {*
-* @brief Check if a skeleton is valid.
-*
-* Returns true if atleast the texBindPose is greater than zero.
-*
-* @param skeleton The skeleton to check.
-* @return true if valid, false otherwise.
-*}
+ * @brief Check if a skeleton is valid.
+ *
+ * Returns true if atleast the texBindPose is greater than zero.
+ *
+ * @param skeleton The skeleton to check.
+ * @return true if valid, false otherwise.
+ *}
 function R3D_IsSkeletonValid(const skeleton: TR3D_Skeleton): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsSkeletonValid';
 
@@ -91,8 +101,8 @@ function R3D_IsSkeletonValid(const skeleton: TR3D_Skeleton): Boolean; cdecl;
  * @param boneName Name of the bone to find.
  * @return Index of the bone, or a negative value if not found.
  *}
- function R3D_GetSkeletonBoneIndex(skeleton: TR3D_Skeleton; const boneName: PChar): Integer; cdecl;
-   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetSkeletonBoneIndex';
+function R3D_GetSkeletonBoneIndex(skeleton: TR3D_Skeleton; const boneName: PAnsiChar): Integer; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetSkeletonBoneIndex';
 
 {*
  * @brief Returns a pointer to the bone with the given name.
@@ -101,8 +111,5 @@ function R3D_IsSkeletonValid(const skeleton: TR3D_Skeleton): Boolean; cdecl;
  * @param boneName Name of the bone to find.
  * @return Pointer to the bone, or NULL if not found.
  *}
- function R3D_GetSkeletonBone(Skeleton: TR3D_Skeleton; const boneName: PChar): PR3D_BoneInfo; cdecl;
-   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetSkeletonBoneIndex';
-
-
-
+function R3D_GetSkeletonBone(skeleton: TR3D_Skeleton; const boneName: PAnsiChar): PR3D_BoneInfo; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetSkeletonBone';

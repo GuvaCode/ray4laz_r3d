@@ -136,7 +136,7 @@ procedure R3D_UpdateCubemapSky(cubemap: PR3D_Cubemap; params: TR3D_CubemapSky); 
  *}
 
 
-
+function R3D_CUBEMAP_SKY_BASE: TR3D_CubemapSky; inline;
 
 
 

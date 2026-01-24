@@ -339,4 +339,10 @@ procedure R3D_UnloadOrmMap(map: TR3D_OrmMap); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadOrmMap';
 
 
-
+{*
+ * @brief Get base material configuration.
+ *
+ * Returns a material structure initialized with sensible default values for all
+ * rendering parameters. Use this as a starting point for custom configurations.
+ *}
+function R3D_MATERIAL_BASE: TR3D_Material; inline;

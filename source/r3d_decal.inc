@@ -71,5 +71,6 @@ procedure R3D_UnloadDecalMaps(decal: TR3D_Decal); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadDecalMaps';
 
 
+function R3D_DECAL_BASE: TR3D_Decal; inline;
 
 
