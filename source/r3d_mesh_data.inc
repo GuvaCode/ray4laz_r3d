@@ -116,10 +116,12 @@ function R3D_GenMeshDataPlane(width, length: Single; resX, resZ: Integer): TR3D_
  *
  * @param sides Number of sides for the polygon (minimum 3).
  * @param radius Radius of the circumscribed circle.
+ * @param frontDir Direction vector defining the polygon's front face and normal.
+ *                 This vector will be normalized internally.
  *
  * @return Generated polygon mesh structure.
  *}
-function R3D_GenMeshDataPoly(sides: Integer; radius: Single): TR3D_MeshData; cdecl;
+function R3D_GenMeshDataPoly(sides: Integer; radius: Single; frontDir: TVector3): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataPoly';
 
 {*
@@ -137,6 +139,50 @@ function R3D_GenMeshDataPoly(sides: Integer; radius: Single): TR3D_MeshData; cde
 function R3D_GenMeshDataCube(width, height, length: Single): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataCube';
 
+{*
+ * @brief Generate a subdivided cube mesh with specified dimensions.
+ *
+ * Extension of R3D_GenMeshDataCube() allowing per-axis subdivision.
+ * Each face can be tessellated along the X, Y, and Z axes according
+ * to the provided resolutions.
+ *
+ * @param width Width of the cube along the X axis.
+ * @param height Height of the cube along the Y axis.
+ * @param length Length of the cube along the Z axis.
+ * @param resX Number of subdivisions along the X axis.
+ * @param resY Number of subdivisions along the Y axis.
+ * @param resZ Number of subdivisions along the Z axis.
+ *
+ * @return Generated cube mesh structure.
+ *}
+function R3D_GenMeshDataCubeEx(width, height, length: Single; resX, resY, resZ: Integer): TR3D_MeshData; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataCubeEx';
+ {$WARN 2005 off : Comment level $1 found}
+{*
+ * @brief Generate a slope mesh by cutting a cube with a plane.
+ *
+ * Creates a slope mesh by slicing a cube with a plane that passes through the origin.
+ * The plane is defined by its normal vector, and the portion of the cube on the side
+ * opposite to the normal direction is kept. This allows creating ramps, wedges, and
+ * angled surfaces with arbitrary orientations.
+ *
+ * @param width Width of the base cube along the X axis.
+ * @param height Height of the base cube along the Y axis.
+ * @param length Length of the base cube along the Z axis.
+ * @param slopeNormal Normal vector of the cutting plane. The mesh keeps the portion
+ *                    of the cube in the direction opposite to this normal.
+ *                    Example: {-1, 0, 0} creates a ramp rising towards +X.
+ *                             {0, 1, 0} creates a wedge with the slope facing up.
+ *                             {-1.0, 1.0, 0} creates a 45° diagonal slope.
+ *
+ * @return Generated slope mesh structure.
+ *
+ * @note The normal vector will be automatically normalized internally.
+ * @note The cutting plane always passes through the center of the cube (origin).
+ *}
+function R3D_GenMeshDataSlope(width, height, length: Single; slopeNormal: TVector3): TR3D_MeshData; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataSlope';
+ {$WARN 2005 on : Comment level $1 found}
 {*
  * @brief Generate a sphere mesh with specified parameters.
  *
@@ -170,32 +216,36 @@ function R3D_GenMeshDataHemiSphere(radius: Single; rings, slices: Integer): TR3D
 {*
  * @brief Generate a cylinder mesh with specified parameters.
  *
- * Creates a cylinder mesh centered at the origin, extending along the Y axis.
- * The cylinder includes both top and bottom caps and smooth side surfaces.
+ * Creates a mesh centered at the origin, extending along the Y axis.
+ * The mesh includes top and bottom caps and smooth side surfaces.
+ * A cone is produced when bottomRadius and topRadius differ.
  *
- * @param radius Radius of the cylinder base.
- * @param height Height of the cylinder along the Y axis.
- * @param slices Number of radial subdivisions around the cylinder.
+ * @param bottomRadius Radius of the bottom cap.
+ * @param topRadius Radius of the top cap.
+ * @param height Height of the shape along the Y axis.
+ * @param slices Number of radial subdivisions around the shape.
  *
- * @return Generated cylinder mesh structure.
+ * @return Generated mesh structure.
  *}
-function R3D_GenMeshDataCylinder(radius, height: Single; slices: Integer): TR3D_MeshData; cdecl;
+function R3D_GenMeshDataCylinder(bottomRadius, topRadius, height: Single; slices: Integer): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataCylinder';
 
 {*
- * @brief Generate a cone mesh with specified parameters.
+ * @brief Generate a capsule mesh with specified parameters.
  *
- * Creates a cone mesh with its base centered at the origin and apex pointing upward along the Y axis.
- * The cone includes a circular base and smooth tapered sides.
+ * Creates a capsule mesh centered at the origin, extending along the Y axis.
+ * The capsule consists of a cylindrical body with hemispherical caps on both ends.
+ * The total height of the capsule is height + 2 * radius.
  *
- * @param radius Radius of the cone base.
- * @param height Height of the cone along the Y axis.
- * @param slices Number of radial subdivisions around the cone base.
+ * @param radius Radius of the capsule (both cylindrical body and hemispherical caps).
+ * @param height Height of the cylindrical portion along the Y axis.
+ * @param rings Total number of latitudinal subdivisions for both hemispheres combined.
+ * @param slices Number of radial subdivisions around the shape.
  *
- * @return Generated cone mesh structure.
+ * @return Generated mesh structure.
  *}
-function R3D_GenMeshDataCone(radius, height: Single; slices: Integer): TR3D_MeshData; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataCone';
+function R3D_GenMeshDataCapsule(radius, height: Single; rings, slices: Integer): TR3D_MeshData; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataCapsule';
 
 {*
  * @brief Generate a torus mesh with specified parameters.
@@ -264,7 +314,7 @@ function R3D_GenMeshDataCubicmap(cubicmap: TImage; cubeSize: TVector3): TR3D_Mes
  * @param meshData Source mesh data to duplicate.
  * @return A new R3D_MeshData containing a copy of the source data.
  *}
-function R3D_DuplicateMeshData(const meshData: PR3D_MeshData): TR3D_MeshData; cdecl;
+function R3D_DuplicateMeshData(meshData: TR3D_MeshData): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DuplicateMeshData';
 
 {*
@@ -273,7 +323,7 @@ function R3D_DuplicateMeshData(const meshData: PR3D_MeshData): TR3D_MeshData; cd
  * @param b Second mesh data.
  * @return A new R3D_MeshData containing the merged geometry.
  *}
-function R3D_MergeMeshData(const a, b: PR3D_MeshData): TR3D_MeshData; cdecl;
+function R3D_MergeMeshData(a, b: TR3D_MeshData): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_MergeMeshData';
 
 {*
@@ -281,7 +331,7 @@ function R3D_MergeMeshData(const a, b: PR3D_MeshData): TR3D_MeshData; cdecl;
  * @param meshData Mesh data to modify.
  * @param translation Offset to apply to all vertex positions.
  *}
-procedure R3D_TranslateMeshData(meshData: PR3D_MeshData; translation: TVector3); cdecl;
+procedure R3D_TranslateMeshData(var meshData: TR3D_MeshData; translation: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_TranslateMeshData';
 
 {*
@@ -289,7 +339,7 @@ procedure R3D_TranslateMeshData(meshData: PR3D_MeshData; translation: TVector3);
  * @param meshData Mesh data to modify.
  * @param rotation Quaternion representing the rotation.
  *}
-procedure R3D_RotateMeshData(meshData: PR3D_MeshData; rotation: TQuaternion); cdecl;
+procedure R3D_RotateMeshData(var meshData: TR3D_MeshData; rotation: TQuaternion); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_RotateMeshData';
 
 {*
@@ -297,7 +347,7 @@ procedure R3D_RotateMeshData(meshData: PR3D_MeshData; rotation: TQuaternion); cd
  * @param meshData Mesh data to modify.
  * @param scale Scaling factors for each axis.
  *}
-procedure R3D_ScaleMeshData(meshData: PR3D_MeshData; scale: TVector3); cdecl;
+procedure R3D_ScaleMeshData(var meshData: TR3D_MeshData; scale: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ScaleMeshData';
 
 {*
@@ -306,35 +356,35 @@ procedure R3D_ScaleMeshData(meshData: PR3D_MeshData; scale: TVector3); cdecl;
  * @param uvScale Scaling factors for UV coordinates.
  * @param axis Axis along which to project the planar mapping.
  *}
-procedure R3D_GenMeshDataUVsPlanar(meshData: PR3D_MeshData; uvScale: TVector2; axis: TVector3); cdecl;
+procedure R3D_GenMeshDataUVsPlanar(var meshData: TR3D_MeshData; uvScale: TVector2; axis: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataUVsPlanar';
 
 {*
  * @brief Generates spherical UV coordinates.
  * @param meshData Mesh data to modify.
  *}
-procedure R3D_GenMeshDataUVsSpherical(meshData: PR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataUVsSpherical(var meshData: TR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataUVsSpherical';
 
 {*
  * @brief Generates cylindrical UV coordinates.
  * @param meshData Mesh data to modify.
  *}
-procedure R3D_GenMeshDataUVsCylindrical(meshData: PR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataUVsCylindrical(var meshData: TR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataUVsCylindrical';
 
 {*
  * @brief Computes vertex normals from triangle geometry.
  * @param meshData Mesh data to modify.
  *}
-procedure R3D_GenMeshDataNormals(meshData: PR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataNormals(var meshData: TR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataNormals';
 
 {*
  * @brief Computes vertex tangents based on existing normals and UVs.
  * @param meshData Mesh data to modify.
  *}
-procedure R3D_GenMeshDataTangents(meshData: PR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataTangents(var meshData: TR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataTangents';
 
 {*
@@ -342,5 +392,5 @@ procedure R3D_GenMeshDataTangents(meshData: PR3D_MeshData); cdecl;
  * @param meshData Mesh data to analyze.
  * @return The computed bounding box.
  *}
-function R3D_CalculateMeshDataBoundingBox(const meshData: PR3D_MeshData): TBoundingBox; cdecl;
+function R3D_CalculateMeshDataBoundingBox(meshData: TR3D_MeshData): TBoundingBox; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CalculateMeshDataBoundingBox';

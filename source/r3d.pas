@@ -48,10 +48,11 @@ const
   {$I r3d_skeleton.inc}
   {$I r3d_animation.inc}
   {$I r3d_animation_player.inc}
+
   {$I r3d_mesh_data.inc}
   {$I r3d_mesh.inc}
   {$I r3d_model.inc}
-
+  {$I r3d_kinematics.inc}
   {$I r3d_utils.inc}
   {$I r3d_instance.inc}
   {$I r3d_draw.inc}

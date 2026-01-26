@@ -115,3 +115,6 @@ function R3D_LoadModelFromImporter(const importer: PR3D_Importer): TR3D_Model; c
  *}
 procedure R3D_UnloadModel(model: TR3D_Model; unloadMaterials: Boolean); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadModel';
+
+
+

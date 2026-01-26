@@ -1,40 +1,4 @@
 // R3D Decal Module.
-{/**
- * @brief Default decal configuration.
- *
- * Contains a R3D_Decal structure with sensible default values for all rendering parameters.
- */
-#define R3D_DECAL_BASE                                  \
-    R3D_LITERAL(R3D_Decal) {                            \
-        .albedo = {                                     \
-            .texture = {0},                             \
-            .color = {255, 255, 255, 255},              \
-        },                                              \
-        .emission = {                                   \
-            .texture = {0},                             \
-            .color = {255, 255, 255, 255},              \
-            .energy = 0.0f,                             \
-        },                                              \
-        .normal = {                                     \
-            .texture = {0},                             \
-            .scale = 1.0f,                              \
-        },                                              \
-        .orm = {                                        \
-            .texture = {0},                             \
-            .occlusion = 1.0f,                          \
-            .roughness = 1.0f,                          \
-            .metalness = 0.0f,                          \
-        },                                              \
-        .uvOffset = {0.0f, 0.0f},                       \
-        .uvScale = {1.0f, 1.0f},                        \
-        .alphaCutoff = 0.01f,                           \
-        .normalThreshold = 0,                           \
-        .fadeWidth = 0,                                 \
-        .applyColor = true                              \
-    }
-}
-
-
 
 {*
 * @brief Represents a decal and its properties.

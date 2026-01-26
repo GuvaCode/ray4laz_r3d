@@ -7,7 +7,7 @@ rm -f ../libs/x86_64-linux/libr3d*
 git clone https://github.com/raysan5/raylib.git
 
 ####     -DRAYLIB_MODULE_RAYGUI=ON \
-
+### git clone -b kineamitcs --single-branch https://github.com/Bigfoot71/r3d
 git clone https://github.com/Bigfoot71/r3d
 cd r3d/external
 

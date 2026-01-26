@@ -67,6 +67,9 @@ type
     aabb: TBoundingBox;                   ///< Axis-Aligned Bounding Box in local space.
   end;
 
+// ========================================
+// PUBLIC API
+// ========================================
 
 {*
  * @brief Creates a 3D mesh from CPU-side mesh data.
@@ -78,14 +81,15 @@ type
  * @note The function copies all vertex and index data into GPU buffers.
  *}
 function R3D_LoadMesh(&type: TR3D_PrimitiveType; data: TR3D_MeshData;
-  const aabb: PBoundingBox; usage: TR3D_MeshUsage): TR3D_Mesh; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadMesh';
-
+  const aabb: PBoundingBox; usage: TR3D_MeshUsage): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadMesh';
 
 {*
  * @brief Destroys a 3D mesh and frees its resources.
  * @param mesh R3D_Mesh to destroy.
  *}
-procedure R3D_UnloadMesh(mesh: TR3D_Mesh); cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadMesh';
+procedure R3D_UnloadMesh(mesh: TR3D_Mesh); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadMesh';
 
 {*
  * @brief Check if a mesh is valid for rendering.
@@ -95,7 +99,8 @@ procedure R3D_UnloadMesh(mesh: TR3D_Mesh); cdecl; external {$IFNDEF RAY_STATIC}r
  * @param mesh The mesh to check.
  * @return true if valid, false otherwise.
  *}
-function R3D_IsMeshValid(const mesh: TR3D_Mesh): Boolean; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsMeshValid';
+function R3D_IsMeshValid(const mesh: TR3D_Mesh): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsMeshValid';
 
 {*
  * @brief Generate a quad mesh with orientation.
@@ -108,7 +113,8 @@ function R3D_IsMeshValid(const mesh: TR3D_Mesh): Boolean; cdecl; external {$IFND
  * @see R3D_GenMeshDataQuad
  *}
 function R3D_GenMeshQuad(width, length: Single; resX, resZ: Integer;
-  frontDir: TVector3): TR3D_Mesh; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshQuad';
+  frontDir: TVector3): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshQuad';
 
 {*
  * @brief Generate a plane mesh.
@@ -119,8 +125,8 @@ function R3D_GenMeshQuad(width, length: Single; resX, resZ: Integer;
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataPlane
  *}
-function R3D_GenMeshPlane(width, length: Single; resX, resZ: Integer): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshPlane';
+function R3D_GenMeshPlane(width, length: Single; resX, resZ: Integer): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshPlane';
 
 {*
  * @brief Generate a polygon mesh.
@@ -130,8 +136,8 @@ function R3D_GenMeshPlane(width, length: Single; resX, resZ: Integer): TR3D_Mesh
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataPoly
  *}
-function R3D_GenMeshPoly(sides: Integer; radius: Single; frontDir: TVector3): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshPoly';
+function R3D_GenMeshPoly(sides: Integer; radius: Single; frontDir: TVector3): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshPoly';
 
 {*
  * @brief Generate a cube mesh.
@@ -141,8 +147,8 @@ function R3D_GenMeshPoly(sides: Integer; radius: Single; frontDir: TVector3): TR
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataCube
  *}
-function R3D_GenMeshCube(width, height, length: Single): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCube';
+function R3D_GenMeshCube(width, height, length: Single): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCube';
 
 {*
  * @brief Generate a subdivided cube mesh.
@@ -155,8 +161,20 @@ function R3D_GenMeshCube(width, height, length: Single): TR3D_Mesh;
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataCubeEx
  *}
-function R3D_GenMeshCubeEx(width, height, length: Single; resX, resY, resZ: Integer): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCubeEx';
+function R3D_GenMeshCubeEx(width, height, length: Single; resX, resY, resZ: Integer): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCubeEx';
+
+{*
+ * @brief Generate a slope mesh.
+ * @param width Width along X axis.
+ * @param height Height along Y axis.
+ * @param length Length along Z axis.
+ * @param slopeNormal Direction of the slope.
+ * @return Mesh ready for rendering.
+ * @see R3D_GenMeshDataSlope
+ *}
+function R3D_GenMeshSlope(width, height, length: Single; slopeNormal: TVector3): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshSlope';
 
 {*
  * @brief Generate a sphere mesh.
@@ -166,8 +184,8 @@ function R3D_GenMeshCubeEx(width, height, length: Single; resX, resY, resZ: Inte
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataSphere
  *}
-function R3D_GenMeshSphere(radius: Single; rings, slices: Integer): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshSphere';
+function R3D_GenMeshSphere(radius: Single; rings, slices: Integer): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshSphere';
 
 {*
  * @brief Generate a hemisphere mesh.
@@ -177,8 +195,8 @@ function R3D_GenMeshSphere(radius: Single; rings, slices: Integer): TR3D_Mesh;
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataHemiSphere
  *}
-function R3D_GenMeshHemiSphere(radius: Single; rings, slices: Integer): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshHemiSphere';
+function R3D_GenMeshHemiSphere(radius: Single; rings, slices: Integer): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshHemiSphere';
 
 {*
  * @brief Generate a cylinder mesh.
@@ -189,8 +207,20 @@ function R3D_GenMeshHemiSphere(radius: Single; rings, slices: Integer): TR3D_Mes
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataCylinder
  *}
-function R3D_GenMeshCylinder(bottomRadius, topRadius, height: Single; slices: Integer): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCylinder';
+function R3D_GenMeshCylinder(bottomRadius, topRadius, height: Single; slices: Integer): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCylinder';
+
+{*
+ * @brief Generate a capsule mesh.
+ * @param radius Capsule radius.
+ * @param height Height along Y axis.
+ * @param rings Number of latitude divisions.
+ * @param slices Number of longitude divisions.
+ * @return Mesh ready for rendering.
+ * @see R3D_GenMeshDataCapsule
+ *}
+function R3D_GenMeshCapsule(radius, height: Single; rings, slices: Integer): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCapsule';
 
 {*
  * @brief Generate a torus mesh.
@@ -201,8 +231,8 @@ function R3D_GenMeshCylinder(bottomRadius, topRadius, height: Single; slices: In
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataTorus
  *}
-function R3D_GenMeshTorus(radius, size: Single; radSeg, sides: Integer): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshTorus';
+function R3D_GenMeshTorus(radius, size: Single; radSeg, sides: Integer): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshTorus';
 
 {*
  * @brief Generate a trefoil knot mesh.
@@ -213,8 +243,8 @@ function R3D_GenMeshTorus(radius, size: Single; radSeg, sides: Integer): TR3D_Me
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataKnot
  *}
-function R3D_GenMeshKnot(radius, size: Single; radSeg, sides: Integer): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshKnot';
+function R3D_GenMeshKnot(radius, size: Single; radSeg, sides: Integer): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshKnot';
 
 {*
  * @brief Generate a heightmap terrain mesh.
@@ -223,8 +253,8 @@ function R3D_GenMeshKnot(radius, size: Single; radSeg, sides: Integer): TR3D_Mes
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataHeightmap
  *}
-function R3D_GenMeshHeightmap(heightmap: TImage; size: TVector3): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshHeightmap';
+function R3D_GenMeshHeightmap(heightmap: TImage; size: TVector3): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshHeightmap';
 
 {*
  * @brief Generate a cubicmap voxel mesh.
@@ -233,8 +263,8 @@ function R3D_GenMeshHeightmap(heightmap: TImage; size: TVector3): TR3D_Mesh;
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataCubicmap
  *}
-function R3D_GenMeshCubicmap(cubicmap: TImage; cubeSize: TVector3): TR3D_Mesh;
-  cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCubicmap';
+function R3D_GenMeshCubicmap(cubicmap: TImage; cubeSize: TVector3): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCubicmap';
 
 {*
  * @brief Upload a mesh data on the GPU.
@@ -250,8 +280,5 @@ function R3D_GenMeshCubicmap(cubicmap: TImage; cubeSize: TVector3): TR3D_Mesh;
  * @return Returns true if the update is successful, false otherwise.
  *}
 function R3D_UpdateMesh(mesh: PR3D_Mesh; data: TR3D_MeshData;
-  const aabb: PBoundingBox): Boolean; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UpdateMesh';
-
-
-
-
+  const aabb: PBoundingBox): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UpdateMesh';
