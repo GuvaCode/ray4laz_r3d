@@ -29,10 +29,17 @@ interface
 uses
   SysUtils, raylib, ctypes, Variants;
 
-const
-  r3dName =
+{$IFDEF LINUX}
+  {$DEFINE RAY_STATIC}
+{$IFEND}
+
+
+{$IFNDEF RAY_STATIC}
+  const r3dName =
   {$IFDEF WINDOWS} 'libr3d.dll'; {$IFEND}
-  {$IFDEF LINUX} 'libr3d.so'; {$IFEND}
+   {$IFDEF LINUX} 'libr3d.so'; {$IFEND}
+ {$ENDIF}
+
 
   {$I r3d_core.inc}
   {$I r3d_culling.inc}
@@ -58,6 +65,20 @@ const
   {$I r3d_draw.inc}
 
 implementation
+
+{$IFDEF UNIX}
+  {$IFDEF RAY_STATIC}
+    {$linklib c}
+    {$linklib m}
+    {$linklib dl}
+    {$linklib pthread}
+    {$linklib libr3d.a}
+  {$ENDIF}
+{$ENDIF}
+
+{$IFDEF MSWINDOWS}
+  //
+{$ENDIF}
 
 function R3D_MATERIAL_BASE: TR3D_Material; inline;
 begin

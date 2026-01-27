@@ -29,15 +29,15 @@ echo " "
 
 cmake .. \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DBUILD_SHARED_LIBS=ON \
-    -DR3D_BUILD_EXAMPLES=ON \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DR3D_BUILD_EXAMPLES=OFF \
     -DR3D_RAYLIB_VENDORED=ON \
     -DR3D_ASSIMP_VENDORED=ON \
     -DR3D_BUILD_DOCS=OFF 
 
 cmake --build .
 
-cp lib/libr3d.so ../../../libs/x86_64-linux/libr3d.so
+cp lib/libr3d.a ../../../libs/x86_64-linux/libr3d.a
 cd ../../
 
 
@@ -67,8 +67,8 @@ cmake .. \
 
 cmake --build .
 
-cp bin/libr3d.dll ../../../libs/x86_64-windows/libr3d.dll
-
+cp bin/libr3d.dll ../../../libs/x86_64-win64/libr3d.dll
+cp bin/libassimp-6.dll ../../../libs/x86_64-win64/libassimp-6.dll
 
 
 

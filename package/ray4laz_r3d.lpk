@@ -7,8 +7,14 @@
       <Version Value="11"/>
       <SearchPaths>
         <OtherUnitFiles Value="../source"/>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)/"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
+      <Other>
+        <CustomOptions Value="-dIsStatics"/>
+        <OtherDefines Count="1">
+          <Define0 Value="IsStatics"/>
+        </OtherDefines>
+      </Other>
     </CompilerOptions>
     <Files>
       <Item>
