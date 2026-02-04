@@ -1,6 +1,6 @@
 /* r3d_material.h -- R3D Material Module.
  *
- * Copyright (c) 2025 Le Juez Victor
+ * Copyright (c) 2025-2026 Le Juez Victor
  *
  * This software is provided 'as-is', without any express or implied warranty.
  * For conditions of distribution and use, see accompanying LICENSE file.
@@ -9,6 +9,7 @@
 #ifndef R3D_MATERIAL_H
 #define R3D_MATERIAL_H
 
+#include "./r3d_surface_shader.h"
 #include "./r3d_platform.h"
 #include <raylib.h>
 
@@ -48,31 +49,20 @@
             .roughness = 1.0f,                          \
             .metalness = 0.0f,                          \
         },                                              \
+        .uvOffset = {0.0f, 0.0f},                       \
+        .uvScale = {1.0f, 1.0f},                        \
+        .alphaCutoff = 0.01f,                           \
         .transparencyMode = R3D_TRANSPARENCY_DISABLED,  \
         .billboardMode = R3D_BILLBOARD_DISABLED,        \
         .blendMode = R3D_BLEND_MIX,                     \
+        .depthMode = R3D_DEPTH_LESS,                    \
         .cullMode = R3D_CULL_BACK,                      \
-        .uvOffset = {0.0f, 0.0f},                       \
-        .uvScale = {1.0f, 1.0f},                        \
-        .alphaCutoff = 0.01f                            \
+        .shader = 0,                                    \
     }
 
 // ========================================
 // ENUMS TYPES
 // ========================================
-
-/**
- * @brief Billboard modes.
- *
- * This enumeration defines how a 3D object aligns itself relative to the camera.
- * It provides options to disable billboarding or to enable specific modes of alignment.
- */
-typedef enum R3D_BillboardMode {
-    R3D_BILLBOARD_DISABLED,         ///< Billboarding is disabled; the object retains its original orientation.
-    R3D_BILLBOARD_FRONT,            ///< Full billboarding; the object fully faces the camera, rotating on all axes.
-    R3D_BILLBOARD_Y_AXIS            /**< Y-axis constrained billboarding; the object rotates only around the Y-axis,
-                                         keeping its "up" orientation fixed. This is suitable for upright objects like characters or signs. */
-} R3D_BillboardMode;
 
 /**
  * @brief Transparency modes.
@@ -88,6 +78,19 @@ typedef enum R3D_TransparencyMode {
 } R3D_TransparencyMode;
 
 /**
+ * @brief Billboard modes.
+ *
+ * This enumeration defines how a 3D object aligns itself relative to the camera.
+ * It provides options to disable billboarding or to enable specific modes of alignment.
+ */
+typedef enum R3D_BillboardMode {
+    R3D_BILLBOARD_DISABLED,         ///< Billboarding is disabled; the object retains its original orientation.
+    R3D_BILLBOARD_FRONT,            ///< Full billboarding; the object fully faces the camera, rotating on all axes.
+    R3D_BILLBOARD_Y_AXIS            /**< Y-axis constrained billboarding; the object rotates only around the Y-axis,
+                                         keeping its "up" orientation fixed. This is suitable for upright objects like characters or signs. */
+} R3D_BillboardMode;
+
+/**
  * @brief Blend modes.
  *
  * Defines common blending modes used in 3D rendering to combine source and destination colors.
@@ -101,14 +104,31 @@ typedef enum R3D_BlendMode {
 } R3D_BlendMode;
 
 /**
+ * @brief Depth comparison modes.
+ *
+ * Defines how fragments are tested against the depth buffer during rendering.
+ * @note The depth mode affects both forward and deferred rendering passes.
+ */
+typedef enum R3D_DepthMode {
+    R3D_DEPTH_LESS = 0,     ///< Passes if depth < depth buffer (default)
+    R3D_DEPTH_LEQUAL,       ///< Passes if depth <= depth buffer
+    R3D_DEPTH_EQUAL,        ///< Passes if depth == depth buffer
+    R3D_DEPTH_GREATER,      ///< Passes if depth > depth buffer
+    R3D_DEPTH_GEQUAL,       ///< Passes if depth >= depth buffer
+    R3D_DEPTH_NOTEQUAL,     ///< Passes if depth != depth buffer
+    R3D_DEPTH_ALWAYS,       ///< Always passes
+    R3D_DEPTH_NEVER         ///< Never passes
+} R3D_DepthMode;
+
+/**
  * @brief Face culling modes.
  *
  * Specifies which faces of a geometry are discarded during rendering based on their winding order.
  */
 typedef enum R3D_CullMode {
-    R3D_CULL_NONE,              ///< No culling; all faces are rendered.
-    R3D_CULL_BACK,              ///< Cull back-facing polygons (faces with clockwise winding order).
-    R3D_CULL_FRONT              ///< Cull front-facing polygons (faces with counter-clockwise winding order).
+    R3D_CULL_NONE,          ///< No culling; all faces are rendered.
+    R3D_CULL_BACK,          ///< Cull back-facing polygons (faces with clockwise winding order).
+    R3D_CULL_FRONT          ///< Cull front-facing polygons (faces with counter-clockwise winding order).
 } R3D_CullMode;
 
 // ========================================
@@ -165,20 +185,24 @@ typedef struct R3D_OrmMap {
  */
 typedef struct R3D_Material {
 
-    R3D_AlbedoMap albedo;       ///< Albedo map
-    R3D_EmissionMap emission;   ///< Emission map
-    R3D_NormalMap normal;       ///< Normal map
-    R3D_OrmMap orm;             ///< Occlusion-Roughness-Metalness map
+    R3D_AlbedoMap albedo;                   ///< Albedo map
+    R3D_EmissionMap emission;               ///< Emission map
+    R3D_NormalMap normal;                   ///< Normal map
+    R3D_OrmMap orm;                         ///< Occlusion-Roughness-Metalness map
+
+    Vector2 uvOffset;                       ///< UV offset (default: {0.0f, 0.0f})
+    Vector2 uvScale;                        ///< UV scale (default: {1.0f, 1.0f})
+    float alphaCutoff;                      ///< Alpha cutoff threshold (default: 0.01f)
 
     R3D_TransparencyMode transparencyMode;  ///< Transparency mode (default: DISABLED)
     R3D_BillboardMode billboardMode;        ///< Billboard mode (default: DISABLED)
     R3D_BlendMode blendMode;                ///< Blend mode (default: MIX)
+    R3D_DepthMode depthMode;                ///< Depth mode (default: LESS)
     R3D_CullMode cullMode;                  ///< Face culling mode (default: BACK)
 
-    Vector2 uvOffset;    ///< UV offset (default: {0.0f, 0.0f})
-    Vector2 uvScale;     ///< UV scale (default: {1.0f, 1.0f})
+    bool unlit;                             ///< If true, material does not participate in lighting (default: false)
 
-    float alphaCutoff;   ///< Alpha cutoff threshold (default: 0.01f)
+    R3D_SurfaceShader* shader;              ///< Custom shader applied to the material (default: NULL)
 
 } R3D_Material;
 

@@ -130,11 +130,6 @@
         <DebugInfoType Value="dsDwarf3"/>
       </Debugging>
     </Linking>
-    <Other>
-      <CustomOptions Value="-Xr
--k&quot;-rpath=\$$ORIGIN&quot;
--k-lr3d"/>
-    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions>

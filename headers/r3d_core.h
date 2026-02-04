@@ -1,6 +1,6 @@
 /* r3d_core.h -- R3D Core Module.
  *
- * Copyright (c) 2025 Le Juez Victor
+ * Copyright (c) 2025-2026 Le Juez Victor
  *
  * This software is provided 'as-is', without any express or implied warranty.
  * For conditions of distribution and use, see accompanying LICENSE file.
@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 /**
- * @defgroup Core Core Functions
+ * @defgroup Core Core
  * @{
  */
 
@@ -147,8 +147,10 @@ extern "C" {
  * 
  * @param resWidth Width of the internal resolution.
  * @param resHeight Height of the internal resolution.
+ *
+ * @return True if the initialization is successful.
  */
-R3DAPI void R3D_Init(int resWidth, int resHeight);
+R3DAPI bool R3D_Init(int resWidth, int resHeight);
 
 /**
  * @brief Closes the rendering engine and deallocates all resources.

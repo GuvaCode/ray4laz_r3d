@@ -4,7 +4,7 @@ program AnimationExample;
 
 uses
   Classes, SysUtils, Math,
-  raylib, r3d, raymath;
+  raylib, r3d, raymath, glu;
 
 const
   RESOURCES_PATH = 'resources/';

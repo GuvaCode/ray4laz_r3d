@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2025 Le Juez Victor
+ * Copyright (c) 2025-2026 Le Juez Victor
  *
  * This software is provided "as-is", without any express or implied warranty. In no event
  * will the authors be held liable for any damages arising from the use of this software.
@@ -25,7 +25,6 @@
 #include "r3d_animation_player.h"
 #include "r3d_core.h"
 #include "r3d_cubemap.h"
-#include "r3d_culling.h"
 #include "r3d_decal.h"
 #include "r3d_draw.h"
 #include "r3d_environment.h"
@@ -37,7 +36,10 @@
 #include "r3d_mesh.h"
 #include "r3d_model.h"
 #include "r3d_probe.h"
+#include "r3d_screen_shader.h"
 #include "r3d_skeleton.h"
+#include "r3d_surface_shader.h"
 #include "r3d_utils.h"
+#include "r3d_visibility.h"
 
 #endif // R3D_H

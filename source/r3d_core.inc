@@ -123,14 +123,16 @@ type
 // ========================================
 
 {*
- * @brief Initializes the rendering engine.
- *
- * This function sets up the internal rendering system with the provided resolution.
- *
- * @param resWidth Width of the internal resolution.
- * @param resHeight Height of the internal resolution.
+* @brief Initializes the rendering engine.
+*
+* This function sets up the internal rendering system with the provided resolution.
+*
+* @param resWidth Width of the internal resolution.
+* @param resHeight Height of the internal resolution.
+*
+* @return True if the initialization is successful.
  *}
-procedure R3D_Init(resWidth, resHeight: Integer); cdecl;
+function R3D_Init(resWidth, resHeight: Integer): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_Init';
 
 {*

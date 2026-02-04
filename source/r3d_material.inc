@@ -1,35 +1,9 @@
 // R3D Material Module.
 
-// ========================================
-// CONSTANTS
-// ========================================
-
-{*
- * @brief Default environment configuration.
- *
- * Initializes an R3D_Environment structure with sensible default values for all
- * rendering parameters. Use this as a starting point for custom configurations.
- *}
-// Note: In Pascal, we can't directly translate the C macro R3D_MATERIAL_BASE
-// It should be implemented as a function or initialization routine
 
 // ========================================
 // ENUMS TYPES
 // ========================================
-
-{*
- * @brief Billboard modes.
- *
- * This enumeration defines how a 3D object aligns itself relative to the camera.
- * It provides options to disable billboarding or to enable specific modes of alignment.
- *}
-type
-  TR3D_BillboardMode = (
-    R3D_BILLBOARD_DISABLED,         ///< Billboarding is disabled; the object retains its original orientation.
-    R3D_BILLBOARD_FRONT,            ///< Full billboarding; the object fully faces the camera, rotating on all axes.
-    R3D_BILLBOARD_Y_AXIS            ///< Y-axis constrained billboarding; the object rotates only around the Y-axis,
-                                    ///< keeping its "up" orientation fixed. This is suitable for upright objects like characters or signs.
-  );
 
 {*
  * @brief Transparency modes.
@@ -43,6 +17,20 @@ type
     R3D_TRANSPARENCY_DISABLED,      ///< No transparency, supports alpha cutoff.
     R3D_TRANSPARENCY_PREPASS,       ///< Supports transparency with shadows. Writes shadows for alpha > 0.1 and depth for alpha > 0.99.
     R3D_TRANSPARENCY_ALPHA          ///< Standard transparency without shadows or depth writes.
+  );
+
+{*
+ * @brief Billboard modes.
+ *
+ * This enumeration defines how a 3D object aligns itself relative to the camera.
+ * It provides options to disable billboarding or to enable specific modes of alignment.
+ *}
+type
+  TR3D_BillboardMode = (
+    R3D_BILLBOARD_DISABLED,         ///< Billboarding is disabled; the object retains its original orientation.
+    R3D_BILLBOARD_FRONT,            ///< Full billboarding; the object fully faces the camera, rotating on all axes.
+    R3D_BILLBOARD_Y_AXIS            ///< Y-axis constrained billboarding; the object rotates only around the Y-axis,
+                                    ///< keeping its "up" orientation fixed. This is suitable for upright objects like characters or signs.
   );
 
 {*
@@ -60,15 +48,33 @@ type
   );
 
 {*
+ * @brief Depth comparison modes.
+ *
+ * Defines how fragments are tested against the depth buffer during rendering.
+ * @note The depth mode affects both forward and deferred rendering passes.
+ *}
+type
+  TR3D_DepthMode = (
+    R3D_DEPTH_LESS = 0,     ///< Passes if depth < depth buffer (default)
+    R3D_DEPTH_LEQUAL,       ///< Passes if depth <= depth buffer
+    R3D_DEPTH_EQUAL,        ///< Passes if depth == depth buffer
+    R3D_DEPTH_GREATER,      ///< Passes if depth > depth buffer
+    R3D_DEPTH_GEQUAL,       ///< Passes if depth >= depth buffer
+    R3D_DEPTH_NOTEQUAL,     ///< Passes if depth != depth buffer
+    R3D_DEPTH_ALWAYS,       ///< Always passes
+    R3D_DEPTH_NEVER         ///< Never passes
+  );
+
+{*
  * @brief Face culling modes.
  *
  * Specifies which faces of a geometry are discarded during rendering based on their winding order.
  *}
 type
   TR3D_CullMode = (
-    R3D_CULL_NONE,              ///< No culling; all faces are rendered.
-    R3D_CULL_BACK,              ///< Cull back-facing polygons (faces with clockwise winding order).
-    R3D_CULL_FRONT              ///< Cull front-facing polygons (faces with counter-clockwise winding order).
+    R3D_CULL_NONE,          ///< No culling; all faces are rendered.
+    R3D_CULL_BACK,          ///< Cull back-facing polygons (faces with clockwise winding order).
+    R3D_CULL_FRONT          ///< Cull front-facing polygons (faces with counter-clockwise winding order).
   );
 
 // ========================================
@@ -125,22 +131,30 @@ type
    * Combines multiple texture maps and rendering parameters for shading.
    *}
   TR3D_Material = record
-    albedo: TR3D_AlbedoMap;       ///< Albedo map
-    emission: TR3D_EmissionMap;   ///< Emission map
-    normal: TR3D_NormalMap;       ///< Normal map
-    orm: TR3D_OrmMap;             ///< Occlusion-Roughness-Metalness map
+    albedo: TR3D_AlbedoMap;                   ///< Albedo map
+    emission: TR3D_EmissionMap;               ///< Emission map
+    normal: TR3D_NormalMap;                   ///< Normal map
+    orm: TR3D_OrmMap;                         ///< Occlusion-Roughness-Metalness map
+
+    uvOffset: TVector2;                       ///< UV offset (default: {0.0f, 0.0f})
+    uvScale: TVector2;                        ///< UV scale (default: {1.0f, 1.0f})
+    alphaCutoff: Single;                      ///< Alpha cutoff threshold (default: 0.01f)
 
     transparencyMode: TR3D_TransparencyMode;  ///< Transparency mode (default: DISABLED)
     billboardMode: TR3D_BillboardMode;        ///< Billboard mode (default: DISABLED)
     blendMode: TR3D_BlendMode;                ///< Blend mode (default: MIX)
+    depthMode: TR3D_DepthMode;                ///< Depth mode (default: LESS)
     cullMode: TR3D_CullMode;                  ///< Face culling mode (default: BACK)
 
-    uvOffset: TVector2;    ///< UV offset (default: {0.0f, 0.0f})
-    uvScale: TVector2;     ///< UV scale (default: {1.0f, 1.0f})
+    unlit: Boolean;                           ///< If true, material does not participate in lighting (default: false)
 
-    alphaCutoff: Single;   ///< Alpha cutoff threshold (default: 0.01f)
+    shader: PR3D_SurfaceShader;               ///< Custom shader applied to the material (default: NULL)
   end;
   PR3D_Material = ^TR3D_Material;
+
+
+
+
 
 // ========================================
 // PUBLIC API
@@ -193,7 +207,7 @@ procedure R3D_UnloadMaterial(material: TR3D_Material); cdecl;
  * @param color Multiplicative tint applied in the shader.
  * @return Albedo map structure. Returns an empty map on failure.
  *}
-function R3D_LoadAlbedoMap(const fileName: PChar; color: TColor): TR3D_AlbedoMap; cdecl;
+function R3D_LoadAlbedoMap(const fileName: PAnsiChar; color: TColor): TR3D_AlbedoMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadAlbedoMap';
 
 {*
@@ -207,7 +221,7 @@ function R3D_LoadAlbedoMap(const fileName: PChar; color: TColor): TR3D_AlbedoMap
  * @param color Multiplicative tint applied in the shader.
  * @return Albedo map structure. Returns an empty map on failure.
  *}
-function R3D_LoadAlbedoMapFromMemory(fileType: PChar; fileData: Pointer;
+function R3D_LoadAlbedoMapFromMemory(fileType: PAnsiChar; fileData: Pointer;
   dataSize: Integer; color: TColor): TR3D_AlbedoMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadAlbedoMapFromMemory';
 
@@ -231,7 +245,7 @@ procedure R3D_UnloadAlbedoMap(map: TR3D_AlbedoMap); cdecl;
  * @param energy Emission intensity multiplier.
  * @return Emission map. Returns an empty map on failure.
  *}
-function R3D_LoadEmissionMap(fileName: PChar; color: TColor; energy: Single): TR3D_EmissionMap; cdecl;
+function R3D_LoadEmissionMap(fileName: PAnsiChar; color: TColor; energy: Single): TR3D_EmissionMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadEmissionMap';
 
 {*
@@ -246,7 +260,7 @@ function R3D_LoadEmissionMap(fileName: PChar; color: TColor; energy: Single): TR
  * @param energy Emission intensity multiplier.
  * @return Emission map. Returns an empty map on failure.
  *}
-function R3D_LoadEmissionMapFromMemory(fileType: PChar; fileData: Pointer;
+function R3D_LoadEmissionMapFromMemory(fileType: PAnsiChar; fileData: Pointer;
   dataSize: Integer; color: TColor; energy: Single): TR3D_EmissionMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadEmissionMapFromMemory';
 
@@ -269,7 +283,7 @@ procedure R3D_UnloadEmissionMap(map: TR3D_EmissionMap); cdecl;
  * @param scale Normal intensity multiplier.
  * @return Normal map. Returns an empty map on failure.
  *}
-function R3D_LoadNormalMap(fileName: PChar; scale: Single): TR3D_NormalMap; cdecl;
+function R3D_LoadNormalMap(fileName: PAnsiChar; scale: Single): TR3D_NormalMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadNormalMap';
 
 {*
@@ -283,7 +297,7 @@ function R3D_LoadNormalMap(fileName: PChar; scale: Single): TR3D_NormalMap; cdec
  * @param scale Normal intensity multiplier.
  * @return Normal map. Returns an empty map on failure.
  *}
-function R3D_LoadNormalMapFromMemory(fileType: PChar; fileData: Pointer;
+function R3D_LoadNormalMapFromMemory(fileType: PAnsiChar; fileData: Pointer;
   dataSize: Integer; scale: Single): TR3D_NormalMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadNormalMapFromMemory';
 
@@ -308,7 +322,7 @@ procedure R3D_UnloadNormalMap(map: TR3D_NormalMap); cdecl;
  * @param metalness Metalness multiplier.
  * @return ORM map. Returns an empty map on failure.
  *}
-function R3D_LoadOrmMap(fileName: PChar; occlusion, roughness, metalness: Single): TR3D_OrmMap; cdecl;
+function R3D_LoadOrmMap(fileName: PAnsiChar; occlusion, roughness, metalness: Single): TR3D_OrmMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadOrmMap';
 
 {*
@@ -324,7 +338,7 @@ function R3D_LoadOrmMap(fileName: PChar; occlusion, roughness, metalness: Single
  * @param metalness Metalness multiplier.
  * @return ORM map. Returns an empty map on failure.
  *}
-function R3D_LoadOrmMapFromMemory(fileType: PChar; fileData: Pointer; dataSize: Integer;
+function R3D_LoadOrmMapFromMemory(fileType: PAnsiChar; fileData: Pointer; dataSize: Integer;
   occlusion, roughness, metalness: Single): TR3D_OrmMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadOrmMapFromMemory';
 
@@ -338,11 +352,39 @@ function R3D_LoadOrmMapFromMemory(fileType: PChar; fileData: Pointer; dataSize: 
 procedure R3D_UnloadOrmMap(map: TR3D_OrmMap); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadOrmMap';
 
+// ========================================
+// HELPER FUNCTION IMPLEMENTATION
+// ========================================
 
-{*
- * @brief Get base material configuration.
- *
- * Returns a material structure initialized with sensible default values for all
- * rendering parameters. Use this as a starting point for custom configurations.
- *}
+{function R3D_MATERIAL_BASE: TR3D_Material; inline;
+begin
+  Result.albedo.texture := Default(TTexture2D);
+  Result.albedo.color := WHITE;
+
+  Result.emission.texture := Default(TTexture2D);
+  Result.emission.color := WHITE;
+  Result.emission.energy := 0.0;
+
+  Result.normal.texture := Default(TTexture2D);
+  Result.normal.scale := 1.0;
+
+  Result.orm.texture := Default(TTexture2D);
+  Result.orm.occlusion := 1.0;
+  Result.orm.roughness := 1.0;
+  Result.orm.metalness := 0.0;
+
+  Result.uvOffset := Vector2Create(0.0, 0.0);
+  Result.uvScale := Vector2Create(1.0, 1.0);
+  Result.alphaCutoff := 0.01;
+
+  Result.transparencyMode := R3D_TRANSPARENCY_DISABLED;
+  Result.billboardMode := R3D_BILLBOARD_DISABLED;
+  Result.blendMode := R3D_BLEND_MIX;
+  Result.depthMode := R3D_DEPTH_LESS;
+  Result.cullMode := R3D_CULL_BACK;
+
+  Result.unlit := False;
+  Result.shader := nil;
+end;
+}
 function R3D_MATERIAL_BASE: TR3D_Material; inline;

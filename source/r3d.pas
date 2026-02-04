@@ -27,12 +27,11 @@
 interface
 
 uses
-  SysUtils, raylib, ctypes, Variants;
+  SysUtils, raylib, ctypes, Variants, math;
 
 {$IFDEF LINUX}
   {$DEFINE RAY_STATIC}
 {$IFEND}
-
 
 {$IFNDEF RAY_STATIC}
   const r3dName =
@@ -42,7 +41,7 @@ uses
 
 
   {$I r3d_core.inc}
-  {$I r3d_culling.inc}
+  {$I r3d_screen_shader.inc}
 
   {$I r3d_cubemap.inc}
   {$I r3d_ambient_map.inc}
@@ -50,7 +49,10 @@ uses
   {$I r3d_probe.inc}
   {$I r3d_environment.inc}
   {$I r3d_lighting.inc}
+
+  {$I r3d_surface_shader.inc}
   {$I r3d_material.inc}
+
   {$I r3d_decal.inc}
   {$I r3d_skeleton.inc}
   {$I r3d_animation.inc}
@@ -63,6 +65,7 @@ uses
   {$I r3d_utils.inc}
   {$I r3d_instance.inc}
   {$I r3d_draw.inc}
+  {$I r3d_visibility.inc}
 
 implementation
 
@@ -73,14 +76,13 @@ implementation
     {$linklib dl}
     {$linklib pthread}
     {$linklib libr3d.a}
+    {$linklib libassimp}
   {$ENDIF}
 {$ENDIF}
 
-{$IFDEF MSWINDOWS}
-  //
-{$ENDIF}
 
-function R3D_MATERIAL_BASE: TR3D_Material; inline;
+
+{function R3D_MATERIAL_BASE: TR3D_Material; inline;
 begin
   Result := Default(TR3D_Material);
   with Result do
@@ -111,6 +113,36 @@ begin
     // Alpha
     alphaCutoff := 0.01;
   end;
+end; }
+function R3D_MATERIAL_BASE: TR3D_Material; inline;
+begin
+  Result.albedo.texture := Default(TTexture2D);
+  Result.albedo.color := WHITE;
+
+  Result.emission.texture := Default(TTexture2D);
+  Result.emission.color := WHITE;
+  Result.emission.energy := 0.0;
+
+  Result.normal.texture := Default(TTexture2D);
+  Result.normal.scale := 1.0;
+
+  Result.orm.texture := Default(TTexture2D);
+  Result.orm.occlusion := 1.0;
+  Result.orm.roughness := 1.0;
+  Result.orm.metalness := 0.0;
+
+  Result.uvOffset := Vector2Create(0.0, 0.0);
+  Result.uvScale := Vector2Create(1.0, 1.0);
+  Result.alphaCutoff := 0.01;
+
+  Result.transparencyMode := R3D_TRANSPARENCY_DISABLED;
+  Result.billboardMode := R3D_BILLBOARD_DISABLED;
+  Result.blendMode := R3D_BLEND_MIX;
+  Result.depthMode := R3D_DEPTH_LESS;
+  Result.cullMode := R3D_CULL_BACK;
+
+  Result.unlit := False;
+  Result.shader := nil;
 end;
 
 function R3D_DECAL_BASE: TR3D_Decal; inline;
@@ -135,6 +167,14 @@ begin
   Result.alphaCutoff := 0.01;
   Result.normalThreshold := 0;
   Result.fadeWidth := 0;
+  Result.applyColor:= True;
+  Result.shader := nil;
+//         .applyColor = true,                             \
+///        .shader = 0
+
+
+
+
 end;
 
 function R3D_CUBEMAP_SKY_BASE: TR3D_CubemapSky; inline;
@@ -417,6 +457,7 @@ begin
     raise Exception.CreateFmt('Unknown TR3D_Tonemap field or wrong type: %s', [Path]);
   end;
 end;
+
 
 
 

@@ -1,0 +1,9 @@
+#!/bin/bash
+# copy_dlls.sh
+
+MINGW_PATH="/path/to/your/mingw64/bin"  # Укажите правильный путь
+
+# Копируем необходимые DLL
+cp ${MINGW_PATH}/libstdc++-6.dll ../../libs/x86_64-win64/
+cp ${MINGW_PATH}/libgcc_s_seh-1.dll ../../libs/x86_64-win64/
+cp ${MINGW_PATH}/libwinpthread-1.dll ../../libs/x86_64-win64/

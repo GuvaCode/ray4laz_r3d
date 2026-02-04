@@ -2,73 +2,79 @@
 
 rm -f ../libs/x86_64-linux/libr3d*
 
+git clone --depth 1 --recurse-submodules https://github.com/Bigfoot71/r3d
 
+cd r3d
+mkdir build && cd build
 
-git clone https://github.com/raysan5/raylib.git
+cmake .. -DR3D_RAYLIB_VENDORED=ON -DR3D_ASSIMP_VENDORED=ON -DBUILD_SHARED_LIBS=OFF
+cmake --build .
+
+#git clone https://github.com/raysan5/raylib.git
 
 ####     -DRAYLIB_MODULE_RAYGUI=ON \
 ### git clone -b kineamitcs --single-branch https://github.com/Bigfoot71/r3d
-git clone https://github.com/Bigfoot71/r3d
-cd r3d/external
+#git clone https://github.com/Bigfoot71/r3d
+#cd r3d/external
 
-git clone https://github.com/assimp/assimp
+#git clone https://github.com/assimp/assimp
 
-cd ../../
-cp -r raylib r3d/external
+#cd ../../
+#cp -r raylib r3d/external
 
-cd r3d
+#cd r3d
 
-mkdir build_lin64
-cd build_lin64
+#mkdir build_lin64
+#cd build_lin64
 
-echo " "
-echo " -------------------------- "
-echo " Build R3D x86_64_LINUX     "
-echo " -------------------------- "
-echo " "
+#echo " "
+#echo " -------------------------- "
+#echo " Build R3D x86_64_LINUX     "
+#echo " -------------------------- "
+#echo " "
 
-cmake .. \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DR3D_BUILD_EXAMPLES=OFF \
-    -DR3D_RAYLIB_VENDORED=ON \
-    -DR3D_ASSIMP_VENDORED=ON \
-    -DR3D_BUILD_DOCS=OFF 
+#cmake .. \
+#    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+#    -DBUILD_SHARED_LIBS=OFF \
+#    -DR3D_BUILD_EXAMPLES=OFF \
+#    -DR3D_RAYLIB_VENDORED=ON \
+#    -DR3D_ASSIMP_VENDORED=ON \
+#    -DR3D_BUILD_DOCS=OFF 
 
-cmake --build .
+#cmake --build .
 
-cp lib/libr3d.a ../../../libs/x86_64-linux/libr3d.a
-cd ../../
-
-
-
-echo " "
-echo " -------------------------- "
-echo " Build R3D x86_64_WINDOWS   "
-echo " -------------------------- "
-echo " "
-
-cp mingw-w64-x86_64.cmake r3d/mingw-w64-x86_64.cmake
-
-cd r3d
-mkdir build_win64
-cd build_win64
-
-cmake .. \
-    -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake \
-    -DCMAKE_PREFIX_PATH=$(pwd)/../external/raylib \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DBUILD_SHARED_LIBS=ON \
-    -DR3D_BUILD_EXAMPLES=OFF \
-    -DR3D_RAYLIB_VENDORED=ON \
-    -DR3D_ASSIMP_VENDORED=ON \
-    -DR3D_BUILD_DOCS=OFF 
+#cp lib/libr3d.a ../../../libs/x86_64-linux/libr3d.a
+#cd ../../
 
 
-cmake --build .
+#
+#echo " "#
+#echo " -------------------------- "
+#echo " Build R3D x86_64_WINDOWS   "
+#echo " -------------------------- "
+#echo " "
 
-cp bin/libr3d.dll ../../../libs/x86_64-win64/libr3d.dll
-cp bin/libassimp-6.dll ../../../libs/x86_64-win64/libassimp-6.dll
+#cp mingw-w64-x86_64.cmake r3d/mingw-w64-x86_64.cmake
+
+#cd r3d
+#mkdir build_win64
+#cd build_win64
+
+#cmake .. \
+#    -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake \
+#    -DCMAKE_PREFIX_PATH=$(pwd)/../external/raylib \
+#    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+#    -DBUILD_SHARED_LIBS=ON \
+#    -DR3D_BUILD_EXAMPLES=OFF \
+#    -DR3D_RAYLIB_VENDORED=ON \
+#    -DR3D_ASSIMP_VENDORED=ON \
+#    -DR3D_BUILD_DOCS=OFF 
+
+
+#cmake --build .
+
+#cp bin/libr3d.dll ../../../libs/x86_64-win64/libr3d.dll
+#cp bin/libassimp-6.dll ../../../libs/x86_64-win64/libassimp-6.dll
 
 
 

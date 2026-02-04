@@ -48,9 +48,6 @@
       <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="../../temp/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
-    <CodeGeneration>
-      <TargetOS Value="win64"/>
-    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf3"/>
@@ -58,8 +55,9 @@
     </Linking>
     <Other>
       <CustomOptions Value="-Xr
--k&quot;-rpath=\$$ORIGIN&quot;
--k-lr3d"/>
+-k&quot;-rpath=\dll&quot;
+-k-lr3d
+-k-lassimp"/>
     </Other>
   </CompilerOptions>
   <Debugging>

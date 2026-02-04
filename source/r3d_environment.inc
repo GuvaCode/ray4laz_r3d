@@ -91,7 +91,7 @@ type
     sampleCount: Integer;     ///< Number of samples to compute SSAO (default: 16)
     intensity: Single;        ///< Base occlusion strength multiplier (default: 1.0)
     power: Single;            ///< Exponential falloff for sharper darkening (default: 1.5)
-    radius: Single;           ///< Sampling radius in world space (default: 0.35)
+    radius: Single;           ///< Sampling radius in world space (default: 0.25)
     bias: Single;             ///< Depth bias to prevent self-shadowing, good value is ~2% of the radius (default: 0.007)
     enabled: Boolean;         ///< Enable/disable SSAO effect (default: false)
   end;
@@ -105,13 +105,30 @@ type
   TR3D_EnvSSIL = record
     sampleCount: Integer;     ///< Number of samples to compute indirect lighting (default: 4)
     sliceCount: Integer;      ///< Number of depth slices for accumulation (default: 4)
-    sampleRadius: Single;     ///< Maximum distance to gather light from (default: 2.0)
+    sampleRadius: Single;     ///< Maximum distance to gather light from (default: 5.0)
     hitThickness: Single;     ///< Thickness threshold for occluders (default: 0.5)
     aoPower: Single;          ///< Exponential falloff for visibility factor (too high = more noise) (default: 1.0)
     energy: Single;           ///< Multiplier for indirect light intensity (default: 1.0)
-    convergence: Single;      ///< Temporal convergence factor (0 disables it, default 0.5)
     bounce: Single;           ///< Bounce feedback factor (default: 0.5)
+    convergence: Single;      ///< Temporal convergence factor (0 disables it, default 0.5)
     enabled: Boolean;         ///< Enable/disable SSIL effect (default: false)
+  end;
+
+  {*
+   * @brief Screen Space Reflections (SSR) settings.
+   *
+   * Real-time reflections calculated in screen space.
+   *}
+  PR3D_EnvSSR = ^TR3D_EnvSSR;
+  TR3D_EnvSSR = record
+    maxRaySteps: Integer;     ///< Maximum ray marching iterations (default: 32)
+    binarySearchSteps: Integer; ///< Refinement steps for intersection (default: 4)
+    rayMarchLength: Single;   ///< Maximum ray distance in view space (default: 5.0)
+    depthThickness: Single;   ///< Depth tolerance for valid hits (default: 0.5)
+    depthTolerance: Single;   ///< Negative margin to prevent false negatives (default: 0.01)
+    edgeFadeStart: Single;    ///< Screen edge fade start [0-1] (default: 0.75)
+    edgeFadeEnd: Single;      ///< Screen edge fade end [0-1] (default: 1.0)
+    enabled: Boolean;         ///< Enable/disable SSR (default: false)
   end;
 
   {*
@@ -127,23 +144,6 @@ type
     threshold: Single;        ///< Minimum brightness to trigger bloom (default: 0.0)
     softThreshold: Single;    ///< Softness of brightness cutoff transition (default: 0.5)
     filterRadius: Single;     ///< Blur filter radius during upscaling (default: 1.0)
-  end;
-
-  {*
-   * @brief Screen Space Reflections (SSR) settings.
-   *
-   * Real-time reflections calculated in screen space.
-   *}
-  PR3D_EnvSSR = ^TR3D_EnvSSR;
-  TR3D_EnvSSR = record
-    maxRaySteps: Integer;     ///< Maximum ray marching iterations (default: 64)
-    binarySearchSteps: Integer; ///< Refinement steps for intersection (default: 8)
-    rayMarchLength: Single;   ///< Maximum ray distance in view space (default: 8.0)
-    depthThickness: Single;   ///< Depth tolerance for valid hits (default: 0.2)
-    depthTolerance: Single;   ///< Negative margin to prevent false negatives (default: 0.005)
-    edgeFadeStart: Single;    ///< Screen edge fade start [0-1] (default: 0.7)
-    edgeFadeEnd: Single;      ///< Screen edge fade end [0-1] (default: 1.0)
-    enabled: Boolean;         ///< Enable/disable SSR (default: false)
   end;
 
   {*
@@ -208,8 +208,8 @@ type
     ambient: TR3D_EnvAmbient;       ///< Ambient lighting configuration
     ssao: TR3D_EnvSSAO;             ///< Screen space ambient occlusion
     ssil: TR3D_EnvSSIL;             ///< Screen space indirect lighting
-    bloom: TR3D_EnvBloom;           ///< Bloom glow effect
     ssr: TR3D_EnvSSR;               ///< Screen space reflections
+    bloom: TR3D_EnvBloom;           ///< Bloom glow effect
     fog: TR3D_EnvFog;               ///< Atmospheric fog
     dof: TR3D_EnvDoF;               ///< Depth of field focus effect
     tonemap: TR3D_EnvTonemap;       ///< HDR tone mapping
@@ -222,17 +222,89 @@ type
 // ========================================
 
 {*
- * @brief Quick read access to environment members.
+ * @brief Default environment configuration.
  *
- * Example: `intensity := R3D_GetEnvironment()^.bloom.intensity;`
+ * Initializes an R3D_Environment structure with sensible default values for all
+ * rendering parameters. Use this as a starting point for custom configurations.
  *}
-
-{*
- * @brief Quick write access to environment members.
- *
- * Example: `R3D_GetEnvironment()^.bloom.intensity := 0.05;`
- *}
-
+//const
+ { R3D_ENVIRONMENT_BASE: TR3D_Environment = (
+    background: (
+      color: GRAY;
+      energy: 1.0;
+      skyBlur: 0.0;
+      sky: ();
+      rotation: (x: 0.0; y: 0.0; z: 0.0; w: 1.0);
+    );
+    ambient: (
+      color: BLACK;
+      energy: 1.0;
+      map: ();
+    );
+    ssao: (
+      sampleCount: 16;
+      intensity: 1.0;
+      power: 1.5;
+      radius: 0.25;
+      bias: 0.007;
+      enabled: false;
+    );
+    ssil: (
+      sampleCount: 4;
+      sliceCount: 4;
+      sampleRadius: 2.0;
+      hitThickness: 0.5;
+      aoPower: 1.0;
+      energy: 1.0;
+      bounce: 0.5;
+      convergence: 0.5;
+      enabled: false;
+    );
+    ssr: (
+      maxRaySteps: 32;
+      binarySearchSteps: 4;
+      rayMarchLength: 5.0;
+      depthThickness: 0.5;
+      depthTolerance: 0.01;
+      edgeFadeStart: 0.75;
+      edgeFadeEnd: 1.0;
+      enabled: false;
+    );
+    bloom: (
+      mode: R3D_BLOOM_DISABLED;
+      levels: 0.5;
+      intensity: 0.05;
+      threshold: 0.0;
+      softThreshold: 0.5;
+      filterRadius: 1.0;
+    );
+    fog: (
+      mode: R3D_FOG_DISABLED;
+      color: (r: 255; g: 255; b: 255; a: 255);
+      start: 1.0;
+      end_: 50.0;
+      density: 0.05;
+      skyAffect: 0.5;
+    );
+    dof: (
+      mode: R3D_DOF_DISABLED;
+      focusPoint: 10.0;
+      focusScale: 1.0;
+      maxBlurSize: 20.0;
+      debugMode: false;
+    );
+    tonemap: (
+      mode: R3D_TONEMAP_LINEAR;
+      exposure: 1.0;
+      white: 1.0;
+    );
+    color: (
+      brightness: 1.0;
+      contrast: 1.0;
+      saturation: 1.0;
+    );
+  );
+ }
 
 
 // ========================================

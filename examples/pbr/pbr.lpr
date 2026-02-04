@@ -39,7 +39,7 @@ begin
 
   // Setup environment ambient
   ambientMap := R3D_GenAmbientMap(cubemap, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
-  R3D_ENVIRONMENT_SET('ambient.map', ambientMap);
+ R3D_ENVIRONMENT_SET('ambient.map', ambientMap);
 
   // Setup bloom
   R3D_ENVIRONMENT_SET('bloom.mode', R3D_BLOOM_MIX);
@@ -48,7 +48,7 @@ begin
   // Setup tonemapping
   R3D_ENVIRONMENT_SET('tonemap.mode', R3D_TONEMAP_FILMIC);
   R3D_ENVIRONMENT_SET('tonemap.exposure', 0.5);
-  R3D_ENVIRONMENT_SET('tonemap.white', 4.0);
+ R3D_ENVIRONMENT_SET('tonemap.white', 4.0);
 
   // Load model
   R3D_SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_4X);
@@ -72,7 +72,7 @@ begin
     // Rotate model with left mouse button
     if IsMouseButtonDown(MOUSE_BUTTON_LEFT) then
     begin
-      pitch := GetMouseDelta().y * 0.005 / modelScale;
+     pitch := GetMouseDelta().y * 0.005 / modelScale;
       yaw := GetMouseDelta().x * 0.005 / modelScale;
       rotateMatrix := MatrixRotateXYZ(Vector3Create(pitch, yaw, 0.0));
       modelMatrix := MatrixMultiply(modelMatrix, rotateMatrix);

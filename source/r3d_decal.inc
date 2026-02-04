@@ -21,6 +21,7 @@ type
     normalThreshold: Single;      ///< Maximum angle against the surface normal to draw decal. 0.0f disables threshold. (default: 0.0f)
     fadeWidth: Single;            ///< The width of fading along the normal threshold (default: 0.0f)
     applyColor: Boolean;          ///< Indicates that the albedo color will not be rendered, only the alpha component of the albedo will be used as a mask. (default: true)
+    shader: PR3D_SurfaceShader;   ///< Custom shader applied to the decal (default: NULL)
   end;
 
 
