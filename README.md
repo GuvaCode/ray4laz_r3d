@@ -30,112 +30,72 @@ Open and complile package/ray4laz_r3d.lpk
 ## Quick Start
 
 ```pascal
-program R3DExample;
+program r3dexample;
 
 {$mode objfpc}{$H+}
 
 uses
-  raylib, r3d;  
+  SysUtils, raylib, r3d, raymath;
 
 const
-  SCREEN_WIDTH = 800;   // Window width in pixels
-  SCREEN_HEIGHT = 600;  // Window height in pixels
+  SCREEN_WIDTH = 800;
+  SCREEN_HEIGHT = 600;
 
 var
-  Mesh: TR3D_Mesh;           // 3D mesh object (sphere)
-  Material: TR3D_Material;   // Material properties for the mesh
-  Light: TR3D_Light;         // Directional light source
-  Camera: TCamera3D;         // 3D camera for viewing the scene
-  ModelRotation: Single = 0.0; // Current rotation angle of the model in degrees
+  mesh: TR3D_Mesh;
+  material: TR3D_Material;
+  light: TR3D_Light;
+  camera: TCamera3D;
 
 begin
-  // Initialize Raylib window and set target FPS
+  // Initialize window
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 'R3D Example');
-  SetTargetFPS(60);  // Target 60 frames per second
-  
-  // Initialize R3D rendering engine with screen resolution and no special flags
-  R3D_Init(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-  
-  // Configure environment settings
-  R3D_SetBackgroundColor(BLACK);  // Set clear color to black
-  R3D_SetAmbientColor(ColorCreate(20, 20, 20, 255));  // Set ambient light to dark gray
+  SetTargetFPS(60);
+
+  // Initialize R3D
+  R3D_Init(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   try
-    // === Create 3D objects ===
-    
-    // Generate a sphere mesh with radius 1.0, 16 rings, and 32 slices
-    Mesh := R3D_GenMeshSphere(1.0, 16, 32);
-    
-    // Get default material and set its base color to red
-    Material := R3D_GetDefaultMaterial();
-    Material.albedo.color := RED;
-    
-    // === Setup lighting ===
-    
-    // Create a directional light (simulates sunlight)
-    Light := R3D_CreateLight(R3D_LIGHT_DIR);
-    
-    // Set light direction (coming from top-left-back)
-    R3D_SetLightDirection(Light, Vector3Create(-1, -1, -1));
-    
-    // Set light color to white
-    R3D_SetLightColor(Light, WHITE);
-    
-    // Enable shadows with 2048x2048 resolution shadow map
-    R3D_EnableShadow(Light, 2048);
-    
-    // Activate the light
-    R3D_SetLightActive(Light, True);
-    
-    // === Setup camera ===
-    
-    // Position camera at (-3, 3, 3) looking at origin (0, 0, 0)
-    Camera.position := Vector3Create(-3, 3, 3);
-    Camera.target := Vector3Create(0, 0, 0);
-    Camera.up := Vector3Create(0, 1, 0);  // Y-axis is up
-    Camera.fovy := 60.0;  // Field of view in degrees
-    Camera.projection := CAMERA_PERSPECTIVE;  // Perspective projection
+    // Create scene objects
+    mesh := R3D_GenMeshSphere(1.0, 16, 32);
+    material := R3D_GetDefaultMaterial();
 
-    // === Main rendering loop ===
-    while not WindowShouldClose() do  // Continue until window close requested
+    // Setup lighting
+    light := R3D_CreateLight(R3D_LIGHT_DIR);
+    R3D_SetLightDirection(light, Vector3Create(-1, -1, -1));
+    R3D_SetLightActive(light, True);
+
+    // Camera setup
+    camera.position := Vector3Create(3, 3, 3);
+    camera.target := Vector3Create(0, 0, 0);
+    camera.up := Vector3Create(0, 1, 0);
+    camera.fovy := 60.0;
+    camera.projection := CAMERA_PERSPECTIVE;
+
+    // Main loop
+    while not WindowShouldClose() do
     begin
-      // Update rotation angle (1 degree per frame at 60 FPS = 60 degrees per second)
-      ModelRotation := ModelRotation + 1.0;
-      
-      // Begin drawing frame
+      UpdateCamera(@camera, CAMERA_ORBITAL);
+
       BeginDrawing();
-        // Clear screen with black color
         ClearBackground(BLACK);
-        
-        // Begin R3D rendering with our camera
-        R3D_Begin(Camera);
-          // Draw the mesh with material, rotated around Y-axis
-          R3D_DrawMesh(@Mesh, @Material, 
-            MatrixRotateY(ModelRotation * DEG2RAD));  // Convert degrees to radians
-        R3D_End();  // End R3D rendering (performs all lighting, shadow, post-processing passes)
-        
-        // Draw 2D overlay text using standard Raylib functions
-        DrawText('R3D Basic Example', 10, 10, 20, LIME);
-        DrawFPS(10, 40);  // Display frames per second counter
-      EndDrawing();  // End drawing frame (swap buffers)
+
+        R3D_Begin(camera);
+          R3D_DrawMesh(mesh, material, Vector3Zero(), 1.0);
+        R3D_End();
+
+        // Draw FPS
+        DrawFPS(10, 10);
+      EndDrawing();
     end;
 
   finally
-    // === Cleanup resources (always executed, even if exception occurs) ===
-    
-    // Unload mesh data from GPU memory
-    R3D_UnloadMesh(@Mesh);
-    
-    // Unload material and associated textures
-    R3D_UnloadMaterial(@Material);
-    
-    // Shutdown R3D rendering engine
+    // Cleanup
+    R3D_UnloadMesh(mesh);
     R3D_Close();
-    
-    // Close Raylib window
     CloseWindow();
   end;
-end.
+end.                                                   
 ```
 
 ## License

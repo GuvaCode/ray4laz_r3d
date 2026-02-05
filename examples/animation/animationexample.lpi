@@ -54,10 +54,7 @@
       </Debugging>
     </Linking>
     <Other>
-      <CustomOptions Value="-Xr
--k&quot;-rpath=\dll&quot;
--k-lr3d
--k-lassimp"/>
+      <CustomOptions Value="-k&quot;-rpath=$ORIGIN&quot;"/>
     </Other>
   </CompilerOptions>
   <Debugging>

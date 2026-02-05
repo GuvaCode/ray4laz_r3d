@@ -122,7 +122,7 @@
     </SearchPaths>
     <CodeGeneration>
       <Optimizations>
-        <OptimizationLevel Value="3"/>
+        <OptimizationLevel Value="2"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
@@ -130,6 +130,10 @@
         <DebugInfoType Value="dsDwarf3"/>
       </Debugging>
     </Linking>
+    <Other>
+      <CustomOptions Value="-k&quot;-rpath=$ORIGIN&quot;
+-k-lr3d -k-lraylib -k-lassimp -k-lm -k-lpthread -k-ldl"/>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions>

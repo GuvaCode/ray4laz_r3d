@@ -53,9 +53,7 @@
       </Debugging>
     </Linking>
     <Other>
-      <CustomOptions Value="-Xr
-    -k&quot;-rpath=$ORIGIN&quot;
--k-lr3d"/>
+      <CustomOptions Value="-k&quot;-rpath=$ORIGIN&quot;"/>
     </Other>
   </CompilerOptions>
   <Debugging>

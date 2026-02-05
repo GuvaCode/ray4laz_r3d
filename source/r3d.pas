@@ -81,7 +81,6 @@ implementation
 {$ENDIF}
 
 
-
 {function R3D_MATERIAL_BASE: TR3D_Material; inline;
 begin
   Result := Default(TR3D_Material);
