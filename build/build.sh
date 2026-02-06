@@ -39,12 +39,7 @@ cp bin/libassimp-6.dll ../../../libs/x86_64-win64/libassimp-6.dll
 cp bin/libr3d.dll ../../../libs/x86_64-win64/libr3d.dll
 cp bin/libraylib.dll ../../../libs/x86_64-win64/libraylib.dll
 
-
-
 cd ..
-
-
-
 cd ../..
 
 

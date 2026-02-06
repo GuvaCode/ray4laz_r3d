@@ -6,13 +6,14 @@
     <CompilerOptions>
       <Version Value="11"/>
       <SearchPaths>
+        <IncludeFiles Value="../../ray4laz/source"/>
         <OtherUnitFiles Value="../source"/>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Other>
-        <CustomOptions Value="-dIsStatics"/>
+        <CustomOptions Value="-dUSED_R3D"/>
         <OtherDefines Count="1">
-          <Define0 Value="IsStatics"/>
+          <Define0 Value="USED_R3D"/>
         </OtherDefines>
       </Other>
     </CompilerOptions>

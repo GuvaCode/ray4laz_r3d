@@ -1,6 +1,5 @@
 // R3D Material Module.
 
-
 // ========================================
 // ENUMS TYPES
 // ========================================
@@ -48,21 +47,35 @@ type
   );
 
 {*
- * @brief Depth comparison modes.
+ * @brief Comparison modes.
  *
- * Defines how fragments are tested against the depth buffer during rendering.
- * @note The depth mode affects both forward and deferred rendering passes.
+ * Defines how fragments are tested against the depth/stencil buffer during rendering.
+ * @note The depth/stencil comparison mode affects both forward and deferred rendering passes.
  *}
 type
-  TR3D_DepthMode = (
-    R3D_DEPTH_LESS = 0,     ///< Passes if depth < depth buffer (default)
-    R3D_DEPTH_LEQUAL,       ///< Passes if depth <= depth buffer
-    R3D_DEPTH_EQUAL,        ///< Passes if depth == depth buffer
-    R3D_DEPTH_GREATER,      ///< Passes if depth > depth buffer
-    R3D_DEPTH_GEQUAL,       ///< Passes if depth >= depth buffer
-    R3D_DEPTH_NOTEQUAL,     ///< Passes if depth != depth buffer
-    R3D_DEPTH_ALWAYS,       ///< Always passes
-    R3D_DEPTH_NEVER         ///< Never passes
+  TR3D_CompareMode = (
+    R3D_COMPARE_LESS,       ///< Passes if 'value' <  'buffer' (default)
+    R3D_COMPARE_LEQUAL,     ///< Passes if 'value' <= 'buffer'
+    R3D_COMPARE_EQUAL,      ///< Passes if 'value' == 'buffer'
+    R3D_COMPARE_GREATER,    ///< Passes if 'value' >  'buffer'
+    R3D_COMPARE_GEQUAL,     ///< Passes if 'value' >= 'buffer'
+    R3D_COMPARE_NOTEQUAL,   ///< Passes if 'value' != 'buffer'
+    R3D_COMPARE_ALWAYS,     ///< Always passes
+    R3D_COMPARE_NEVER       ///< Never passes
+  );
+
+{*
+ * @brief Stencil buffer operations.
+ *
+ * Defines how the stencil buffer value is modified based on test results.
+ *}
+type
+  TR3D_StencilOp = (
+    R3D_STENCIL_KEEP,      ///< Keep the current stencil value
+    R3D_STENCIL_ZERO,      ///< Set stencil value to 0
+    R3D_STENCIL_REPLACE,   ///< Replace with reference value
+    R3D_STENCIL_INCR,      ///< Increment stencil value (clamped)
+    R3D_STENCIL_DECR       ///< Decrement stencil value (clamped)
   );
 
 {*
@@ -126,6 +139,38 @@ type
   end;
 
   {*
+   * @brief Depth buffer state configuration.
+   *
+   * Controls how fragments interact with the depth buffer during rendering..
+   *
+   * @note This structure does not directly control depth buffer writes for technical reasons.
+   *       To render objects without writing to the depth buffer, use alpha blending mode instead.
+   *}
+  TR3D_DepthState = record
+    mode: TR3D_CompareMode;   ///< Comparison function for depth test (default: LESS)
+    offsetFactor: Single;     ///< Scales the maximum depth slope for polygon offset (default: 0.0f)
+    offsetUnits: Single;      ///< Constant depth offset value (default: 0.0f)
+    rangeNear: Single;        ///< Near clipping plane for depth range mapping (default: 0.0f)
+    rangeFar: Single;         ///< Far clipping plane for depth range mapping (default: 1.0f)
+  end;
+
+  {*
+   * @brief Stencil buffer state configuration.
+   *
+   * Controls how fragments interact with the stencil buffer during rendering.
+   * The stencil buffer can be used for effects like x-ray vision, outlines,
+   * portals, and masking.
+   *}
+  TR3D_StencilState = record
+    mode: TR3D_CompareMode;   ///< Comparison function for stencil test (default: ALWAYS)
+    ref: Byte;                ///< Reference value (0-255) for comparison and replace operations (default: 0x00)
+    mask: Byte;               ///< Bit mask applied to both reference and stencil values during comparison (default: 0xFF)
+    opFail: TR3D_StencilOp;   ///< Operation when stencil test fails (default: KEEP)
+    opZFail: TR3D_StencilOp;  ///< Operation when stencil test passes but depth test fails (default: KEEP)
+    opPass: TR3D_StencilOp;   ///< Operation when both stencil and depth tests pass (default: REPLACE)
+  end;
+
+  {*
    * @brief Material definition.
    *
    * Combines multiple texture maps and rendering parameters for shading.
@@ -140,10 +185,12 @@ type
     uvScale: TVector2;                        ///< UV scale (default: {1.0f, 1.0f})
     alphaCutoff: Single;                      ///< Alpha cutoff threshold (default: 0.01f)
 
+    depth: TR3D_DepthState;                   ///< Depth test configuration (default: standard)
+    stencil: TR3D_StencilState;               ///< Stencil test configuration (default: disabled)
+
     transparencyMode: TR3D_TransparencyMode;  ///< Transparency mode (default: DISABLED)
     billboardMode: TR3D_BillboardMode;        ///< Billboard mode (default: DISABLED)
     blendMode: TR3D_BlendMode;                ///< Blend mode (default: MIX)
-    depthMode: TR3D_DepthMode;                ///< Depth mode (default: LESS)
     cullMode: TR3D_CullMode;                  ///< Face culling mode (default: BACK)
 
     unlit: Boolean;                           ///< If true, material does not participate in lighting (default: false)
@@ -151,10 +198,6 @@ type
     shader: PR3D_SurfaceShader;               ///< Custom shader applied to the material (default: NULL)
   end;
   PR3D_Material = ^TR3D_Material;
-
-
-
-
 
 // ========================================
 // PUBLIC API
@@ -352,39 +395,4 @@ function R3D_LoadOrmMapFromMemory(fileType: PAnsiChar; fileData: Pointer; dataSi
 procedure R3D_UnloadOrmMap(map: TR3D_OrmMap); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadOrmMap';
 
-// ========================================
-// HELPER FUNCTION IMPLEMENTATION
-// ========================================
-
-{function R3D_MATERIAL_BASE: TR3D_Material; inline;
-begin
-  Result.albedo.texture := Default(TTexture2D);
-  Result.albedo.color := WHITE;
-
-  Result.emission.texture := Default(TTexture2D);
-  Result.emission.color := WHITE;
-  Result.emission.energy := 0.0;
-
-  Result.normal.texture := Default(TTexture2D);
-  Result.normal.scale := 1.0;
-
-  Result.orm.texture := Default(TTexture2D);
-  Result.orm.occlusion := 1.0;
-  Result.orm.roughness := 1.0;
-  Result.orm.metalness := 0.0;
-
-  Result.uvOffset := Vector2Create(0.0, 0.0);
-  Result.uvScale := Vector2Create(1.0, 1.0);
-  Result.alphaCutoff := 0.01;
-
-  Result.transparencyMode := R3D_TRANSPARENCY_DISABLED;
-  Result.billboardMode := R3D_BILLBOARD_DISABLED;
-  Result.blendMode := R3D_BLEND_MIX;
-  Result.depthMode := R3D_DEPTH_LESS;
-  Result.cullMode := R3D_CULL_BACK;
-
-  Result.unlit := False;
-  Result.shader := nil;
-end;
-}
 function R3D_MATERIAL_BASE: TR3D_Material; inline;
