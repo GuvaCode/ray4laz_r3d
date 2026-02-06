@@ -32,13 +32,12 @@ begin
   // Setup environment sky
   cubemap := R3D_LoadCubemap(PAnsiChar(RESOURCES_PATH + 'panorama/indoor.hdr'), R3D_CUBEMAP_LAYOUT_AUTO_DETECT);
   R3D_ENVIRONMENT_SET('background.skyBlur', 0.3);
-  R3D_ENVIRONMENT_SET('background.energy', 0.6);
   R3D_ENVIRONMENT_SET('background.sky', cubemap);
 
   // Setup environment ambient
   ambientMap := R3D_GenAmbientMap(cubemap, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
   R3D_ENVIRONMENT_SET('ambient.map', ambientMap);
-  R3D_ENVIRONMENT_SET('ambient.energy', 0.25);
+  R3D_ENVIRONMENT_SET('ambient.energy', 0.2);
 
   // Setup tonemapping
   R3D_ENVIRONMENT_SET('tonemap.mode', R3D_TONEMAP_FILMIC);
