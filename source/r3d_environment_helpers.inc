@@ -26,10 +26,10 @@ begin
   Result.ambient.map := Default(TR3D_AmbientMap); // Пустая карта окружения
 
   Result.ssao.sampleCount := 16;
-  Result.ssao.intensity := 1.0;
+  Result.ssao.intensity := 0.5;
   Result.ssao.power := 1.5;
-  Result.ssao.radius := 0.35;
-  Result.ssao.bias := 0.007;
+  Result.ssao.radius := 0.5;
+  Result.ssao.bias := 0.02;
   Result.ssao.enabled := false;
 
   Result.ssil.sampleCount := 4;
