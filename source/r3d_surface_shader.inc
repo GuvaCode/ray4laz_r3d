@@ -67,8 +67,10 @@ procedure R3D_UnloadSurfaceShader(shader: PR3D_SurfaceShader); cdecl;
  * @warning Boolean values are read as 4 bytes.
  *
  * @param shader Target surface shader.
- * @param name Name of the uniform.
- * @param value Pointer to the uniform value.
+ *               May be NULL. In that case, the call is ignored
+ *               and a warning is logged.
+ * @param name   Name of the uniform. Must not be NULL.
+ * @param value  Pointer to the uniform value. Must not be NULL.
  *}
 procedure R3D_SetSurfaceShaderUniform(shader: PR3D_SurfaceShader; const name: PAnsiChar; const value: Pointer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetSurfaceShaderUniform';
@@ -83,8 +85,10 @@ procedure R3D_SetSurfaceShaderUniform(shader: PR3D_SurfaceShader; const name: PA
  * Supported samplers:
  * sampler1D, sampler2D, sampler3D, samplerCube
  *
- * @param shader Target surface shader.
- * @param name Name of the sampler uniform.
+ * @param shader  Target surface shader.
+ *                May be NULL. In that case, the call is ignored
+ *                and a warning is logged.
+ * @param name    Name of the sampler uniform. Must not be NULL.
  * @param texture Texture to bind to the sampler.
  *}
 procedure R3D_SetSurfaceShaderSampler(shader: PR3D_SurfaceShader; const name: PAnsiChar; texture: TTexture); cdecl;

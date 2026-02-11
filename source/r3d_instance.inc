@@ -5,7 +5,7 @@
 // ========================================
 
 const
-  R3D_INSTANCE_ATTRIBUTE_COUNT = 4;
+  R3D_INSTANCE_ATTRIBUTE_COUNT = 5;
 
 // ========================================
 // ENUM / FLAGS
@@ -21,6 +21,7 @@ const
   R3D_INSTANCE_ROTATION = (1 shl 1);    //< Quaternion
   R3D_INSTANCE_SCALE    = (1 shl 2);    //< Vector3
   R3D_INSTANCE_COLOR    = (1 shl 3);    //< Color
+  R3D_INSTANCE_CUSTOM   = (1 shl 4);    //< Vector4
 
 // ========================================
 // STRUCT TYPES

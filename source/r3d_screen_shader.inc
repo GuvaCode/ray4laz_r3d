@@ -57,8 +57,8 @@ procedure R3D_UnloadScreenShader(shader: PR3D_ScreenShader); cdecl;
 {*
  * @brief Sets a uniform value for the current frame.
  *
- * Once a uniform is set, it remains valid for all frames.
- * If a uniform is set multiple times during the same frame,
+ * Once a uniform is set, it remains valid for the all frames.
+ * If an uniform is set multiple times during the same frame,
  * the last value defined before R3D_End() is used.
  *
  * Supported types:
@@ -70,8 +70,10 @@ procedure R3D_UnloadScreenShader(shader: PR3D_ScreenShader); cdecl;
  * @warning Boolean values are read as 4 bytes.
  *
  * @param shader Target screen shader.
- * @param name Name of the uniform.
- * @param value Pointer to the uniform value.
+ *               May be NULL. In that case, the call is ignored
+ *               and a warning is logged.
+ * @param name   Name of the uniform. Must not be NULL.
+ * @param value  Pointer to the uniform value. Must not be NULL.
  *}
 procedure R3D_SetScreenShaderUniform(shader: PR3D_ScreenShader; const name: PAnsiChar; const value: Pointer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetScreenShaderUniform';
@@ -86,9 +88,10 @@ procedure R3D_SetScreenShaderUniform(shader: PR3D_ScreenShader; const name: PAns
  * Supported samplers:
  * sampler1D, sampler2D, sampler3D, samplerCube
  *
- * @param shader Target screen shader.
- * @param name Name of the sampler uniform.
- * @param texture Texture to bind to the sampler.
+ * @param shader  Target screen shader.
+ *                May be NULL. In that case, the call is ignored
+ *                and a warning is logged.
+ * @param name    Name of the sampler uniform. Must not be NULL.
  *}
 procedure R3D_SetScreenShaderSampler(shader: PR3D_ScreenShader; const name: PAnsiChar; texture: TTexture); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetScreenShaderSampler';
