@@ -71,7 +71,7 @@ begin
   Result.dof.focusPoint := 10.0;
   Result.dof.focusScale := 1.0;
   Result.dof.maxBlurSize := 20.0;
-  Result.dof.debugMode := false;
+ // Result.dof.debugMode := false;
 
   Result.tonemap.mode := R3D_TONEMAP_LINEAR;
   Result.tonemap.exposure := 1.0;
@@ -198,7 +198,7 @@ begin
     'ssr.enabled': Env^.ssr.enabled := Value;
 
     // Depth of Field
-    'dof.debugmode': Env^.dof.debugMode := Value;
+   // 'dof.debugmode': Env^.dof.debugMode := Value;
 
   else
     raise Exception.CreateFmt('Unknown Boolean field or wrong type: %s', [Path]);

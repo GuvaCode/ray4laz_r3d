@@ -169,7 +169,7 @@ type
     focusPoint: Single;       ///< Focus distance in meters from camera (default: 10.0)
     focusScale: Single;       ///< Depth of field depth: lower = shallower (default: 1.0)
     maxBlurSize: Single;      ///< Maximum blur radius, similar to aperture (default: 20.0)
-    debugMode: Boolean;       ///< Color-coded visualization: green=near, blue=far (default: false)
+   // debugMode: Boolean;       ///< Color-coded visualization: green=near, blue=far (default: false)
   end;
 
   {*
