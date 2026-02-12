@@ -198,7 +198,7 @@ begin
     'ssr.enabled': Env^.ssr.enabled := Value;
 
     // Depth of Field
-    'dof.debugmode': Env^.dof.debugMode := Value;
+   // 'dof.debugmode': Env^.dof.debugMode := Value;
 
   else
     raise Exception.CreateFmt('Unknown Boolean field or wrong type: %s', [Path]);

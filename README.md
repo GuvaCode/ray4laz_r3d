@@ -1,4 +1,4 @@
-# ![R3D](https://github.com/Bigfoot71/r3d) - 3D Rendering Library for raylib (free pascal binding)
+# R3D - 3D Rendering Library for raylib (free pascal binding)
 
 <img align="left" src="https://github.com/Bigfoot71/r3d/blob/master/logo.png" width="100" hspace="20">
 <br>
@@ -104,8 +104,14 @@ Licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
 
 ## Screenshots
 
-<img src="screenshots/screenshot0.png" width="400">
-<img src="screenshots/screenshot1.png" width="400">
+<table>
+  <tr>
+    <td><img src="screenshots/screenshot0.png"></td>
+    <td><img src="screenshots/screenshot1.png"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/screenshot2.png"></td>
+    <td><img src="screenshots/screenshot3.png"></td>
+  </tr>
+</table>
 
-<img src="screenshots/screenshot2.png" width="400">
-<img src="screenshots/screenshot3.png" width="400">
