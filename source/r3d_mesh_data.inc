@@ -1,4 +1,4 @@
-// R3D Mesh Data Module.
+﻿// R3D Mesh Data Module.
 
 {*
  * @brief Represents a vertex and all its attributes for a mesh.
@@ -157,8 +157,10 @@ function R3D_GenMeshDataCube(width, height, length: Single): TR3D_MeshData; cdec
  *}
 function R3D_GenMeshDataCubeEx(width, height, length: Single; resX, resY, resZ: Integer): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataCubeEx';
+{$IFDEF FPC}
  {$WARN 2005 off : Comment level $1 found}
-{*
+{$ENDIF}
+(*
  * @brief Generate a slope mesh by cutting a cube with a plane.
  *
  * Creates a slope mesh by slicing a cube with a plane that passes through the origin.
@@ -179,10 +181,12 @@ function R3D_GenMeshDataCubeEx(width, height, length: Single; resX, resY, resZ: 
  *
  * @note The normal vector will be automatically normalized internally.
  * @note The cutting plane always passes through the center of the cube (origin).
- *}
+ *)
 function R3D_GenMeshDataSlope(width, height, length: Single; slopeNormal: TVector3): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataSlope';
+{$IFDEF FPC}
  {$WARN 2005 on : Comment level $1 found}
+{$ENDIF}
 {*
  * @brief Generate a sphere mesh with specified parameters.
  *

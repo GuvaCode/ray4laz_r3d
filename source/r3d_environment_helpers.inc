@@ -1,4 +1,4 @@
-// R3D Environment Helpers Module
+﻿// R3D Environment Helpers Module
 
 // ========================================
 // HELPER FUNCTIONS
@@ -71,7 +71,7 @@ begin
   Result.dof.focusPoint := 10.0;
   Result.dof.focusScale := 1.0;
   Result.dof.maxBlurSize := 20.0;
- // Result.dof.debugMode := false;
+  //Result.dof.debugMode := false;
 
   Result.tonemap.mode := R3D_TONEMAP_LINEAR;
   Result.tonemap.exposure := 1.0;

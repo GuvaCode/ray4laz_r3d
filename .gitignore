@@ -45,3 +45,8 @@ templates/standard_game/
 
 # GNU+Linux
 # *.so
+*~
+*.local
+*.rsm
+*.exe
+*.dcu

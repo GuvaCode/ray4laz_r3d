@@ -22,13 +22,15 @@
  *)
 
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+  {$mode objfpc}{$H+}
+{$ENDIF}
 {.$DEFINE USED_R3D}
 
 interface
 
 uses
-  SysUtils, raylib, ctypes, Variants, math;
+  SysUtils, raylib, {$IFDEF FPC} ctypes, {$ENDIF} Variants, math;
 
 {$IFDEF LINUX}
   {$DEFINE RAY_STATIC}
@@ -36,7 +38,7 @@ uses
 
 {$IFNDEF RAY_STATIC}
   const r3dName =
-  {$IFDEF WINDOWS} 'libr3d.dll'; {$IFEND}
+  {$IFDEF MSWINDOWS} 'libr3d.dll'; {$IFEND}
    {$IFDEF LINUX} 'libr3d.so'; {$IFEND}
  {$ENDIF}
 
@@ -84,7 +86,11 @@ implementation
 {$I r3d_material_helpers.inc}
 {$I r3d_decal_helpers.inc}
 {$I r3d_cubemap_helpers.inc}
-{$I r3d_environment_helpers.inc}
+{$IFDEF FPC}
+  {$I r3d_environment_helpers.inc}
+{$ELSE}
+  {$I r3d_environment_helpers_delphi.inc}
+{$ENDIF}
 
 end.
 
