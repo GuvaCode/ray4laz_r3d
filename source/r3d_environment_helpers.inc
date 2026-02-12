@@ -1,4 +1,4 @@
-﻿// R3D Environment Helpers Module
+// R3D Environment Helpers Module
 
 // ========================================
 // HELPER FUNCTIONS

@@ -1,4 +1,4 @@
-﻿// R3D Environment Module.
+// R3D Environment Module.
 
 // ========================================
 // ENUMS TYPES

@@ -1,4 +1,4 @@
-﻿// R3D Mesh Data Module.
+// R3D Mesh Data Module.
 
 {*
  * @brief Represents a vertex and all its attributes for a mesh.
