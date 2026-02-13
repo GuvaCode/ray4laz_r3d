@@ -226,6 +226,46 @@ procedure R3D_SetDefaultMaterial(material: TR3D_Material); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetDefaultMaterial';
 
 {*
+ * @brief Load materials from a file.
+ *
+ * Parses a 3D model file and loads its associated materials.
+ *
+ * @param filePath Path to the 3D model file.
+ * @param materialCount Pointer to an integer to store the number of loaded materials.
+ * @return Pointer to an array of loaded R3D_Material, or NULL on failure.
+ *}
+function R3D_LoadMaterials(const filePath: PAnsiChar; materialCount: PInteger): PR3D_Material;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadMaterials';
+
+{*
+ * @brief Load materials from memory.
+ *
+ * Loads materials directly from a memory buffer containing 3D model data.
+ *
+ * @param data Pointer to the memory buffer containing the model data.
+ * @param size Size of the data buffer in bytes.
+ * @param hint Hint on the model format (can be NULL).
+ * @param materialCount Pointer to an integer to store the number of loaded materials.
+ * @return Pointer to an array of loaded R3D_Material, or NULL on failure.
+ *}
+function R3D_LoadMaterialsFromMemory(const data: Pointer; size: LongWord; const hint: PAnsiChar; materialCount: PInteger): PR3D_Material;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadMaterialsFromMemory';
+
+
+{*
+ * @brief Load materials from an importer.
+ *
+ * Loads materials that were previously imported via an R3D_Importer instance.
+ *
+ * @param importer Pointer to a valid R3D_Importer.
+ * @param materialCount Pointer to an integer to store the number of loaded materials.
+ * @return Pointer to an array of loaded R3D_Material, or NULL on failure.
+ *}
+ function R3D_LoadMaterialsFromImporter(const importer: PR3D_Importer; materialCount: PInteger): PR3D_Material;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadMaterialsFromImporter';
+
+
+{*
  * @brief Unload a material and its associated textures.
  *
  * Frees all memory associated with a material, including its textures.

@@ -95,31 +95,24 @@ procedure R3D_DrawMeshPro(mesh: TR3D_Mesh; material: TR3D_Material;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshPro';
 
 {*
- * @brief Queues an instanced mesh draw command.
- *
- * Draws multiple instances using the provided instance buffer.
- * The command is executed during R3D_End().
- *
- * @param mesh Mesh to render.
- * @param material Material to apply to the mesh.
- * @param instances Instance buffer containing instance data.
- * @param count Number of instances to draw.
+* @brief Queues an instanced mesh draw command.
+*
+* Draws multiple instances using the provided instance buffer.
+* Does nothing if the number of instances is <= 0.
+*
+* The command is executed during R3D_End().
  *}
 procedure R3D_DrawMeshInstanced(mesh: TR3D_Mesh; material: TR3D_Material;
   instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshInstanced';
 
 {*
- * @brief Queues an instanced mesh draw command with an additional transform.
- *
- * The transform is applied to all instances.
- * The command is executed during R3D_End().
- *
- * @param mesh Mesh to render.
- * @param material Material to apply to the mesh.
- * @param instances Instance buffer containing instance data.
- * @param count Number of instances to draw.
- * @param transform Additional transformation matrix applied to all instances.
+* @brief Queues an instanced mesh draw command with an additional transform.
+*
+* Does nothing if the number of instances is <= 0.
+* The transform is applied to all instances.
+*
+* The command is executed during R3D_End().
  *}
 procedure R3D_DrawMeshInstancedEx(mesh: TR3D_Mesh; material: TR3D_Material;
   instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
@@ -163,14 +156,12 @@ procedure R3D_DrawModelPro(model: TR3D_Model; transform: TMatrix); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelPro';
 
 {*
- * @brief Queues an instanced model draw command.
- *
- * Draws multiple instances using the provided instance buffer.
- * The command is executed during R3D_End().
- *
- * @param model Model to render.
- * @param instances Instance buffer containing instance data.
- * @param count Number of instances to draw.
+* @brief Queues an instanced model draw command.
+*
+* Draws multiple instances using the provided instance buffer.
+* Does nothing if the number of instances is <= 0.
+*
+* The command is executed during R3D_End().
  *}
 procedure R3D_DrawModelInstanced(model: TR3D_Model;
   instances: TR3D_InstanceBuffer; count: Integer); cdecl;
