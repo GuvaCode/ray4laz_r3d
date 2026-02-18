@@ -99,20 +99,45 @@ type
   {*
    * @brief Screen Space Indirect Lighting (SSIL) settings.
    *
-   * Approximates indirect lighting by gathering light from nearby surfaces in screen space.
+   * Approximates indirect lighting by gathering light from nearby visible
+   * surfaces in screen space.
+   *
+   * With a small radius, SSIL behaves like an extension of SSAO,
+   * producing a very subtle local blending of light and surface hues.
+   * With a larger radius, it becomes a better complement to SSGI,
+   * reinforcing indirect lighting over a wider area.
    *}
-  PR3D_EnvSSIL = ^TR3D_EnvSSIL;
-  TR3D_EnvSSIL = record
-    sampleCount: Integer;     ///< Number of samples to compute indirect lighting (default: 4)
-    sliceCount: Integer;      ///< Number of depth slices for accumulation (default: 4)
-    sampleRadius: Single;     ///< Maximum distance to gather light from (default: 2.0)
-    hitThickness: Single;     ///< Thickness threshold for occluders (default: 0.5)
-    aoPower: Single;          ///< Exponential falloff for visibility factor (too high = more noise) (default: 1.0)
-    energy: Single;           ///< Multiplier for indirect light intensity (default: 1.0)
-    bounce: Single;           ///< Bounce feedback factor (default: 0.5)
-    convergence: Single;      ///< Temporal convergence factor (0 disables it, default 0.5)
-    enabled: Boolean;         ///< Enable/disable SSIL effect (default: false)
-  end;
+   PR3D_EnvSSIL = ^TR3D_EnvSSIL;
+   TR3D_EnvSSIL = record
+     sampleCount: Integer;     ///< Number of samples to compute indirect lighting (default: 2)
+     sliceCount: Integer;      ///< Number of depth slices for accumulation (default: 4)
+     radius: Single;           ///< Maximum distance to gather light from (default: 2.0)
+     thickness: Single;        ///< Thickness threshold for occluders (default: 1.0)
+     intensity: Single;        ///< IL intensity multiplier (default: 1.0)
+     aoPower: Single;          ///< AO exponent/power (default: 1.0)
+     denoiseSteps: Integer;    ///< Number of denoiser iterations (default: 4)
+     enabled: Boolean;         ///< Enable/disable SSIL effect (default: false)
+   end;
+
+  (*
+   * @brief Screen Space Global Illumination (SSGI) settings.
+   *
+   * Real-time global illlumination calculated in screen space.
+   * @note Best suited for enclosed/indoor environments.
+   *)
+   PR3D_EnvSSGI = ^TR3D_EnvSSGI;
+   TR3D_EnvSSGI = record
+     sampleCount: Integer;     ///< Number of rays per pixel (default: 2)
+     maxRaySteps: Integer;     ///< Maximum ray marching steps (default: 32)
+     stepSize: Single;         ///< Ray step size (default: 0.125)
+     thickness: Single;        ///< Depth tolerance for valid hits (default: 1.0)
+     maxDistance: Single;      ///< Maximum ray distance (default: 4.0)
+     fadeStart: Single;        ///< Distance at which the GI fade begins (default: 8.0)
+     fadeEnd: Single;          ///< Distance at which GI is fully faded (default: 16.0)
+     denoiseSteps: Integer;    ///< Number of denoiser iterations (default: 5)
+     enabled: Boolean;         ///< Enable/disable SSGI (default: false)
+   end;
+
 
   {*
    * @brief Screen Space Reflections (SSR) settings.
@@ -169,7 +194,6 @@ type
     focusPoint: Single;       ///< Focus distance in meters from camera (default: 10.0)
     focusScale: Single;       ///< Depth of field depth: lower = shallower (default: 1.0)
     maxBlurSize: Single;      ///< Maximum blur radius, similar to aperture (default: 20.0)
-    //debugMode: Boolean;       ///< Color-coded visualization: green=near, blue=far (default: false)
   end;
 
   {*
@@ -207,6 +231,7 @@ type
     ambient: TR3D_EnvAmbient;       ///< Ambient lighting configuration
     ssao: TR3D_EnvSSAO;             ///< Screen space ambient occlusion
     ssil: TR3D_EnvSSIL;             ///< Screen space indirect lighting
+    ssgi: TR3D_EnvSSGI;             ///< Screen space global illumination
     ssr: TR3D_EnvSSR;               ///< Screen space reflections
     bloom: TR3D_EnvBloom;           ///< Bloom glow effect
     fog: TR3D_EnvFog;               ///< Atmospheric fog

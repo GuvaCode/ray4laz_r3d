@@ -30,16 +30,25 @@ begin
   Result.ssao.bias := 0.02;
   Result.ssao.enabled := false;
 
-  Result.ssil.sampleCount := 4;
+  Result.ssil.sampleCount := 2;
   Result.ssil.sliceCount := 4;
-  Result.ssil.sampleRadius := 2.0;
-  Result.ssil.hitThickness := 0.5;
+  Result.ssil.radius := 2.0;
+  Result.ssil.thickness := 1.0;
+  Result.ssil.intensity := 1.0;
   Result.ssil.aoPower := 1.0;
-  Result.ssil.energy := 1.0;
-  Result.ssil.bounce := 0.5;
-  Result.ssil.convergence := 0.5;
-  Result.ssil.enabled := false;
+  Result.ssil.denoiseSteps := 4;
+  Result.ssil.enabled := false; 
 
+  Result.ssgi.sampleCount := 2;
+  Result.ssgi.maxRaySteps:= 32;
+  Result.ssgi.stepSize := 0.125;
+  Result.ssgi.thickness:= 1.0;
+  Result.ssgi.maxDistance := 4.0;
+  Result.ssgi.fadeStart := 8.0;
+  Result.ssgi.fadeEnd := 16.0;
+  Result.ssgi.denoiseSteps :=  5;
+  Result.ssgi.enabled := False;     
+  
   Result.ssr.maxRaySteps := 32;
   Result.ssr.binarySteps := 4;
   Result.ssr.stepSize := 0.125;

@@ -32,15 +32,24 @@ begin
   Result.ssao.bias := 0.02;
   Result.ssao.enabled := false;
 
-  Result.ssil.sampleCount := 4;
+  Result.ssil.sampleCount := 2;
   Result.ssil.sliceCount := 4;
-  Result.ssil.sampleRadius := 2.0;
-  Result.ssil.hitThickness := 0.5;
+  Result.ssil.radius := 2.0;
+  Result.ssil.thickness := 1.0;
+  Result.ssil.intensity := 1.0;
   Result.ssil.aoPower := 1.0;
-  Result.ssil.energy := 1.0;
-  Result.ssil.bounce := 0.5;
-  Result.ssil.convergence := 0.5;
+  Result.ssil.denoiseSteps := 4;
   Result.ssil.enabled := false;
+
+  Result.ssgi.sampleCount := 2;
+  Result.ssgi.maxRaySteps:= 32;
+  Result.ssgi.stepSize := 0.125;
+  Result.ssgi.thickness:= 1.0;
+  Result.ssgi.maxDistance := 4.0;
+  Result.ssgi.fadeStart := 8.0;
+  Result.ssgi.fadeEnd := 16.0;
+  Result.ssgi.denoiseSteps :=  5;
+  Result.ssgi.enabled := False;
 
   Result.ssr.maxRaySteps := 32;
   Result.ssr.binarySteps := 4;
@@ -71,7 +80,6 @@ begin
   Result.dof.focusPoint := 10.0;
   Result.dof.focusScale := 1.0;
   Result.dof.maxBlurSize := 20.0;
-  //Result.dof.debugMode := false;
 
   Result.tonemap.mode := R3D_TONEMAP_LINEAR;
   Result.tonemap.exposure := 1.0;
@@ -109,14 +117,19 @@ begin
     'ssao.bias': Env^.ssao.bias := Value;
 
     // SSIL
-    'ssil.sampleradius': Env^.ssil.sampleRadius := Value;
-    'ssil.hitthickness': Env^.ssil.hitThickness := Value;
-    'ssil.aopower': Env^.ssil.aoPower := Value;
-    'ssil.energy': Env^.ssil.energy := Value;
-    'ssil.convergence': Env^.ssil.convergence := Value;
-    'ssil.bounce': Env^.ssil.bounce := Value;
+    'ssil.radius': Env^.ssil.radius := Value;
+    'ssil.thickness': Env^.ssil.thickness := Value;
+    'ssil.intensity': Env^.ssil.intensity := Value;
+    'ssil.aoPower': Env^.ssil.aoPower := Value;
 
-    // SSR - ИСПРАВЛЕННЫЕ имена полей
+    // SSGI
+    'ssgi.stepSize': Env^.ssgi.stepSize := Value;
+    'ssgi.thickness': Env^.ssgi.thickness := Value;
+    'ssgi.maxDistance': Env^.ssgi.maxDistance := Value;
+    'ssgi.fadeStart': Env^.ssgi.fadeStart := Value;
+    'ssgi.fadeEnd': Env^.ssgi.fadeEnd := Value;
+
+    // SSR
     'ssr.stepsize': Env^.ssr.stepSize := Value;
     'ssr.thickness': Env^.ssr.thickness := Value;
     'ssr.maxdistance': Env^.ssr.maxDistance := Value;
@@ -169,10 +182,14 @@ begin
     // SSIL
     'ssil.samplecount': Env^.ssil.sampleCount := Value;
     'ssil.slicecount': Env^.ssil.sliceCount := Value;
-
-    // SSR - ИСПРАВЛЕННЫЕ имена полей
+    'ssil.denoiseSteps': Env^.ssil.denoiseSteps:= Value;
+    // SSR
     'ssr.maxraysteps': Env^.ssr.maxRaySteps := Value;
     'ssr.binarysteps': Env^.ssr.binarySteps := Value;
+    // SSGI
+    'sampleCount': Env^.ssgi.sampleCount := Value;
+    'maxRaySteps': Env^.ssgi.maxRaySteps := Value;
+    'denoiseSteps': Env^.ssgi.denoiseSteps := Value;
 
   else
     raise Exception.CreateFmt('Unknown Integer field or wrong type: %s', [Path]);
@@ -197,8 +214,8 @@ begin
     // SSR
     'ssr.enabled': Env^.ssr.enabled := Value;
 
-    // Depth of Field
-   // 'dof.debugmode': Env^.dof.debugMode := Value;
+    // SSGI
+    'ssgi.enabled': Env^.ssgi.enabled := Value;
 
   else
     raise Exception.CreateFmt('Unknown Boolean field or wrong type: %s', [Path]);

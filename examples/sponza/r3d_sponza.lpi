@@ -35,7 +35,7 @@
       <Unit>
         <Filename Value="r3d_sponza.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="SponzaExample"/>
+        <UnitName Value="sponza_example"/>
       </Unit>
     </Units>
   </ProjectOptions>
