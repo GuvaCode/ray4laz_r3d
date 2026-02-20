@@ -37,13 +37,32 @@ const
   R3D_LAYER_ALL = $FFFFFFFF;
 
 {*
- * @brief Anti-aliasing modes for rendering.
+ * @brief Anti-aliasing modes used during rendering.
+ *
+ * Anti-aliasing reduces visible jagged edges (aliasing artifacts)
+ * in the final rendered image.
  *}
- type
-   TR3D_AntiAliasing = (
-     R3D_ANTI_ALIASING_DISABLED, ///< Anti-aliasing is disabled. Edges may appear jagged.
-     R3D_ANTI_ALIASING_FXAA     ///< FXAA is applied. Smooths edges efficiently but may appear blurry.
-     );
+type
+  TR3D_AntiAliasingMode = (
+    R3D_ANTI_ALIASING_MODE_NONE,  ///< No anti-aliasing. Best performance, visible jagged edges.
+    R3D_ANTI_ALIASING_MODE_FXAA,  ///< Fast Approximate AA. Smooths edges efficiently but may appear blurry.
+    R3D_ANTI_ALIASING_MODE_SMAA  ///< Subpixel Morphological AA. Sharper than FXAA, moderate performance cost.
+    );
+
+{*
+ * @brief Quality presets for anti-aliasing.
+ *
+ * Presets adjust internal algorithm parameters (e.g. edge detection,
+ * search steps, thresholds). Higher presets increase quality and GPU cost.
+ *}
+type
+  TR3D_AntiAliasingPreset = (
+    R3D_ANTI_ALIASING_PRESET_LOW,     ///< Performance-oriented preset with reduced quality.
+    R3D_ANTI_ALIASING_PRESET_MEDIUM,  ///< Balanced quality/performance preset.
+    R3D_ANTI_ALIASING_PRESET_HIGH,    ///< High quality preset with increased GPU cost.
+    R3D_ANTI_ALIASING_PRESET_ULTRA,   ///< Maximum quality preset, highest performance cost.
+    R3D_ANTI_ALIASING_PRESET_COUNT   ///< Number of presets (not a valid preset value).
+    );
 
 {*
  * @brief Aspect ratio handling modes for rendering.
@@ -174,17 +193,42 @@ procedure R3D_UpdateResolution(width, height: Integer); cdecl;
 
 {*
  * @brief Retrieves the current anti-aliasing mode used for rendering.
- * @return The currently active R3D_AntiAliasing mode.
+ *
+ * @return The currently active R3D_AntiAliasingMode.
  *}
-function R3D_GetAntiAliasing(): TR3D_AntiAliasing; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetAntiAliasing';
+function R3D_GetAntiAliasingMode(): TR3D_AntiAliasingMode; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetAntiAliasingMode';
 
 {*
  * @brief Sets the anti-aliasing mode for rendering.
- * @param mode The desired R3D_AntiAliasing mode.
+ *
+ * The new mode takes effect on subsequent frames.
+ *
+ * @param mode The desired R3D_AntiAliasingMode.
+ * @note If the mode is invalid, no AA will be applied.
  *}
-procedure R3D_SetAntiAliasing(mode: TR3D_AntiAliasing); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetAntiAliasing';
+procedure R3D_SetAntiAliasingMode(mode: TR3D_AntiAliasingMode); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetAntiAliasingMode';
+
+{*
+ * @brief Retrieves the current anti-aliasing quality preset.
+ *
+ * @return The currently active R3D_AntiAliasingPreset.
+ *}
+function R3D_GetAntiAliasingPreset(): TR3D_AntiAliasingPreset; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetAntiAliasingPreset';
+
+{*
+ * @brief Sets the anti-aliasing quality preset.
+ *
+ * Changing the preset triggers an internal shader recompilation.
+ * Compiled variants are cached and reused if the preset is set again.
+ *
+ * @param preset The desired R3D_AntiAliasingPreset.
+ * @note The preset will be a clamp between low and ultra.
+ *}
+procedure R3D_SetAntiAliasingPreset(preset: TR3D_AntiAliasingPreset); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetAntiAliasingPreset';
 
 {*
  * @brief Retrieves the current aspect ratio handling mode.

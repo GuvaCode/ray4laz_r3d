@@ -52,7 +52,7 @@ uses
   {$I r3d_probe.inc}
   {$I r3d_environment.inc}
   {$I r3d_lighting.inc}
-
+  //#include "r3d_sky.h"
   {$I r3d_surface_shader.inc}
   {$I r3d_material.inc}
 

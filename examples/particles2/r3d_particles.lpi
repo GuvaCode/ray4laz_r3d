@@ -9,7 +9,7 @@
         <MainUnitHasScaledStatement Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="shader"/>
+      <Title Value="r3d_particles"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -33,16 +33,16 @@
     </RequiredPackages>
     <Units>
       <Unit>
-        <Filename Value="shader.lpr"/>
+        <Filename Value="r3d_particles.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ShaderExample"/>
+        <UnitName Value="LaserImpactEffect"/>
       </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="../../binary/shader"/>
+      <Filename Value="../../binary/r3d_particles"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
@@ -54,8 +54,7 @@
       </Debugging>
     </Linking>
     <Other>
-      <CustomOptions Value="-Xr
--k&quot;-rpath=\$$ORIGIN&quot;"/>
+      <CustomOptions Value="-k&quot;-rpath=$ORIGIN&quot;"/>
     </Other>
   </CompilerOptions>
   <Debugging>
