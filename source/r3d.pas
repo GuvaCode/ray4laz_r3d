@@ -52,7 +52,8 @@ uses
   {$I r3d_probe.inc}
   {$I r3d_environment.inc}
   {$I r3d_lighting.inc}
-  //#include "r3d_sky.h"
+  {$I r3d_sky_shader.inc}
+  {$I r3d_sky.inc}
   {$I r3d_surface_shader.inc}
   {$I r3d_material.inc}
 
@@ -85,7 +86,7 @@ implementation
 
 {$I r3d_material_helpers.inc}
 {$I r3d_decal_helpers.inc}
-{$I r3d_cubemap_helpers.inc}
+{$I r3d_sky_helpers.inc}
 {$IFDEF FPC}
   {$I r3d_environment_helpers.inc}
 {$ELSE}

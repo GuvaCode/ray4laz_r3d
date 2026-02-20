@@ -280,3 +280,6 @@ procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Bloom); overload;
 procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Fog); overload;
 procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_DoF); overload;
 procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_Tonemap); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_EnvBackground); overload;
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_EnvAmbient); overload;
+

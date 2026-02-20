@@ -363,3 +363,37 @@ begin
     raise Exception.CreateFmt('Unknown TR3D_Tonemap field or wrong type: %s', [Path]);
   end;
 end;
+
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_EnvBackground);
+var
+  Env: PR3D_Environment;
+begin
+  Env := R3D_GetEnvironment();
+  if not Assigned(Env) then Exit;
+
+  case LowerCase(Path) of
+    // background
+    'background': Env^.background := Value;
+
+  else
+    raise Exception.CreateFmt('Unknown TR3D_Tonemap field or wrong type: %s', [Path]);
+  end;
+end;
+
+procedure R3D_ENVIRONMENT_SET(const Path: string; Value: TR3D_EnvAmbient);
+var
+  Env: PR3D_Environment;
+begin
+  Env := R3D_GetEnvironment();
+  if not Assigned(Env) then Exit;
+
+  case LowerCase(Path) of
+    // ambient    //TR3D_EnvAmbient
+    'ambient': Env^.ambient := Value;
+
+  else
+    raise Exception.CreateFmt('Unknown TR3D_Tonemap field or wrong type: %s', [Path]);
+  end;
+end;
+
+

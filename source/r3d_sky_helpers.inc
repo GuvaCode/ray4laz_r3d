@@ -1,6 +1,6 @@
-// // R3D Cubemap Helpers Module
+// // R3D Sky Helpers Module
 
-function R3D_CUBEMAP_SKY_BASE: TR3D_CubemapSky; inline;
+function R3D_PROCEDURAL_SKY_BASE: TR3D_ProceduralSky; inline;
 begin
   Result.skyTopColor := ColorCreate(98, 116, 140, 255);
   Result.skyHorizonColor := ColorCreate(165, 167, 171, 255);
@@ -14,7 +14,9 @@ begin
 
   Result.sunDirection := Vector3Create(-1.0, -1.0, -1.0);
   Result.sunColor := WHITE;
-  Result.sunSize := 1.5 * DEG2RAD;
+  Result.sunSize := 1.0 * DEG2RAD;
   Result.sunCurve := 0.15;
   Result.sunEnergy := 1.0;
 end;
+
+

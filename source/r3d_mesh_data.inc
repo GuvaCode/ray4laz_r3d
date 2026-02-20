@@ -157,10 +157,8 @@ function R3D_GenMeshDataCube(width, height, length: Single): TR3D_MeshData; cdec
  *}
 function R3D_GenMeshDataCubeEx(width, height, length: Single; resX, resY, resZ: Integer): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataCubeEx';
-{$IFDEF FPC}
- {$WARN 2005 off : Comment level $1 found}
-{$ENDIF}
-(*
+
+{*
  * @brief Generate a slope mesh by cutting a cube with a plane.
  *
  * Creates a slope mesh by slicing a cube with a plane that passes through the origin.
@@ -181,12 +179,10 @@ function R3D_GenMeshDataCubeEx(width, height, length: Single; resX, resY, resZ: 
  *
  * @note The normal vector will be automatically normalized internally.
  * @note The cutting plane always passes through the center of the cube (origin).
- *)
+ *}
 function R3D_GenMeshDataSlope(width, height, length: Single; slopeNormal: TVector3): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataSlope';
-{$IFDEF FPC}
- {$WARN 2005 on : Comment level $1 found}
-{$ENDIF}
+
 {*
  * @brief Generate a sphere mesh with specified parameters.
  *
@@ -332,63 +328,63 @@ function R3D_MergeMeshData(a, b: TR3D_MeshData): TR3D_MeshData; cdecl;
 
 {*
  * @brief Translates all vertices by a given offset.
- * @param meshData Mesh data to modify.
+ * @param meshData Pointer to mesh data to modify.
  * @param translation Offset to apply to all vertex positions.
  *}
-procedure R3D_TranslateMeshData(var meshData: TR3D_MeshData; translation: TVector3); cdecl;
+procedure R3D_TranslateMeshData(meshData: PR3D_MeshData; translation: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_TranslateMeshData';
 
 {*
  * @brief Rotates all vertices using a quaternion.
- * @param meshData Mesh data to modify.
+ * @param meshData Pointer to mesh data to modify.
  * @param rotation Quaternion representing the rotation.
  *}
-procedure R3D_RotateMeshData(var meshData: TR3D_MeshData; rotation: TQuaternion); cdecl;
+procedure R3D_RotateMeshData(meshData: PR3D_MeshData; rotation: TQuaternion); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_RotateMeshData';
 
 {*
  * @brief Scales all vertices by given factors.
- * @param meshData Mesh data to modify.
+ * @param meshData Pointer to mesh data to modify.
  * @param scale Scaling factors for each axis.
  *}
-procedure R3D_ScaleMeshData(var meshData: TR3D_MeshData; scale: TVector3); cdecl;
+procedure R3D_ScaleMeshData(meshData: PR3D_MeshData; scale: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ScaleMeshData';
 
 {*
  * @brief Generates planar UV coordinates.
- * @param meshData Mesh data to modify.
+ * @param meshData Pointer to mesh data to modify.
  * @param uvScale Scaling factors for UV coordinates.
  * @param axis Axis along which to project the planar mapping.
  *}
-procedure R3D_GenMeshDataUVsPlanar(var meshData: TR3D_MeshData; uvScale: TVector2; axis: TVector3); cdecl;
+procedure R3D_GenMeshDataUVsPlanar(meshData: PR3D_MeshData; uvScale: TVector2; axis: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataUVsPlanar';
 
 {*
  * @brief Generates spherical UV coordinates.
- * @param meshData Mesh data to modify.
+ * @param meshData Pointer to mesh data to modify.
  *}
-procedure R3D_GenMeshDataUVsSpherical(var meshData: TR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataUVsSpherical(meshData: PR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataUVsSpherical';
 
 {*
  * @brief Generates cylindrical UV coordinates.
- * @param meshData Mesh data to modify.
+ * @param meshData Pointer to mesh data to modify.
  *}
-procedure R3D_GenMeshDataUVsCylindrical(var meshData: TR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataUVsCylindrical(meshData: PR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataUVsCylindrical';
 
 {*
  * @brief Computes vertex normals from triangle geometry.
- * @param meshData Mesh data to modify.
+ * @param meshData Pointer to mesh data to modify.
  *}
-procedure R3D_GenMeshDataNormals(var meshData: TR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataNormals(meshData: PR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataNormals';
 
 {*
  * @brief Computes vertex tangents based on existing normals and UVs.
- * @param meshData Mesh data to modify.
+ * @param meshData Pointer to mesh data to modify.
  *}
-procedure R3D_GenMeshDataTangents(var meshData: TR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataTangents(meshData: PR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataTangents';
 
 {*
