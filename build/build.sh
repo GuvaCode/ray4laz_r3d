@@ -2,7 +2,7 @@
 
 #rm -f ../libs/x86_64-linux/libr3d*
 
-# git clone --depth 1 --recurse-submodules https://github.com/Bigfoot71/r3d
+git clone --depth 1 --recurse-submodules https://github.com/Bigfoot71/r3d
 
 cp mingw-w64-x86_64.cmake r3d/mingw-w64-x86_64.cmake
 
@@ -24,7 +24,7 @@ cd ..
 # ==================== КОМПИЛЯЦИЯ СТАТИЧЕСКОЙ БИБЛИОТЕКИ LINUX64 ====================
 echo "=== Building static library ==="
 mkdir build_lin64_static && cd build_lin64_static
-cmake .. -DR3D_RAYLIB_VENDORED=ON -DR3D_ASSIMP_VENDORED=ON -DBUILD_SHARED_LIBS=OFF -DR3D_BUILD_EXAMPLES=ON
+cmake .. -DR3D_RAYLIB_VENDORED=ON -DR3D_ASSIMP_VENDORED=ON -DBUILD_SHARED_LIBS=OFF -DR3D_BUILD_EXAMPLES=OFF
 cmake --build .
 cp lib/libr3d.a ../../../libs/x86_64-linux/libr3d.a
 

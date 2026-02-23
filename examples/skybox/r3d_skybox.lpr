@@ -55,7 +55,7 @@ begin
 
   // Load a custom sky shader
   shader := Default(PR3D_SkyShader);
-  shader := R3D_LoadSkyShader(PAnsiChar(RESOURCES_PATH + 'shaders/sky.glsl'));
+  shader := R3D_LoadSkyShader(PAnsiChar(RESOURCES_PATH + 'shaders/test_sky.glsl'));
 
 
   // Set shader uniforms
