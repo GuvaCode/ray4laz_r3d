@@ -11,20 +11,6 @@ type
   );
 
 {*
- * @brief Defines the geometric primitive type.
- *}
-type
-  TR3D_PrimitiveType = (
-    R3D_PRIMITIVE_POINTS,           ///< Each vertex represents a single point.
-    R3D_PRIMITIVE_LINES,            ///< Each pair of vertices forms an independent line segment.
-    R3D_PRIMITIVE_LINE_STRIP,       ///< Connected series of line segments sharing vertices.
-    R3D_PRIMITIVE_LINE_LOOP,        ///< Closed loop of connected line segments.
-    R3D_PRIMITIVE_TRIANGLES,        ///< Each set of three vertices forms an independent triangle.
-    R3D_PRIMITIVE_TRIANGLE_STRIP,   ///< Connected strip of triangles sharing vertices.
-    R3D_PRIMITIVE_TRIANGLE_FAN      ///< Fan of triangles sharing the first vertex.
-  );
-
-{*
  * @brief Shadow casting modes for objects.
  *
  * Controls how an object interacts with the shadow mapping system.
@@ -57,14 +43,18 @@ type
 type
   PR3D_Mesh = ^TR3D_Mesh;
   TR3D_Mesh = record
-    vao, vbo, ebo: UInt32;                ///< OpenGL objects handles.
-    vertexCount, indexCount: Integer;     ///< Number of vertices and indices currently in use.
-    allocVertexCount, allocIndexCount: Integer; ///< Number of vertices and indices allocated in GPU buffers.
-    shadowCastMode: TR3D_ShadowCastMode;  ///< Shadow casting mode for the mesh.
-    primitiveType: TR3D_PrimitiveType;    ///< Type of primitive that constitutes the vertices.
-    usage: TR3D_MeshUsage;                ///< Hint about the usage of the mesh, retained in case of update if there is a reallocation.
-    layerMask: TR3D_Layer;                ///< Bitfield indicating the rendering layer(s) of this mesh.
-    aabb: TBoundingBox;                   ///< Axis-Aligned Bounding Box in local space.
+    vao: UInt32;                           ///< OpenGL objects handles.
+    vbo: UInt32;
+    ebo: UInt32;
+    vertexCapacity: Integer;                ///< Number of vertices allocated in GPU buffers.
+    indexCapacity: Integer;                 ///< Number of indices allocated in GPU buffers.
+    vertexCount: Integer;                   ///< Number of vertices currently in use.
+    indexCount: Integer;                    ///< Number of indices currently in use.
+    shadowCastMode: TR3D_ShadowCastMode;    ///< Shadow casting mode for the mesh.
+    primitiveType: TR3D_PrimitiveType;      ///< Type of primitive that constitutes the vertices.
+    usage: TR3D_MeshUsage;                  ///< Hint about the usage of the mesh, retained in case of update if there is a reallocation.
+    layerMask: TR3D_Layer;                  ///< Bitfield indicating the rendering layer(s) of this mesh.
+    aabb: TBoundingBox;                     ///< Axis-Aligned Bounding Box in local space.
   end;
 
 // ========================================
@@ -74,7 +64,7 @@ type
 {*
  * @brief Creates a 3D mesh from CPU-side mesh data.
  * @param type Primitive type used to interpret vertex data.
- * @param data R3D_MeshData containing vertices and indices (cannot be NULL).
+ * @param data R3D_MeshData containing vertices and indices (can be zero initialized).
  * @param aabb Optional pointer to a bounding box. If NULL, it will be computed automatically.
  * @param usage Hint on how the mesh will be used.
  * @return Created R3D_Mesh.

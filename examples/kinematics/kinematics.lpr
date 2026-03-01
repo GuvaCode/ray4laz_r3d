@@ -58,9 +58,12 @@ begin
   // Initialize R3D
   R3D_Init(GetScreenWidth(), GetScreenHeight());
   R3D_SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_8X);
+  R3D_SetTextureWrap(TEXTURE_WRAP_REPEAT);
 
   // Setup sky and ambient
-  sky := R3D_GenCubemapSky(4096, R3D_CUBEMAP_SKY_BASE);
+  // sky := R3D_GenCubemapSky(4096, R3D_CUBEMAP_SKY_BASE);
+  sky := R3D_GenProceduralSky(1024, R3D_PROCEDURAL_SKY_BASE);
+
   ambient := R3D_GenAmbientMap(sky, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
   R3D_ENVIRONMENT_SET('background.sky', sky);
   R3D_ENVIRONMENT_SET('ambient.map', ambient);

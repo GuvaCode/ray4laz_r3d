@@ -298,7 +298,7 @@ function R3D_LoadAlbedoMap(const fileName: PAnsiChar; color: TColor): TR3D_Albed
  *
  * Same behavior as R3D_LoadAlbedoMap(), but reads from memory instead of disk.
  *
- * @param fileType Image format hint (e.g. "png", "jpg").
+ * @param fileType Image format hint (e.g. ".png", ".jpg").
  * @param fileData Pointer to image data.
  * @param dataSize Size of image data in bytes.
  * @param color Multiplicative tint applied in the shader.
@@ -336,7 +336,7 @@ function R3D_LoadEmissionMap(fileName: PAnsiChar; color: TColor; energy: Single)
  *
  * Same behavior as R3D_LoadEmissionMap(), but reads from memory.
  *
- * @param fileType Image format hint.
+ * @param fileType Image format hint (e.g. ".png", ".jpg").
  * @param fileData Pointer to image data.
  * @param dataSize Size of image data in bytes.
  * @param color Emission color.
@@ -413,7 +413,7 @@ function R3D_LoadOrmMap(fileName: PAnsiChar; occlusion, roughness, metalness: Si
  *
  * Same behavior as R3D_LoadOrmMap(), but reads from memory.
  *
- * @param fileType Image format hint.
+ * @param fileType Image format hint (e.g. ".png", ".jpg").
  * @param fileData Pointer to image data.
  * @param dataSize Size of image data in bytes.
  * @param occlusion Occlusion multiplier.

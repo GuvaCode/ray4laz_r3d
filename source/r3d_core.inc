@@ -304,6 +304,20 @@ procedure R3D_SetTextureFilter(filter: TTextureFilter); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetTextureFilter';
 
 {*
+ * @brief Sets the default texture wrap mode.
+ *
+ * This function only affects textures that are loaded manually for material maps.
+ * Textures loaded automatically during model import will use the wrap mode
+ * defined in the model file itself.
+ *
+ * The default texture wrap mode is `TEXTURE_WRAP_CLAMP`.
+ *
+ * @param wrap The texture wrap mode to apply by default.
+ *}
+procedure R3D_SetTextureWrap(wrap: TTextureWrap); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetTextureWrap';
+
+{*
  * @brief Set the working color space for user-provided surface colors and color textures.
  *
  * Defines how all *color inputs* should be interpreted:

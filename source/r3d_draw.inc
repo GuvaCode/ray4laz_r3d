@@ -1,5 +1,10 @@
 // R3D Draw Module.
 
+
+// ========================================
+// PUBLIC API
+// ========================================
+
 {*
  * @brief Begins a rendering session using the given camera.
  *
@@ -56,11 +61,6 @@ procedure R3D_EndCluster; cdecl;
  * @brief Queues a mesh draw command with position and uniform scale.
  *
  * The command is executed during R3D_End().
- *
- * @param mesh Mesh to render.
- * @param material Material to apply to the mesh.
- * @param position Position of the mesh.
- * @param scale Uniform scale factor.
  *}
 procedure R3D_DrawMesh(mesh: TR3D_Mesh; material: TR3D_Material;
   position: TVector3; scale: Single); cdecl;
@@ -70,12 +70,6 @@ procedure R3D_DrawMesh(mesh: TR3D_Mesh; material: TR3D_Material;
  * @brief Queues a mesh draw command with position, rotation and non-uniform scale.
  *
  * The command is executed during R3D_End().
- *
- * @param mesh Mesh to render.
- * @param material Material to apply to the mesh.
- * @param position Position of the mesh.
- * @param rotation Rotation quaternion.
- * @param scale Non-uniform scale vector.
  *}
 procedure R3D_DrawMeshEx(mesh: TR3D_Mesh; material: TR3D_Material;
   position: TVector3; rotation: TQuaternion; scale: TVector3); cdecl;
@@ -85,47 +79,58 @@ procedure R3D_DrawMeshEx(mesh: TR3D_Mesh; material: TR3D_Material;
  * @brief Queues a mesh draw command using a full transform matrix.
  *
  * The command is executed during R3D_End().
- *
- * @param mesh Mesh to render.
- * @param material Material to apply to the mesh.
- * @param transform Full transformation matrix.
  *}
 procedure R3D_DrawMeshPro(mesh: TR3D_Mesh; material: TR3D_Material;
   transform: TMatrix); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshPro';
 
 {*
-* @brief Queues an instanced mesh draw command.
-*
-* Draws multiple instances using the provided instance buffer.
-* Does nothing if the number of instances is <= 0.
-*
-* The command is executed during R3D_End().
+ * @brief Queues an instanced mesh draw command.
+ *
+ * Draws multiple instances using the provided instance buffer.
+ * Does nothing if the number of instances is <= 0.
+ *
+ * The command is executed during R3D_End().
  *}
 procedure R3D_DrawMeshInstanced(mesh: TR3D_Mesh; material: TR3D_Material;
   instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshInstanced';
 
 {*
-* @brief Queues an instanced mesh draw command with an additional transform.
-*
-* Does nothing if the number of instances is <= 0.
-* The transform is applied to all instances.
-*
-* The command is executed during R3D_End().
+ * @brief Queues an instanced mesh draw command with an instance range.
+ *
+ * Draws 'count' instances starting at 'offset' in the instance buffer.
+ * Both 'offset' and 'count' are clamped to stay within [0, instances.capacity]:
+ *   - offset is clamped to [0, capacity]
+ *   - count is clamped to [0, capacity - offset]
+ * Does nothing if the resulting count is <= 0.
+ *
+ * The command is executed during R3D_End().
  *}
 procedure R3D_DrawMeshInstancedEx(mesh: TR3D_Mesh; material: TR3D_Material;
-  instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
+  instances: TR3D_InstanceBuffer; offset, count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshInstancedEx';
+
+{*
+ * @brief Queues an instanced mesh draw command with an instance range and an additional transform.
+ *
+ * Draws 'count' instances starting at 'offset' in the instance buffer.
+ * Both 'offset' and 'count' are clamped to stay within [0, instances.capacity]:
+ *   - offset is clamped to [0, capacity]
+ *   - count is clamped to [0, capacity - offset]
+ * Does nothing if the resulting count is <= 0.
+ * The transform is applied to all instances.
+ *
+ * The command is executed during R3D_End().
+ *}
+procedure R3D_DrawMeshInstancedPro(mesh: TR3D_Mesh; material: TR3D_Material;
+  instances: TR3D_InstanceBuffer; offset, count: Integer; transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawMeshInstancedPro';
 
 {*
  * @brief Queues a model draw command with position and uniform scale.
  *
  * The command is executed during R3D_End().
- *
- * @param model Model to render.
- * @param position Position of the model.
- * @param scale Uniform scale factor.
  *}
 procedure R3D_DrawModel(model: TR3D_Model; position: TVector3; scale: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModel';
@@ -134,11 +139,6 @@ procedure R3D_DrawModel(model: TR3D_Model; position: TVector3; scale: Single); c
  * @brief Queues a model draw command with position, rotation and non-uniform scale.
  *
  * The command is executed during R3D_End().
- *
- * @param model Model to render.
- * @param position Position of the model.
- * @param rotation Rotation quaternion.
- * @param scale Non-uniform scale vector.
  *}
 procedure R3D_DrawModelEx(model: TR3D_Model; position: TVector3;
   rotation: TQuaternion; scale: TVector3); cdecl;
@@ -148,50 +148,59 @@ procedure R3D_DrawModelEx(model: TR3D_Model; position: TVector3;
  * @brief Queues a model draw command using a full transform matrix.
  *
  * The command is executed during R3D_End().
- *
- * @param model Model to render.
- * @param transform Full transformation matrix.
  *}
 procedure R3D_DrawModelPro(model: TR3D_Model; transform: TMatrix); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelPro';
 
 {*
-* @brief Queues an instanced model draw command.
-*
-* Draws multiple instances using the provided instance buffer.
-* Does nothing if the number of instances is <= 0.
-*
-* The command is executed during R3D_End().
+ * @brief Queues an instanced model draw command.
+ *
+ * Draws multiple instances using the provided instance buffer.
+ * Does nothing if the number of instances is <= 0.
+ *
+ * The command is executed during R3D_End().
  *}
 procedure R3D_DrawModelInstanced(model: TR3D_Model;
   instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelInstanced';
 
 {*
- * @brief Queues an instanced model draw command with an additional transform.
+ * @brief Queues an instanced model draw command with an instance range.
  *
- * The transform is applied to all instances.
+ * Draws 'count' instances starting at 'offset' in the instance buffer.
+ * Both 'offset' and 'count' are clamped to stay within [0, instances.capacity]:
+ *   - offset is clamped to [0, capacity]
+ *   - count is clamped to [0, capacity - offset]
+ * Does nothing if the resulting count is <= 0.
+ *
  * The command is executed during R3D_End().
- *
- * @param model Model to render.
- * @param instances Instance buffer containing instance data.
- * @param count Number of instances to draw.
- * @param transform Additional transformation matrix applied to all instances.
  *}
 procedure R3D_DrawModelInstancedEx(model: TR3D_Model;
-  instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
+  instances: TR3D_InstanceBuffer; offset, count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelInstancedEx';
+
+{*
+ * @brief Queues an instanced model draw command with an instance range and an additional transform.
+ *
+ * Draws 'count' instances starting at 'offset' in the instance buffer.
+ * Both 'offset' and 'count' are clamped to stay within [0, instances.capacity]:
+ *   - offset is clamped to [0, capacity]
+ *   - count is clamped to [0, capacity - offset]
+ * Does nothing if the resulting count is <= 0.
+ * The transform is applied to all instances.
+ *
+ * The command is executed during R3D_End().
+ *}
+procedure R3D_DrawModelInstancedPro(model: TR3D_Model;
+  instances: TR3D_InstanceBuffer; offset, count: Integer; transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawModelInstancedPro';
 
 {*
  * @brief Queues an animated model draw command.
  *
  * Uses the provided animation player to compute the pose.
- * The command is executed during R3D_End().
  *
- * @param model Model to render.
- * @param player Animation player controlling the model's pose.
- * @param position Position of the model.
- * @param scale Uniform scale factor.
+ * The command is executed during R3D_End().
  *}
 procedure R3D_DrawAnimatedModel(model: TR3D_Model; player: TR3D_AnimationPlayer;
   position: TVector3; scale: Single); cdecl;
@@ -201,13 +210,8 @@ procedure R3D_DrawAnimatedModel(model: TR3D_Model; player: TR3D_AnimationPlayer;
  * @brief Queues an animated model draw command with position, rotation and non-uniform scale.
  *
  * Uses the provided animation player to compute the pose.
- * The command is executed during R3D_End().
  *
- * @param model Model to render.
- * @param player Animation player controlling the model's pose.
- * @param position Position of the model.
- * @param rotation Rotation quaternion.
- * @param scale Non-uniform scale vector.
+ * The command is executed during R3D_End().
  *}
 procedure R3D_DrawAnimatedModelEx(model: TR3D_Model; player: TR3D_AnimationPlayer;
   position: TVector3; rotation: TQuaternion; scale: TVector3); cdecl;
@@ -217,10 +221,6 @@ procedure R3D_DrawAnimatedModelEx(model: TR3D_Model; player: TR3D_AnimationPlaye
  * @brief Queues an animated model draw command using a full transform matrix.
  *
  * The command is executed during R3D_End().
- *
- * @param model Model to render.
- * @param player Animation player controlling the model's pose.
- * @param transform Full transformation matrix.
  *}
 procedure R3D_DrawAnimatedModelPro(model: TR3D_Model; player: TR3D_AnimationPlayer;
   transform: TMatrix); cdecl;
@@ -230,41 +230,49 @@ procedure R3D_DrawAnimatedModelPro(model: TR3D_Model; player: TR3D_AnimationPlay
  * @brief Queues an instanced animated model draw command.
  *
  * Draws multiple animated instances using the provided instance buffer.
- * The command is executed during R3D_End().
+ * Does nothing if the number of instances is <= 0.
  *
- * @param model Model to render.
- * @param player Animation player controlling the model's pose.
- * @param instances Instance buffer containing instance data.
- * @param count Number of instances to draw.
+ * The command is executed during R3D_End().
  *}
 procedure R3D_DrawAnimatedModelInstanced(model: TR3D_Model; player: TR3D_AnimationPlayer;
   instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModelInstanced';
 
 {*
- * @brief Queues an instanced animated model draw command with an additional transform.
+ * @brief Queues an instanced animated model draw command with an instance range.
  *
- * The transform is applied to all instances.
+ * Draws 'count' animated instances starting at 'offset' in the instance buffer.
+ * Both 'offset' and 'count' are clamped to stay within [0, instances.capacity]:
+ *   - offset is clamped to [0, capacity]
+ *   - count is clamped to [0, capacity - offset]
+ * Does nothing if the resulting count is <= 0.
+ *
  * The command is executed during R3D_End().
- *
- * @param model Model to render.
- * @param player Animation player controlling the model's pose.
- * @param instances Instance buffer containing instance data.
- * @param count Number of instances to draw.
- * @param transform Additional transformation matrix applied to all instances.
  *}
 procedure R3D_DrawAnimatedModelInstancedEx(model: TR3D_Model; player: TR3D_AnimationPlayer;
-  instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
+  instances: TR3D_InstanceBuffer; offset, count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModelInstancedEx';
+
+{*
+ * @brief Queues an instanced animated model draw command with an instance range and an additional transform.
+ *
+ * Draws 'count' animated instances starting at 'offset' in the instance buffer.
+ * Both 'offset' and 'count' are clamped to stay within [0, instances.capacity]:
+ *   - offset is clamped to [0, capacity]
+ *   - count is clamped to [0, capacity - offset]
+ * Does nothing if the resulting count is <= 0.
+ * The transform is applied to all instances.
+ *
+ * The command is executed during R3D_End().
+ *}
+procedure R3D_DrawAnimatedModelInstancedPro(model: TR3D_Model; player: TR3D_AnimationPlayer;
+  instances: TR3D_InstanceBuffer; offset, count: Integer; transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawAnimatedModelInstancedPro';
 
 {*
  * @brief Queues a decal draw command with position and uniform scale.
  *
  * The command is executed during R3D_End().
- *
- * @param decal Decal to render.
- * @param position Position of the decal.
- * @param scale Uniform scale factor.
  *}
 procedure R3D_DrawDecal(decal: TR3D_Decal; position: TVector3; scale: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecal';
@@ -273,11 +281,6 @@ procedure R3D_DrawDecal(decal: TR3D_Decal; position: TVector3; scale: Single); c
  * @brief Queues a decal draw command with position, rotation and non-uniform scale.
  *
  * The command is executed during R3D_End().
- *
- * @param decal Decal to render.
- * @param position Position of the decal.
- * @param rotation Rotation quaternion.
- * @param scale Non-uniform scale vector.
  *}
 procedure R3D_DrawDecalEx(decal: TR3D_Decal; position: TVector3;
   rotation: TQuaternion; scale: TVector3); cdecl;
@@ -287,9 +290,6 @@ procedure R3D_DrawDecalEx(decal: TR3D_Decal; position: TVector3;
  * @brief Queues a decal draw command using a full transform matrix.
  *
  * The command is executed during R3D_End().
- *
- * @param decal Decal to render.
- * @param transform Full transformation matrix.
  *}
 procedure R3D_DrawDecalPro(decal: TR3D_Decal; transform: TMatrix); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalPro';
@@ -298,28 +298,42 @@ procedure R3D_DrawDecalPro(decal: TR3D_Decal; transform: TMatrix); cdecl;
  * @brief Queues an instanced decal draw command.
  *
  * Draws multiple instances using the provided instance buffer.
- * The command is executed during R3D_End().
+ * Does nothing if the number of instances is <= 0.
  *
- * @param decal Decal to render.
- * @param instances Instance buffer containing instance data.
- * @param count Number of instances to draw.
+ * The command is executed during R3D_End().
  *}
 procedure R3D_DrawDecalInstanced(decal: TR3D_Decal;
   instances: TR3D_InstanceBuffer; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalInstanced';
 
 {*
- * @brief Queues an instanced decal draw command with an additional transform.
+ * @brief Queues an instanced decal draw command with an instance range.
  *
- * The transform is applied to all instances.
+ * Draws 'count' instances starting at 'offset' in the instance buffer.
+ * Both 'offset' and 'count' are clamped to stay within [0, instances.capacity]:
+ *   - offset is clamped to [0, capacity]
+ *   - count is clamped to [0, capacity - offset]
+ * Does nothing if the resulting count is <= 0.
+ *
  * The command is executed during R3D_End().
- *
- * @param decal Decal to render.
- * @param instances Instance buffer containing instance data.
- * @param count Number of instances to draw.
- * @param transform Additional transformation matrix applied to all instances.
  *}
 procedure R3D_DrawDecalInstancedEx(decal: TR3D_Decal;
-  instances: TR3D_InstanceBuffer; count: Integer; transform: TMatrix); cdecl;
+  instances: TR3D_InstanceBuffer; offset, count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalInstancedEx';
+
+{*
+ * @brief Queues an instanced decal draw command with an instance range and an additional transform.
+ *
+ * Draws 'count' instances starting at 'offset' in the instance buffer.
+ * Both 'offset' and 'count' are clamped to stay within [0, instances.capacity]:
+ *   - offset is clamped to [0, capacity]
+ *   - count is clamped to [0, capacity - offset]
+ * Does nothing if the resulting count is <= 0.
+ * The transform is applied to all instances.
+ *
+ * The command is executed during R3D_End().
+ *}
+procedure R3D_DrawDecalInstancedPro(decal: TR3D_Decal;
+  instances: TR3D_InstanceBuffer; offset, count: Integer; transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawDecalInstancedPro';
 

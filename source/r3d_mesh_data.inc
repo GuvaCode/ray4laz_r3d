@@ -1,5 +1,28 @@
 // R3D Mesh Data Module.
 
+
+// ========================================
+// ENUMS TYPES
+// ========================================
+
+{*
+ * @brief Defines the geometric primitive type.
+ *}
+type
+  TR3D_PrimitiveType = (
+    R3D_PRIMITIVE_POINTS,           ///< Each vertex represents a single point.
+    R3D_PRIMITIVE_LINES,            ///< Each pair of vertices forms an independent line segment.
+    R3D_PRIMITIVE_LINE_STRIP,       ///< Connected series of line segments sharing vertices.
+    R3D_PRIMITIVE_LINE_LOOP,        ///< Closed loop of connected line segments.
+    R3D_PRIMITIVE_TRIANGLES,        ///< Each set of three vertices forms an independent triangle.
+    R3D_PRIMITIVE_TRIANGLE_STRIP,   ///< Connected strip of triangles sharing vertices.
+    R3D_PRIMITIVE_TRIANGLE_FAN      ///< Fan of triangles sharing the first vertex.
+  );
+
+// ========================================
+// STRUCTS TYPES
+// ========================================
+
 {*
  * @brief Represents a vertex and all its attributes for a mesh.
  *}
@@ -9,7 +32,7 @@ type
     position: TVector3;           ///< The 3D position of the vertex in object space.
     texcoord: TVector2;           ///< The 2D texture coordinates (UV) for mapping textures.
     normal: TVector3;             ///< The normal vector used for lighting calculations.
-    color: TColor;                ///< Vertex color, in RGBA32.
+    color: TColorB;               ///< Vertex color, in RGBA32.
     tangent: TVector4;            ///< The tangent vector, used in normal mapping (often with a handedness in w).
     boneIds: array[0..3] of Integer; ///< Indices of up to 4 bones that influence this vertex (for skinning).
     weights: array[0..3] of Single;  ///< Corresponding bone weights (should sum to 1.0). Defines the influence of each bone.
@@ -27,10 +50,12 @@ type
 type
   PR3D_MeshData = ^TR3D_MeshData;
   TR3D_MeshData = record
-    vertices: PR3D_Vertex;    ///< Pointer to vertex data in CPU memory.
-    indices: PLongWord;       ///< Pointer to index data in CPU memory.
-    vertexCount: Integer;     ///< Number of vertices.
-    indexCount: Integer;      ///< Number of indices.
+    vertices: PR3D_Vertex;       ///< Pointer to vertex data in CPU memory.
+    indices: PUInt32;            ///< Pointer to index data in CPU memory.
+    vertexCapacity: Integer;     ///< Capacity of vertices.
+    indexCapacity: Integer;      ///< Capacity of indices.
+    vertexCount: Integer;        ///< Number of vertices.
+    indexCount: Integer;         ///< Number of indices.
   end;
 
 // ========================================
@@ -49,8 +74,8 @@ type
  *
  * @return A new R3D_MeshData instance with allocated memory.
  *}
-function R3D_CreateMeshData(vertexCount, indexCount: Integer): TR3D_MeshData; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CreateMeshData';
+function R3D_LoadMeshData(vertexCount, indexCount: Integer): TR3D_MeshData; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadMeshData';
 
 {*
  * @brief Releases memory used by a mesh data container.
@@ -171,9 +196,9 @@ function R3D_GenMeshDataCubeEx(width, height, length: Single; resX, resY, resZ: 
  * @param length Length of the base cube along the Z axis.
  * @param slopeNormal Normal vector of the cutting plane. The mesh keeps the portion
  *                    of the cube in the direction opposite to this normal.
- *                    Example: {-1, 0, 0} creates a ramp rising towards +X.
- *                             {0, 1, 0} creates a wedge with the slope facing up.
- *                             {-1.0, 1.0, 0} creates a 45° diagonal slope.
+ *                    Example: (-1, 0, 0) creates a ramp rising towards +X.
+ *                             (0, 1, 0) creates a wedge with the slope facing up.
+ *                             (-1.0, 1.0, 0) creates a 45° diagonal slope.
  *
  * @return Generated slope mesh structure.
  *
@@ -310,12 +335,35 @@ function R3D_GenMeshDataCubicmap(cubicmap: TImage; cubeSize: TVector3): TR3D_Mes
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataCubicmap';
 
 {*
+ * @brief Reserves memory for the specified number of vertices and indices.
+ * @param meshData Target mesh data container.
+ * @param vertexCount Number of vertices to reserve space for.
+ * @param indexCount Number of indices to reserve space for.
+ *}
+procedure R3D_ReserveMeshData(meshData: PR3D_MeshData; vertexCount, indexCount: Integer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ReserveMeshData';
+
+{*
+ * @brief Shrinks allocated memory to fit the current vertex and index counts.
+ * @param meshData Target mesh data container to shrink.
+ *}
+procedure R3D_ShrinkMeshData(meshData: PR3D_MeshData); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ShrinkMeshData';
+
+{*
+ * @brief Clears all vertices and indices without releasing allocated memory.
+ * @param meshData Target mesh data container to reset.
+ *}
+procedure R3D_ResetMeshData(meshData: PR3D_MeshData); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ResetMeshData';
+
+{*
  * @brief Creates a deep copy of an existing mesh data container.
  * @param meshData Source mesh data to duplicate.
  * @return A new R3D_MeshData containing a copy of the source data.
  *}
-function R3D_DuplicateMeshData(meshData: TR3D_MeshData): TR3D_MeshData; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DuplicateMeshData';
+function R3D_CopyMeshData(meshData: TR3D_MeshData): TR3D_MeshData; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CopyMeshData';
 
 {*
  * @brief Merges two mesh data containers into a single one.
@@ -327,8 +375,28 @@ function R3D_MergeMeshData(a, b: TR3D_MeshData): TR3D_MeshData; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_MergeMeshData';
 
 {*
+ * @brief Appends vertices and indices to the mesh data container.
+ * @param meshData Target mesh data container.
+ * @param vertices Array of vertices to append.
+ * @param vertexCount Number of vertices to append.
+ * @param indices Array of indices to append.
+ * @param indexCount Number of indices to append.
+ *}
+procedure R3D_AppendMeshData(meshData: PR3D_MeshData; vertices: PR3D_Vertex;
+  vertexCount: Integer; indices: PUInt32; indexCount: Integer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_AppendMeshData';
+
+{*
+ * @brief Applies a transformation matrix to all vertices in the mesh data.
+ * @param meshData Target mesh data container.
+ * @param transform Transformation matrix to apply.
+ *}
+procedure R3D_TransformMeshData(meshData: PR3D_MeshData; transform: TMatrix); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_TransformMeshData';
+
+{*
  * @brief Translates all vertices by a given offset.
- * @param meshData Pointer to mesh data to modify.
+ * @param meshData Mesh data to modify.
  * @param translation Offset to apply to all vertex positions.
  *}
 procedure R3D_TranslateMeshData(meshData: PR3D_MeshData; translation: TVector3); cdecl;
@@ -336,7 +404,7 @@ procedure R3D_TranslateMeshData(meshData: PR3D_MeshData; translation: TVector3);
 
 {*
  * @brief Rotates all vertices using a quaternion.
- * @param meshData Pointer to mesh data to modify.
+ * @param meshData Mesh data to modify.
  * @param rotation Quaternion representing the rotation.
  *}
 procedure R3D_RotateMeshData(meshData: PR3D_MeshData; rotation: TQuaternion); cdecl;
@@ -344,7 +412,7 @@ procedure R3D_RotateMeshData(meshData: PR3D_MeshData; rotation: TQuaternion); cd
 
 {*
  * @brief Scales all vertices by given factors.
- * @param meshData Pointer to mesh data to modify.
+ * @param meshData Mesh data to modify.
  * @param scale Scaling factors for each axis.
  *}
 procedure R3D_ScaleMeshData(meshData: PR3D_MeshData; scale: TVector3); cdecl;
@@ -352,7 +420,7 @@ procedure R3D_ScaleMeshData(meshData: PR3D_MeshData; scale: TVector3); cdecl;
 
 {*
  * @brief Generates planar UV coordinates.
- * @param meshData Pointer to mesh data to modify.
+ * @param meshData Mesh data to modify.
  * @param uvScale Scaling factors for UV coordinates.
  * @param axis Axis along which to project the planar mapping.
  *}
@@ -361,30 +429,34 @@ procedure R3D_GenMeshDataUVsPlanar(meshData: PR3D_MeshData; uvScale: TVector2; a
 
 {*
  * @brief Generates spherical UV coordinates.
- * @param meshData Pointer to mesh data to modify.
+ * @param meshData Mesh data to modify.
  *}
 procedure R3D_GenMeshDataUVsSpherical(meshData: PR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataUVsSpherical';
 
 {*
  * @brief Generates cylindrical UV coordinates.
- * @param meshData Pointer to mesh data to modify.
+ * @param meshData Mesh data to modify.
  *}
 procedure R3D_GenMeshDataUVsCylindrical(meshData: PR3D_MeshData); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataUVsCylindrical';
 
 {*
  * @brief Computes vertex normals from triangle geometry.
- * @param meshData Pointer to mesh data to modify.
+ * @param meshData Mesh data to modify.
+ * @param primitiveType Primitive type of the mesh. Points and line primitives are not
+ *                      supported and will default to a front-facing normal (0, 0, 1).
  *}
-procedure R3D_GenMeshDataNormals(meshData: PR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataNormals(meshData: PR3D_MeshData; primitiveType: TR3D_PrimitiveType); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataNormals';
 
 {*
  * @brief Computes vertex tangents based on existing normals and UVs.
- * @param meshData Pointer to mesh data to modify.
+ * @param meshData Mesh data to modify.
+ * @param primitiveType Primitive type of the mesh. Points and line primitives are not
+ *                      supported and will default to a front-facing tangent (1, 0, 0, 1).
  *}
-procedure R3D_GenMeshDataTangents(meshData: PR3D_MeshData); cdecl;
+procedure R3D_GenMeshDataTangents(meshData: PR3D_MeshData; primitiveType: TR3D_PrimitiveType); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataTangents';
 
 {*
@@ -394,3 +466,4 @@ procedure R3D_GenMeshDataTangents(meshData: PR3D_MeshData); cdecl;
  *}
 function R3D_CalculateMeshDataBoundingBox(meshData: TR3D_MeshData): TBoundingBox; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CalculateMeshDataBoundingBox';
+

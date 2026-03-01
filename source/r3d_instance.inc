@@ -15,7 +15,7 @@ type
   {*
    * @brief Bitmask defining which instance attributes are present.
    *}
-TR3D_InstanceFlags = cint;
+TR3D_InstanceFlags = uint32;
 const
   R3D_INSTANCE_POSITION = (1 shl 0);    //< Vector3
   R3D_INSTANCE_ROTATION = (1 shl 1);    //< Quaternion
@@ -37,11 +37,10 @@ type
    *}
   PR3D_InstanceBuffer = ^TR3D_InstanceBuffer;
   TR3D_InstanceBuffer = record
-    buffers: array[0..R3D_INSTANCE_ATTRIBUTE_COUNT-1] of cuint32;
-    capacity: cint;
-    flags: cint;
+    buffers: array[0..R3D_INSTANCE_ATTRIBUTE_COUNT-1] of uint32;
+    flags: TR3D_InstanceFlags;
+    capacity: integer;
   end;
-
 
 // ========================================
 // PUBLIC API
