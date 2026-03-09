@@ -46,6 +46,7 @@ begin
   Result.ssgi.stepSize := 0.125;
   Result.ssgi.thickness:= 1.0;
   Result.ssgi.maxDistance := 4.0;
+  Result.ssgi.intensity := 3.0;
   Result.ssgi.fadeStart := 8.0;
   Result.ssgi.fadeEnd := 16.0;
   Result.ssgi.denoiseSteps :=  5;
@@ -126,6 +127,7 @@ begin
     'ssgi.stepSize': Env^.ssgi.stepSize := Value;
     'ssgi.thickness': Env^.ssgi.thickness := Value;
     'ssgi.maxDistance': Env^.ssgi.maxDistance := Value;
+    'ssgi.intensity': Env^.ssgi.intensity:= Value;
     'ssgi.fadeStart': Env^.ssgi.fadeStart := Value;
     'ssgi.fadeEnd': Env^.ssgi.fadeEnd := Value;
 

@@ -132,6 +132,7 @@ type
      stepSize: Single;         ///< Ray step size (default: 0.125)
      thickness: Single;        ///< Depth tolerance for valid hits (default: 1.0)
      maxDistance: Single;      ///< Maximum ray distance (default: 4.0)
+     intensity: Single;        ///< GI intensity multiplier (default: 3.0)
      fadeStart: Single;        ///< Distance at which the GI fade begins (default: 8.0)
      fadeEnd: Single;          ///< Distance at which GI is fully faded (default: 16.0)
      denoiseSteps: Integer;    ///< Number of denoiser iterations (default: 5)

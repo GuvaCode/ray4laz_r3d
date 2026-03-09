@@ -57,6 +57,9 @@ uses
   {$I r3d_surface_shader.inc}
   {$I r3d_material.inc}
 
+  {$I r3d_color.inc}
+  {$I r3d_texture.inc}
+
   {$I r3d_decal.inc}
   {$I r3d_skeleton.inc}
   {$I r3d_animation.inc}

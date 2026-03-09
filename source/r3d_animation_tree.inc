@@ -128,7 +128,7 @@ type
   PR3D_SwitchNodeParams = ^TR3D_SwitchNodeParams;
   TR3D_SwitchNodeParams = record
     synced: Boolean;                ///< Flag to control input animation nodes synchronization; activated input is reset when false.
-    activeInput: Cardinal;          ///< Active input zero-based index.
+    activeInput: Integer;          ///< Active input zero-based index.
     xFadeTime: Single;              ///< Animation nodes cross fade blending time, in seconds.
   end;
 
@@ -157,8 +157,8 @@ type
     player: TR3D_AnimationPlayer;                   ///< Animation player and skeleton used by all animation nodes.
     rootNode: PR3D_AnimationTreeNode;                ///< Pointer to root animation node of the tree.
     nodePool: PR3D_AnimationTreeNode;                ///< Animation node pool of size nodePoolMaxSize.
-    nodePoolSize: Cardinal;                          ///< Current animation node pool size.
-    nodePoolMaxSize: Cardinal;                       ///< Maximum number of animation nodes, defined during load.
+    nodePoolSize: Integer;                          ///< Current animation node pool size.
+    nodePoolMaxSize: Integer;                       ///< Maximum number of animation nodes, defined during load.
     rootBone: Integer;                               ///< Optional root bone index, -1 if not defined.
 
     updateCallback: TR3D_AnimationTreeCallback;      ///< Callback function to receive and modify final animation transformation.
@@ -260,7 +260,7 @@ procedure R3D_AddRootAnimationNode(tree: PR3D_AnimationTree; node: PR3D_Animatio
  * @return True on success; false if parent node or inputIndex is invalid.
  *}
 function R3D_AddAnimationNode(parent: PR3D_AnimationTreeNode; node: PR3D_AnimationTreeNode;
-  inputIndex: Cardinal): Boolean; cdecl;
+  inputIndex: Integer): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_AddAnimationNode';
 
 {*
@@ -326,7 +326,7 @@ function R3D_CreateAdd2Node(tree: PR3D_AnimationTree;
  * @param params Switch node initial parameters.
  * @return Pointer to created animation node; NULL if maximum number of nodes was exceeded.
  *}
-function R3D_CreateSwitchNode(tree: PR3D_AnimationTree; inputCount: Cardinal;
+function R3D_CreateSwitchNode(tree: PR3D_AnimationTree; inputCount: Integer;
   params: TR3D_SwitchNodeParams): PR3D_AnimationTreeNode; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CreateSwitchNode';
 
@@ -340,7 +340,7 @@ function R3D_CreateSwitchNode(tree: PR3D_AnimationTree; inputCount: Cardinal;
  * @param edgesCount Maximum number of edges in the state machine.
  * @return Pointer to created animation node; NULL if maximum number of nodes was exceeded.
  *}
-function R3D_CreateStmNode(tree: PR3D_AnimationTree; statesCount, edgesCount: Cardinal): PR3D_AnimationTreeNode; cdecl;
+function R3D_CreateStmNode(tree: PR3D_AnimationTree; statesCount, edgesCount: Integer): PR3D_AnimationTreeNode; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CreateStmNode';
 
 {*
@@ -352,7 +352,7 @@ function R3D_CreateStmNode(tree: PR3D_AnimationTree; statesCount, edgesCount: Ca
  * @param enableTravel Flag to enable or disable travel feature; enabled when set true.
  * @return Pointer to created animation node; NULL if maximum number of nodes was exceeded.
  *}
-function R3D_CreateStmNodeEx(tree: PR3D_AnimationTree; statesCount, edgesCount: Cardinal;
+function R3D_CreateStmNodeEx(tree: PR3D_AnimationTree; statesCount, edgesCount: Integer;
   enableTravel: Boolean): PR3D_AnimationTreeNode; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CreateStmNodeEx';
 
@@ -379,7 +379,7 @@ function R3D_CreateStmXNode(tree: PR3D_AnimationTree;
  * @return Index of created state; -1 if maximum number of states was exceeded.
  *}
 function R3D_CreateStmNodeState(stmNode: PR3D_AnimationTreeNode; stateNode: PR3D_AnimationTreeNode;
-  outEdgesCount: Cardinal): R3D_AnimationStmIndex; cdecl;
+  outEdgesCount: Integer): R3D_AnimationStmIndex; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CreateStmNodeState';
 
 {*
@@ -527,6 +527,6 @@ procedure R3D_TravelToStmState(node: PR3D_AnimationTreeNode;
  * @return Calculated bone mask, or zeroed structure on failure.
  *}
 function R3D_ComputeBoneMask(const skeleton: PR3D_Skeleton;
-  boneNames: PPAnsiChar; boneNameCount: Cardinal): TR3D_BoneMask; cdecl;
+  boneNames: PPAnsiChar; boneNameCount: Integer): TR3D_BoneMask; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ComputeBoneMask';
 

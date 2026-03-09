@@ -45,7 +45,7 @@ function R3D_GetBufferColor: TTexture2D; cdecl; external {$IFNDEF RAY_STATIC}r3d
  *
  * This texture stores octahedral-compressed normals using two 16-bit per-channel RG components.
  *
- * @note You can find the decoding functions in the embedded shaders, such as 'screen/lighting.fs.glsl'.
+ * @note You can find the decoding functions in 'shaders/include/math.glsl'.
  *
  * @return The normal buffer texture.
  *}
@@ -56,7 +56,6 @@ function R3D_GetBufferNormal: TTexture2D; cdecl; external {$IFNDEF RAY_STATIC}r3
  *
  * This texture is an R16 texture containing a linear depth value
  * normalized between the near and far clipping planes.
- * It does not include a stencil buffer.
  *
  * The texture is intended for post-processing effects outside of R3D
  * that require access to linear depth information.
@@ -110,3 +109,13 @@ function R3D_GetMatrixProjection: TMatrix; cdecl; external {$IFNDEF RAY_STATIC}r
 function R3D_GetMatrixInvProjection: TMatrix; cdecl; external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetMatrixInvProjection';
 
 
+{*
+ * @brief Retrieves the view-projection matrix.
+ *
+ * This matrix represents the transformation from world space to clip space.
+ * It is updated at the last call to 'R3D_Begin'.
+ *
+ * @return The current view-projection matrix.
+ *}
+function R3D_GetMatrixViewProjection: TMatrix; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetMatrixViewProjection';
