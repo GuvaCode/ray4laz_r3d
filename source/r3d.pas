@@ -1,6 +1,6 @@
  unit r3d;
 (*
- * r3d header for pascal 2025 Gunko Vadim @guvacode
+ * r3d version 0.9 header for pascal 2025-2026 Gunko Vadim @guvacode
  * this is part of ray4laz project
  * original c lang code r3d by Le Juez Victor
  * https://github.com/Bigfoot71/r3d
