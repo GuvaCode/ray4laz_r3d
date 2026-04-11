@@ -43,13 +43,13 @@ typedef enum R3D_PrimitiveType {
  * @brief Represents a vertex and all its attributes for a mesh.
  */
 typedef struct R3D_Vertex {
-    Vector3 position;       /**< The 3D position of the vertex in object space. */
-    Vector2 texcoord;       /**< The 2D texture coordinates (UV) for mapping textures. */
-    Vector3 normal;         /**< The normal vector used for lighting calculations. */
-    Color color;            /**< Vertex color, in RGBA32. */
-    Vector4 tangent;        /**< The tangent vector, used in normal mapping (often with a handedness in w). */
-    int boneIds[4];         /**< Indices of up to 4 bones that influence this vertex (for skinning). */
-    float weights[4];       /**< Corresponding bone weights (should sum to 1.0). Defines the influence of each bone. */
+    Vector3 position;       ///< The 3D position of the vertex in object space.
+    Vector2 texcoord;       ///< The 2D texture coordinates (UV) for mapping textures.
+    Vector3 normal;         ///< The normal vector used for lighting calculations.
+    Color color;            ///< Vertex color, in RGBA32. */
+    Vector4 tangent;        ///< The tangent vector, used in normal mapping (often with a handedness in w).
+    int boneIds[4];         ///< Indices of up to 4 bones that influence this vertex (for skinning).
+    float weights[4];       ///< Corresponding bone weights (should sum to 1.0). Defines the influence of each bone.
 } R3D_Vertex;
 
 /**
@@ -79,16 +79,24 @@ extern "C" {
 #endif
 
 /**
- * @brief Creates an empty mesh data container.
+ * @brief Allocates a mesh data container with the given capacity.
  *
- * Allocates memory for vertex and index buffers. All allocated buffers
- * are zero-initialized.
+ * This function allocates CPU-side buffers for vertices and indices, but does NOT
+ * initialize the mesh with any actual data. The returned R3D_MeshData has:
  *
- * @param vertexCount Number of vertices to allocate. Must be non-zero.
- * @param indexCount Number of indices to allocate. May be zero.
- *                   If zero, no index buffer is allocated.
+ * - vertexCapacity and indexCapacity set to the requested sizes
+ * - vertexCount and indexCount set to 0
  *
- * @return A new R3D_MeshData instance with allocated memory.
+ * You must manually set vertexCount/indexCount after filling the buffers,
+ * or use helper functions like R3D_AppendMeshData() to populate the mesh.
+ *
+ * All allocated memory is zero-initialized.
+ *
+ * @param vertexCount Number of vertices to allocate (capacity). Must be > 0.
+ * @param indexCount Number of indices to allocate (capacity). May be 0.
+ *                   If 0, no index buffer is allocated.
+ *
+ * @return A new R3D_MeshData with allocated buffers and zero element counts.
  */
 R3DAPI R3D_MeshData R3D_LoadMeshData(int vertexCount, int indexCount);
 
@@ -243,20 +251,37 @@ R3DAPI R3D_MeshData R3D_GenMeshDataSphere(float radius, int rings, int slices);
 R3DAPI R3D_MeshData R3D_GenMeshDataHemiSphere(float radius, int rings, int slices);
 
 /**
- * @brief Generate a cylinder mesh with specified parameters.
+ * @brief Generates a cylinder mesh centered at the origin along the Y axis.
  *
- * Creates a mesh centered at the origin, extending along the Y axis.
- * The mesh includes top and bottom caps and smooth side surfaces.
- * A cone is produced when bottomRadius and topRadius differ.
+ * Both caps are included. For a cone or truncated cone, use R3D_GenMeshDataCylinderEx.
  *
- * @param bottomRadius Radius of the bottom cap.
- * @param topRadius Radius of the top cap.
- * @param height Height of the shape along the Y axis.
- * @param slices Number of radial subdivisions around the shape.
+ * @param radius Radius of the cylinder. Must be > 0.
+ * @param height Total height along the Y axis. Must be > 0.
+ * @param slices Radial subdivisions around the circumference. Must be >= 3.
  *
- * @return Generated mesh structure.
+ * @return The generated mesh data, or an empty mesh on invalid input.
+ * @see R3D_GenMeshDataCylinderEx
  */
-R3DAPI R3D_MeshData R3D_GenMeshDataCylinder(float bottomRadius, float topRadius, float height, int slices);
+R3DAPI R3D_MeshData R3D_GenMeshDataCylinder(float radius, float height, int slices);
+
+/**
+ * @brief Generates a cylinder, cone, or truncated cone mesh centered at the origin along the Y axis.
+ *
+ * The bottom cap sits at Y = -height/2 and the top cap at Y = +height/2.
+ * Setting one radius to 0 produces a cone; caps can be toggled independently.
+ *
+ * @param bottomRadius Radius of the bottom end. Must be >= 0. Cannot both be 0.
+ * @param topRadius Radius of the top end. Must be >= 0. Cannot both be 0.
+ * @param height Total height along the Y axis. Must be > 0.
+ * @param slices Radial subdivisions around the circumference. Must be >= 3.
+ * @param stacks Vertical subdivisions along the height. Must be >= 1.
+ *               Higher values reduce faceting, especially on cones.
+ * @param bottomCap Whether to generate the bottom cap.
+ * @param topCap Whether to generate the top cap.
+ *
+ * @return The generated mesh data, or an empty mesh on invalid input.
+ */
+R3DAPI R3D_MeshData R3D_GenMeshDataCylinderEx(float bottomRadius, float topRadius, float height, int slices, int stacks, bool bottomCap, bool topCap);
 
 /**
  * @brief Generate a capsule mesh with specified parameters.

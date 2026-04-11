@@ -1,4 +1,3 @@
-//* r3d_surface_shader.inc -- R3D Surface Shader Module.
 // R3D Surface Shader Module.
 
 // ========================================
@@ -44,7 +43,34 @@ function R3D_LoadSurfaceShaderFromMemory(const code: PAnsiChar): PR3D_SurfaceSha
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadSurfaceShaderFromMemory';
 
 {*
+ * @brief Creates an alias of an existing surface shader.
+ *
+ * The alias shares the same compiled program as the original but holds its own
+ * independent uniform and sampler state, allowing the same shader to be used
+ * multiple times within a single frame with different values.
+ *
+ * Uniform and sampler state is copied from the original at the moment this
+ * function is called, not from the shader source defaults. Any values set
+ * on the original after compilation but before this call will be reflected
+ * in the alias; values set afterward will not.
+ *
+ * @note The alias does not own the program. Always unload all aliases before
+ *       unloading the original, or the alias program references become dangling.
+ *
+ * @param shader The original surface shader to alias.
+ * @return Pointer to the alias, or nil on failure.
+ *}
+function R3D_LoadSurfaceShaderAlias(shader: PR3D_SurfaceShader): PR3D_SurfaceShader; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadSurfaceShaderAlias';
+
+{*
  * @brief Unloads and destroys a surface shader.
+ *
+ * If the shader owns its program shaders (i.e. it was created with
+ * R3D_LoadSurfaceShader or R3D_LoadSurfaceShaderFromMemory), they are deleted.
+ * Aliases created from this shader via R3D_LoadSurfaceShaderAlias must be
+ * unloaded beforehand, as they share the same programs and will be left
+ * with dangling references.
  *
  * @param shader Surface shader to unload.
  *}
@@ -93,5 +119,3 @@ procedure R3D_SetSurfaceShaderUniform(shader: PR3D_SurfaceShader; const name: PA
  *}
 procedure R3D_SetSurfaceShaderSampler(shader: PR3D_SurfaceShader; const name: PAnsiChar; texture: TTexture); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetSurfaceShaderSampler';
-
-

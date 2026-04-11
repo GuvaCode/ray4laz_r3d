@@ -100,7 +100,7 @@ typedef enum R3D_AspectMode {
 typedef enum R3D_UpscaleMode {
     R3D_UPSCALE_NEAREST,    ///< Nearest-neighbor upscaling: very fast, but produces blocky pixels.
     R3D_UPSCALE_LINEAR,     ///< Bilinear upscaling: very fast, smoother than nearest, but can appear blurry.
-    R3D_UPSCALE_BICUBIC,    ///< Bicubic (Catmull-Rom) upscaling: slower, smoother, and less blurry than linear.
+    R3D_UPSCALE_BICUBIC,    ///< Bicubic upscaling: slower, smoother, and less blurry than linear.
     R3D_UPSCALE_LANCZOS     ///< Lanczos-2 upscaling: preserves more fine details, but is the most expensive.
 } R3D_UpscaleMode;
 
@@ -111,8 +111,9 @@ typedef enum R3D_UpscaleMode {
  */
 typedef enum R3D_DownscaleMode {
     R3D_DOWNSCALE_NEAREST,  ///< Nearest-neighbor downscaling: very fast, but produces aliasing.
-    R3D_DOWNSCALE_LINEAR,   ///< Bilinear downscaling: very fast, can serve as a basic form of anti-aliasing (SSAA).
-    R3D_DOWNSCALE_BOX       ///< Box-blur downscaling: uses a simple but effective box blur, slightly more expensive than linear, smooths moiré better.
+    R3D_DOWNSCALE_LINEAR,   ///< Bilinear filtering. Fast, may show moire on high-frequency content.
+    R3D_DOWNSCALE_RGSS,     ///< 4-sample supersampling. Reduces aliasing and moire, low cost. Recommended default.
+    R3D_DOWNSCALE_PDSS      ///< 16-sample supersampling. Better color accuracy than RGSS, higher cost.
 } R3D_DownscaleMode;
 
 /**
@@ -192,17 +193,16 @@ R3DAPI void R3D_Close(void);
 R3DAPI void R3D_GetResolution(int* width, int* height);
 
 /**
- * @brief Updates the internal resolution.
- * 
- * This function changes the internal resolution of the rendering engine. Note that 
- * this process destroys and recreates all framebuffers, which may be a slow operation.
- * 
- * @param width The new width for the internal resolution.
- * @param height The new height for the internal resolution.
- * 
- * @warning This function may be slow due to the destruction and recreation of framebuffers.
+ * @brief Sets the internal rendering resolution.
+ *
+ * Reallocates all internal render targets to the new resolution.
+ * This operation may cause a stall, this is acceptable when called
+ * infrequently (like window resize events), but should never be called per-frame.
+ *
+ * @param width New internal width in pixels.
+ * @param height New internal height in pixels.
  */
-R3DAPI void R3D_UpdateResolution(int width, int height);
+R3DAPI void R3D_SetResolution(int width, int height);
 
 /**
  * @brief Retrieves the current anti-aliasing mode used for rendering.

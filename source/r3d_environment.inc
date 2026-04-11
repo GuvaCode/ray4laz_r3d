@@ -194,6 +194,7 @@ type
     mode: TR3D_DoF;           ///< Enable/disable state (default: R3D_DOF_DISABLED)
     focusPoint: Single;       ///< Focus distance in meters from camera (default: 10.0)
     focusScale: Single;       ///< Depth of field depth: lower = shallower (default: 1.0)
+    nearScale: Single;        ///< Near blur intensity: 0.0 = disabled, 1.0 = symmetric to far (default: 1.0)
     maxBlurSize: Single;      ///< Maximum blur radius, similar to aperture (default: 20.0)
   end;
 

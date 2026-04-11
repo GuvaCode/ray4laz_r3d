@@ -1,16 +1,6 @@
 // R3D Mesh Module.
 
 {*
- * @brief Hint on how a mesh will be used.
- *}
-type
-  TR3D_MeshUsage = (
-    R3D_STATIC_MESH,            ///< Will never be updated.
-    R3D_DYNAMIC_MESH,           ///< Will be updated occasionally.
-    R3D_STREAMED_MESH           ///< Will be update on each frame.
-  );
-
-{*
  * @brief Shadow casting modes for objects.
  *
  * Controls how an object interacts with the shadow mapping system.
@@ -43,19 +33,20 @@ type
 type
   PR3D_Mesh = ^TR3D_Mesh;
   TR3D_Mesh = record
-    vao: UInt32;                           ///< OpenGL objects handles.
-    vbo: UInt32;
-    ebo: UInt32;
-    vertexCapacity: Integer;                ///< Number of vertices allocated in GPU buffers.
-    indexCapacity: Integer;                 ///< Number of indices allocated in GPU buffers.
-    vertexCount: Integer;                   ///< Number of vertices currently in use.
-    indexCount: Integer;                    ///< Number of indices currently in use.
-    shadowCastMode: TR3D_ShadowCastMode;    ///< Shadow casting mode for the mesh.
-    primitiveType: TR3D_PrimitiveType;      ///< Type of primitive that constitutes the vertices.
-    usage: TR3D_MeshUsage;                  ///< Hint about the usage of the mesh, retained in case of update if there is a reallocation.
-    layerMask: TR3D_Layer;                  ///< Bitfield indicating the rendering layer(s) of this mesh.
-    aabb: TBoundingBox;                     ///< Axis-Aligned Bounding Box in local space.
+    vertexOffset: integer;                       ///< Offset in the internal VBO.
+    vertexCapacity: integer;                     ///< Number of vertices allocated in the internal VBO.
+    vertexCount: integer;                        ///< Number of vertices currently in use.
+
+    indexOffset: integer;                        ///< Offset in the internal EBO.
+    indexCapacity: integer;                      ///< Number of indices allocated in the internal EBO.
+    indexCount: integer;                         ///< Number of indices currently in use.
+
+    shadowCastMode: TR3D_ShadowCastMode;         ///< Shadow casting mode for the mesh.
+    primitiveType: TR3D_PrimitiveType;           ///< Type of primitive that constitutes the vertices.
+    layerMask: TR3D_Layer;                       ///< Bitfield indicating the rendering layer(s) of this mesh.
+    aabb: TBoundingBox;                          ///< Axis-Aligned Bounding Box in local space.
   end;
+
 
 // ========================================
 // PUBLIC API
@@ -66,12 +57,10 @@ type
  * @param type Primitive type used to interpret vertex data.
  * @param data R3D_MeshData containing vertices and indices (can be zero initialized).
  * @param aabb Optional pointer to a bounding box. If NULL, it will be computed automatically.
- * @param usage Hint on how the mesh will be used.
  * @return Created R3D_Mesh.
  * @note The function copies all vertex and index data into GPU buffers.
  *}
-function R3D_LoadMesh(&type: TR3D_PrimitiveType; data: TR3D_MeshData;
-  const aabb: PBoundingBox; usage: TR3D_MeshUsage): TR3D_Mesh; cdecl;
+function R3D_LoadMesh(&type: TR3D_PrimitiveType; data: TR3D_MeshData; const aabb: PBoundingBox): TR3D_Mesh; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadMesh';
 
 {*
@@ -190,15 +179,29 @@ function R3D_GenMeshHemiSphere(radius: Single; rings, slices: Integer): TR3D_Mes
 
 {*
  * @brief Generate a cylinder mesh.
- * @param bottomRadius Bottom radius.
- * @param topRadius Top radius.
+ * @param radius Radius of the cylinder.
  * @param height Height along Y axis.
  * @param slices Radial subdivisions.
  * @return Mesh ready for rendering.
  * @see R3D_GenMeshDataCylinder
  *}
-function R3D_GenMeshCylinder(bottomRadius, topRadius, height: Single; slices: Integer): TR3D_Mesh; cdecl;
+function R3D_GenMeshCylinder(radius,height: Single; slices: Integer): TR3D_Mesh; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCylinder';
+
+{*
+ * @brief Generate a cylinder, cone or truncated cone mesh.
+ * @param bottomRadius Bottom radius.
+ * @param topRadius Top radius.
+ * @param height Height along Y axis.
+ * @param slices Radial subdivisions.
+ * @param stacks Vertical subdivisions.
+ * @param bottomCap Generate bottom cap.
+ * @param topCap Generate top cap.
+ * @return Mesh ready for rendering.
+ * @see R3D_GenMeshDataCylinderEx
+ *}
+function R3D_GenMeshCylinderEx(bottomRadius, topRadius, height: Single; slices, stacks: Integer; bottomCap, topCap: Boolean): TR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshCylinderEx';
 
 {*
  * @brief Generate a capsule mesh.

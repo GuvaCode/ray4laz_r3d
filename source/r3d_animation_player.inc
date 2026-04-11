@@ -15,12 +15,13 @@ type
 
 {*
  * @brief Describes the playback state of a single animation within a player.
+ *
+ * Tracks the current time, speed, play/pause state, and looping behavior.
  *}
 type
   PR3D_AnimationState = ^TR3D_AnimationState;
   TR3D_AnimationState = record
     currentTime: Single;  ///< Current playback time in animation ticks.
-    weight: Single;       ///< Blending weight; any positive value is valid.
     speed: Single;        ///< Playback speed; can be negative for reverse playback.
     play: Boolean;        ///< Whether the animation is currently playing.
     loop: Boolean;        ///< True to enable looping playback.
@@ -44,18 +45,24 @@ type
   ); cdecl;
 
 {*
- * @brief Manages playback and blending of multiple animations for a skeleton.
+ * @brief Manages playback of multiple animations for a skeleton.
+ *
+ * The animation player updates animation states, interpolates keyframes,
+ * blends animations according to their weights, and stores the resulting
+ * local and global bone transforms. It also supports GPU skinning by uploading
+ * the global pose into a texture.
  *}
-
   TR3D_AnimationPlayer = record
-    states: PR3D_AnimationState;      ///< Array of active animation states, one per animation.
     animLib: TR3D_AnimationLib;       ///< Animation library providing the available animations.
     skeleton: TR3D_Skeleton;          ///< Skeleton to animate.
+
+    states: PR3D_AnimationState;      ///< Array of animation states, one per animation.
+    activeAnimIndex: Integer;         ///< Index of the current animation.
 
     localPose: PMatrix;          ///< Array of bone transforms representing the blended local pose.
     modelPose: PMatrix;          ///< Array of bone transforms in model space, obtained by hierarchical accumulation.
     skinBuffer: PMatrix;         ///< Array of final skinning matrices (invBind * modelPose), sent to the GPU.
-    skinTexture: Uint32;       ///< GPU texture ID storing the skinning matrices as a 1D RGBA16F texture.
+    skinTexture: Uint32;         ///< GPU texture ID storing the skinning matrices as a 1D RGBA16F texture.
 
     eventCallback: R3D_AnimationEventCallback; ///< Callback function to receive animation events.
     eventUserData: Pointer;                     ///< Optional user data pointer passed to the callback.
@@ -95,13 +102,12 @@ function R3D_IsAnimationPlayerValid(player: TR3D_AnimationPlayer): Boolean; cdec
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsAnimationPlayerValid';
 
 {*
- * @brief Returns whether a given animation is currently playing.
+ * @brief Returns whether an animation is currently playing.
  *
  * @param player Animation player.
- * @param animIndex Index of the animation.
  * @return true if playing, false otherwise.
  *}
-function R3D_IsAnimationPlaying(player: TR3D_AnimationPlayer; animIndex: Integer): Boolean; cdecl;
+function R3D_IsAnimationPlaying(player: TR3D_AnimationPlayer): Boolean; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsAnimationPlaying';
 
 {*
@@ -114,30 +120,27 @@ procedure R3D_PlayAnimation(player: PR3D_AnimationPlayer; animIndex: Integer); c
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_PlayAnimation';
 
 {*
- * @brief Pauses the specified animation.
+ * @brief Pauses the current animation.
  *
  * @param player Animation player.
- * @param animIndex Index of the animation to pause.
  *}
-procedure R3D_PauseAnimation(player: PR3D_AnimationPlayer; animIndex: Integer); cdecl;
+procedure R3D_PauseAnimation(player: PR3D_AnimationPlayer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_PauseAnimation';
 
 {*
- * @brief Stops the specified animation and clamps its time.
+ * @brief Stops the current animation and clamps its time.
  *
  * @param player Animation player.
- * @param animIndex Index of the animation to stop.
  *}
-procedure R3D_StopAnimation(player: PR3D_AnimationPlayer; animIndex: Integer); cdecl;
+procedure R3D_StopAnimation(player: PR3D_AnimationPlayer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_StopAnimation';
 
 {*
  * @brief Rewinds the animation to the start or end depending on playback direction.
  *
  * @param player Animation player.
- * @param animIndex Index of the animation to rewind.
  *}
-procedure R3D_RewindAnimation(player: PR3D_AnimationPlayer; animIndex: Integer); cdecl;
+procedure R3D_RewindAnimation(player: PR3D_AnimationPlayer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_RewindAnimation';
 
 {*
@@ -159,26 +162,6 @@ function R3D_GetAnimationTime(player: TR3D_AnimationPlayer; animIndex: Integer):
  *}
 procedure R3D_SetAnimationTime(player: PR3D_AnimationPlayer; animIndex: Integer; time: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetAnimationTime';
-
-{*
- * @brief Gets the blending weight of an animation.
- *
- * @param player Animation player.
- * @param animIndex Index of the animation.
- * @return Current weight.
- *}
-function R3D_GetAnimationWeight(player: TR3D_AnimationPlayer; animIndex: Integer): Single; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetAnimationWeight';
-
-{*
- * @brief Sets the blending weight of an animation.
- *
- * @param player Animation player.
- * @param animIndex Index of the animation.
- * @param weight Blending weight to apply.
- *}
-procedure R3D_SetAnimationWeight(player: PR3D_AnimationPlayer; animIndex: Integer; weight: Single); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetAnimationWeight';
 
 {*
  * @brief Gets the playback speed of an animation.
@@ -224,76 +207,72 @@ procedure R3D_SetAnimationLoop(player: PR3D_AnimationPlayer; animIndex: Integer;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetAnimationLoop';
 
 {*
- * @brief Advances the time of all active animations.
+ * @brief Advances the time of the current animation.
  *
- * Updates all internal animation timers based on speed and delta time.
+ * Updates animation timer based on speed and delta time.
  * Does NOT recalculate the skeleton pose.
  *
  * @param player Animation player.
  * @param dt Delta time in seconds.
  *}
-procedure R3D_AdvanceAnimationPlayerTime(player: PR3D_AnimationPlayer; dt: Single); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_AdvanceAnimationPlayerTime';
+procedure R3D_AdvanceAnimationTime(player: PR3D_AnimationPlayer; dt: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_AdvanceAnimationTime';
 
 {*
- * @brief Calculates the current blended local pose of the skeleton.
+ * @brief Computes the local-space transform of each bone for the current animation.
  *
- * Interpolates keyframes and blends all active animations according to their weights,
- * but only computes the local transforms of each bone relative to its parent.
- * Does NOT advance animation time.
+ * Samples and interpolates the current animation keyframes at the current playback time,
+ * and stores the resulting bone transforms in local space into @p player.localPose.
+ * Does NOT advance animation time, and does NOT compute model-space transforms.
  *
  * @param player Animation player whose local pose will be updated.
  *}
-procedure R3D_CalculateAnimationPlayerLocalPose(player: PR3D_AnimationPlayer); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CalculateAnimationPlayerLocalPose';
+procedure R3D_ComputeAnimationLocalPose(player: PR3D_AnimationPlayer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ComputeAnimationLocalPose';
 
 {*
- * @brief Calculates the current blended model (global) pose of the skeleton.
+ * @brief Computes the model-space transform of each bone from the current local pose.
  *
- * Interpolates keyframes and blends all active animations according to their weights,
- * but only computes the global transforms of each bone in model space.
- * This assumes the local pose is already up-to-date.
- * Does NOT advance animation time.
+ * Traverses the bone hierarchy and accumulates local transforms into model-space matrices,
+ * stored into @p player.modelPose. This assumes @p player.localPose is already up-to-date.
+ * Does NOT sample animation keyframes, and does NOT advance animation time.
  *
  * @param player Animation player whose model pose will be updated.
  *}
-procedure R3D_CalculateAnimationPlayerModelPose(player: PR3D_AnimationPlayer); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CalculateAnimationPlayerModelPose';
+procedure R3D_ComputeAnimationModelPose(player: PR3D_AnimationPlayer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ComputeAnimationModelPose';
 
 {*
- * @brief Calculates the current blended skeleton pose (local and model).
+ * @brief Computes both the local and model-space transforms for the current animation.
  *
- * Interpolates keyframes and blends all active animations according to their weights,
- * then computes both local and model transforms for the entire skeleton.
+ * Equivalent to calling R3D_ComputeAnimationLocalPose() followed by R3D_ComputeAnimationModelPose().
  * Does NOT advance animation time.
  *
  * @param player Animation player whose local and model poses will be updated.
  *}
-procedure R3D_CalculateAnimationPlayerPose(player: PR3D_AnimationPlayer); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CalculateAnimationPlayerPose';
+procedure R3D_ComputeAnimationPose(player: PR3D_AnimationPlayer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ComputeAnimationPose';
 
 {*
- * @brief Calculates the skinning matrices and uploads them to the GPU.
+ * @brief Computes the final skinning matrices and uploads them to the GPU.
+ *
+ * Multiplies each bone's model-space transform by its inverse bind matrix to produce
+ * the skinning matrices, then uploads them to the GPU skin texture.
+ * This assumes @p player.modelPose is already up-to-date.
+ *
+ * @param player Animation player whose skinning matrices will be uploaded.
+ *}
+procedure R3D_UploadAnimationPose(player: PR3D_AnimationPlayer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UploadAnimationPose';
+
+{*
+ * @brief Updates the animation player: calculates and upload the current pose, then advances time.
+ *
+ * Equivalent to calling R3D_ComputeAnimationLocalPose() followed by
+ * R3D_ComputeAnimationModelPose() and R3D_AdvanceAnimationTime().
  *
  * @param player Animation player.
- *}
-procedure R3D_UploadAnimationPlayerPose(player: PR3D_AnimationPlayer); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UploadAnimationPlayerPose';
-
-{*
- * @brief Calculates the current skeleton pose, then advances the animation player's time.
- *
- * This function first calculates the pose by blending active animation states,
- * then advances the `currentTicks` of all internal animation states by the given delta time.
- * It is equivalent to calling `R3D_CalculateAnimationPlayerPose` followed by
- * `R3D_AdvanceAnimationPlayerTime`.
- *
- * @note If the sum of animation state weights is less than or equal to 0.0,
- *       the bind pose will be used as the current pose.
- * @note The total sum of animation state weights is the responsibility of the user.
- *
- * @param player Pointer to the animation player.
- * @param dt Delta time to advance, in seconds.
+ * @param dt Delta time in seconds.
  *}
 procedure R3D_UpdateAnimationPlayer(player: PR3D_AnimationPlayer; dt: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UpdateAnimationPlayer';

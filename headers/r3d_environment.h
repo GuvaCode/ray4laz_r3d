@@ -89,6 +89,7 @@
             .stepSize = 0.125f,                         \
             .thickness = 1.0f,                          \
             .maxDistance = 4.0f,                        \
+            .intensity = 3.0f,                          \
             .fadeStart = 8.0f,                          \
             .fadeEnd = 16.0f,                           \
             .denoiseSteps = 5,                          \
@@ -123,6 +124,7 @@
             .mode = R3D_DOF_DISABLED,                   \
             .focusPoint = 10.0f,                        \
             .focusScale = 1.0f,                         \
+            .nearScale = 1.0f,                          \
             .maxBlurSize = 20.0f,                       \
         },                                              \
         .tonemap = {                                    \
@@ -259,6 +261,7 @@ typedef struct R3D_EnvSSGI {
     float stepSize;         ///< Ray step size (default: 0.125)
     float thickness;        ///< Depth tolerance for valid hits (default: 1.0)
     float maxDistance;      ///< Maximum ray distance (default: 4.0)
+    float intensity;        ///< GI intensity multiplier (default: 3.0)
     float fadeStart;        ///< Distance at which the GI fade begins (default: 8.0)
     float fadeEnd;          ///< Distance at which GI is fully faded (default: 16.0)
     int denoiseSteps;       ///< Number of denoiser iterations (default: 5)
@@ -315,6 +318,7 @@ typedef struct R3D_EnvDoF {
     R3D_DoF mode;           ///< Enable/disable state (default: R3D_DOF_DISABLED)
     float focusPoint;       ///< Focus distance in meters from camera (default: 10.0)
     float focusScale;       ///< Depth of field depth: lower = shallower (default: 1.0)
+    float nearScale;        ///< Near blur intensity: 0.0 = disabled, 1.0 = symmetric to far (default: 1.0)
     float maxBlurSize;      ///< Maximum blur radius, similar to aperture (default: 20.0)
 } R3D_EnvDoF;
 

@@ -21,7 +21,7 @@
 // OPAQUE TYPES
 // ========================================
 
-typedef struct R3D_SkyShader R3D_SkyShader;
+typedef struct R3D_ShaderCustom R3D_SkyShader;
 
 // ========================================
 // PUBLIC API
@@ -56,7 +56,33 @@ R3DAPI R3D_SkyShader* R3D_LoadSkyShader(const char* filePath);
 R3DAPI R3D_SkyShader* R3D_LoadSkyShaderFromMemory(const char* code);
 
 /**
+ * @brief Creates an alias of an existing sky shader.
+ *
+ * The alias shares the same compiled program as the original but holds its own
+ * independent uniform and sampler state. A typical use case is to pre-configure
+ * several aliases with different uniforms or textures, avoiding the need to
+ * reconfigure the shader on every skybox switch.
+ *
+ * Uniform and sampler state is copied from the original at the moment this
+ * function is called, not from the shader source defaults. Any values set
+ * on the original after compilation but before this call will be reflected
+ * in the alias; values set afterward will not.
+ *
+ * @note The alias does not own the program. Always unload all aliases before
+ *       unloading the original, or the alias program references become dangling.
+ *
+ * @param shader The original sky shader to alias.
+ * @return Pointer to the alias, or NULL on failure.
+ */
+R3DAPI R3D_SkyShader* R3D_LoadSkyShaderAlias(R3D_SkyShader* shader);
+
+/**
  * @brief Unloads and destroys a sky shader.
+ *
+ * If the shader owns its program shaders (i.e. it was created with @ref R3D_LoadSkyShader
+ * or @ref R3D_LoadSkyShaderFromMemory), they are deleted. Aliases created from this
+ * shader via @ref R3D_LoadSkyShaderAlias must be unloaded beforehand, as they
+ * share the same programs and will be left with dangling references.
  *
  * @param shader Sky shader to unload.
  */

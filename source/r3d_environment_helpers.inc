@@ -80,6 +80,7 @@ begin
   Result.dof.mode := R3D_DOF_DISABLED;
   Result.dof.focusPoint := 10.0;
   Result.dof.focusScale := 1.0;
+  Result.dof.nearScale := 1.0;
   Result.dof.maxBlurSize := 20.0;
 
   Result.tonemap.mode := R3D_TONEMAP_LINEAR;
@@ -153,6 +154,7 @@ begin
     // Depth of Field
     'dof.focuspoint': Env^.dof.focusPoint := Value;
     'dof.focusscale': Env^.dof.focusScale := Value;
+    'dof.nearScale': Env^.dof.nearScale := Value;
     'dof.maxblursize': Env^.dof.maxBlurSize := Value;
 
     // Tonemap
