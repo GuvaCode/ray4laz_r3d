@@ -29,7 +29,7 @@ begin
   // Create meshes
   plane := R3D_GenMeshPlane(5.0, 5.0, 1, 1);
   sphere := R3D_GenMeshSphere(0.5, 64, 64);
-  cylinder := R3D_GenMeshCylinder(0.5, 0.5, 1, 64);
+  cylinder := R3D_GenMeshCylinder(0.5, 0.5, 64);
   material := R3D_GetDefaultMaterial();
   material.albedo.color := GRAY;
 
@@ -43,7 +43,7 @@ begin
 
   // Create data for instanced drawing
   instances := R3D_LoadInstanceBuffer(3, R3D_INSTANCE_POSITION);
-  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION);
+  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION, false);
   positions[0] := Vector3Create(-1.25, 0, 1);
   positions[1] := Vector3Create(0, 0, 1);
   positions[2] := Vector3Create(1.25, 0, 1);

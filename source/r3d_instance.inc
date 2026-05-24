@@ -19,7 +19,7 @@ type
    * Each bit enables one per-instance attribute stream. Attribute data is stored
    * in separate GPU buffers, one buffer per enabled attribute.
    *
-   * The memory format of each enabled attribute is defined by `R3D_InstanceLayout`.
+   * The memory format of each enabled attribute is defined by `TR3D_InstanceLayout`.
    * In shaders, these attributes are exposed as floating-point vectors, including
    * normalized integer formats such as UNORM/SNORM.
    *}
@@ -108,12 +108,12 @@ type
  *
  * - position: FLOAT32
  * - rotation: FLOAT32
- * - scale: FLOAT32
- * - color: UNORM8
- * - custom: FLOAT32
+ * - scale:    FLOAT32
+ * - color:    UNORM8
+ * - custom:   FLOAT32
  *
  * @param capacity Maximum number of instances.
- * @param flags Attribute mask to allocate.
+ * @param flags    Attribute mask to allocate.
  *
  * @return Initialized instance buffer, or an empty buffer on failure.
  *}
@@ -131,7 +131,7 @@ function R3D_LoadInstanceBuffer(capacity: Integer; flags: TR3D_InstanceFlags): T
  * the layout.
  *
  * @param capacity Maximum number of instances.
- * @param layout Instance layout describing enabled attributes and formats.
+ * @param layout   Instance layout describing enabled attributes and formats.
  *
  * @return Initialized instance buffer, or an empty buffer on failure.
  *}
@@ -147,36 +147,66 @@ procedure R3D_UnloadInstanceBuffer(buffer: TR3D_InstanceBuffer); cdecl;
 {*
  * @brief Grow the GPU buffers of an instance buffer to a new capacity.
  *
- * Only expands; if newCapacity <= buffer->capacity the call is a no-op.
- * All attribute buffers present in buffer->flags are reallocated and
+ * Only expands; if newCapacity <= buffer^.capacity the call is a no-op.
+ * All attribute buffers present in buffer^.layout.flags are reallocated and
  * if keepData is true, their existing content is copied to the new
  * buffers before the old ones are deleted.
  *
- * @param buffer Instance buffer to resize (updated in place).
+ * @param buffer      Instance buffer to resize (updated in place).
  * @param newCapacity Desired minimum capacity in number of instances.
- * @param keepData If true, preserves existing instance data.
+ * @param keepData    If true, preserves existing instance data.
  *}
 procedure R3D_ResizeInstanceBuffer(buffer: PR3D_InstanceBuffer; newCapacity: Integer; keepData: Boolean); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ResizeInstanceBuffer';
 
 {*
- * @brief Upload a contiguous range of instance data.
- * @param flag Attribute being updated (single bit).
- * @param offset First instance index.
- * @param count Number of instances.
- * @param data Source pointer.
+ * @brief Upload a contiguous range of instance data to a GPU buffer.
+ *
+ * @param buffer  Instance buffer containing the target GPU buffer.
+ * @param flag    Attribute to update (single bit).
+ * @param offset  First instance index.
+ * @param count   Number of instances to upload.
+ * @param data    Source data pointer.
+ * @param discard If true, the entire GPU buffer is orphaned before upload,
+ *                avoiding a GPU/CPU sync at the cost of discarding existing data.
+ *                Safe to use when rewriting the full buffer each frame.
  *}
 procedure R3D_UploadInstances(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFlags;
-  offset: Integer; count: Integer; data: Pointer); cdecl;
+  offset: Integer; count: Integer; data: Pointer; discard: Boolean); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UploadInstances';
 
 {*
- * @brief Map an attribute buffer for CPU write access.
- * @param flag Attribute to map (single bit).
- * @return Writable pointer, or NULL on error.
+ * @brief Map an entire attribute buffer for CPU write access.
+ *
+ * Call R3D_UnmapInstances when done writing.
+ *
+ * @param buffer  Instance buffer containing the target GPU buffer.
+ * @param flag    Attribute to map (single bit).
+ * @param discard If true, existing buffer contents are invalidated,
+ *                allowing the driver to return a fresh memory region
+ *                without stalling on in-flight GPU reads.
+ * @return        Writable pointer to the full buffer, or NULL on error.
  *}
-function R3D_MapInstances(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFlags): Pointer; cdecl;
+function R3D_MapInstances(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFlags; discard: Boolean): Pointer; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_MapInstances';
+
+{*
+ * @brief Map a sub-range of an attribute buffer for CPU write access.
+ *
+ * Prefer this over R3D_MapInstances for partial updates to avoid
+ * touching unrelated data. Call R3D_UnmapInstances when done writing.
+ *
+ * @param buffer  Instance buffer containing the target GPU buffer.
+ * @param flag    Attribute to map (single bit).
+ * @param offset  First instance index of the mapped range.
+ * @param count   Number of instances to map.
+ * @param discard If true, the mapped range is invalidated, allowing the
+ *                driver to skip syncing that region with in-flight GPU reads.
+ * @return        Writable pointer to the mapped range, or NULL on error.
+ *}
+function R3D_MapInstancesEx(buffer: TR3D_InstanceBuffer; flag: TR3D_InstanceFlags;
+  offset: Integer; count: Integer; discard: Boolean): Pointer; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_MapInstancesEx';
 
 {*
  * @brief Unmap one or more previously mapped attribute buffers.
@@ -194,9 +224,9 @@ procedure R3D_UnmapInstances(buffer: TR3D_InstanceBuffer; flags: TR3D_InstanceFl
  * This function only changes the format stored in the layout. It does not
  * enable the attribute in `layout.flags`.
  *
- * @param layout Layout to modify.
+ * @param layout    Layout to modify.
  * @param attribute Single attribute flag to modify.
- * @param format New storage format.
+ * @param format    New storage format.
  *}
 procedure R3D_SetInstanceFormat(layout: PR3D_InstanceLayout; attribute: TR3D_InstanceFlags; format: TR3D_InstanceFormat); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetInstanceFormat';
@@ -207,7 +237,7 @@ procedure R3D_SetInstanceFormat(layout: PR3D_InstanceLayout; attribute: TR3D_Ins
  * `attribute` must be a single instance attribute flag, such as
  * `R3D_INSTANCE_POSITION`, not a combination of multiple flags.
  *
- * @param layout Layout to read from.
+ * @param layout    Layout to read from.
  * @param attribute Single attribute flag to query.
  *
  * @return Storage format of the requested attribute, or FLOAT32 if the

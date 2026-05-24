@@ -121,7 +121,7 @@ begin
     // Upload positions to GPU
     if particleCount > 0 then
     begin
-      R3D_UploadInstances(instances, R3D_INSTANCE_POSITION, 0, particleCount, @positions[0]);
+      R3D_UploadInstances(instances, R3D_INSTANCE_POSITION, 0, particleCount, @positions[0], true);
     end;
 
     BeginDrawing();

@@ -7,7 +7,8 @@ program animtree_example;
 uses
   SysUtils,
   raylib,
-  r3d;
+  r3d,
+  raymath;
 
 const
   RESOURCES_PATH = 'resources/';
@@ -25,12 +26,7 @@ var
 
   // Animation nodes
   leftRightStmNode, forwBackStmNode, switchNode, idleNode: PR3D_AnimationTreeNode;
-
-  // Узлы для left-right state machine
-  animNodeLR0, animNodeLR1, animNodeLR2, animNodeLR3: PR3D_AnimationTreeNode;
-
-  // Узлы для forward-backward state machine
-  animNodeFB0, animNodeFB1, animNodeFB2, animNodeFB3: PR3D_AnimationTreeNode;
+  animNode0, animNode1, animNode2, animNode3: PR3D_AnimationTreeNode;
 
   // Parameters
   animState: TR3D_AnimationState;
@@ -86,12 +82,12 @@ begin
   // Initialize edge parameters
   edgeParams.mode := R3D_STM_EDGE_ONDONE;
   edgeParams.status := R3D_STM_EDGE_AUTO;
-  edgeParams.nextStatus := R3D_STM_EDGE_OFF; // Default value
+  edgeParams.nextStatus := R3D_STM_EDGE_OFF;
   edgeParams.xFadeTime := 0.0;
 
   fadedEdgeParams.mode := R3D_STM_EDGE_ONDONE;
   fadedEdgeParams.status := R3D_STM_EDGE_AUTO;
-  fadedEdgeParams.nextStatus := R3D_STM_EDGE_OFF; // Default value
+  fadedEdgeParams.nextStatus := R3D_STM_EDGE_OFF;
   fadedEdgeParams.xFadeTime := 0.3;
 
   // Initialize looping animation parameters
@@ -99,67 +95,59 @@ begin
   loopingAnimParams.looper := True;
   loopingAnimParams.evalCallback := nil;
   loopingAnimParams.evalUserData := nil;
-  loopingAnimParams.name := '';
+  FillChar(loopingAnimParams.name, SizeOf(loopingAnimParams.name), 0);
 
-  // ===== Создание left-right state machine =====
+  // ===== Create left-right state machine =====
   leftRightStmNode := R3D_CreateStmNode(@animTree, 4, 4);
   if leftRightStmNode <> nil then
   begin
-    // Создаем узлы анимации
+    // Create animation nodes
     StrPCopy(loopingAnimParams.name, 'walk left');
-    animNodeLR0 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
-    animNodeLR1 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
+    animNode0 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
+    animNode1 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
 
     StrPCopy(loopingAnimParams.name, 'walk right');
-    animNodeLR2 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
-    animNodeLR3 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
+    animNode2 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
+    animNode3 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
 
-    // Создаем состояния и рёбра
-    if (animNodeLR0 <> nil) and (animNodeLR1 <> nil) and
-       (animNodeLR2 <> nil) and (animNodeLR3 <> nil) then
-    begin
-      stateIdx0 := R3D_CreateStmNodeState(leftRightStmNode, animNodeLR0, 1);
-      stateIdx1 := R3D_CreateStmNodeState(leftRightStmNode, animNodeLR1, 1);
-      stateIdx2 := R3D_CreateStmNodeState(leftRightStmNode, animNodeLR2, 1);
-      stateIdx3 := R3D_CreateStmNodeState(leftRightStmNode, animNodeLR3, 1);
+    // Create states and edges
+    stateIdx0 := R3D_CreateStmNodeState(leftRightStmNode, animNode0, 1);
+    stateIdx1 := R3D_CreateStmNodeState(leftRightStmNode, animNode1, 1);
+    stateIdx2 := R3D_CreateStmNodeState(leftRightStmNode, animNode2, 1);
+    stateIdx3 := R3D_CreateStmNodeState(leftRightStmNode, animNode3, 1);
 
-      R3D_CreateStmNodeEdge(leftRightStmNode, stateIdx0, stateIdx1, edgeParams);
-      R3D_CreateStmNodeEdge(leftRightStmNode, stateIdx1, stateIdx2, fadedEdgeParams);
-      R3D_CreateStmNodeEdge(leftRightStmNode, stateIdx2, stateIdx3, edgeParams);
-      R3D_CreateStmNodeEdge(leftRightStmNode, stateIdx3, stateIdx0, fadedEdgeParams);
-    end;
+    R3D_CreateStmNodeEdge(leftRightStmNode, stateIdx0, stateIdx1, edgeParams);
+    R3D_CreateStmNodeEdge(leftRightStmNode, stateIdx1, stateIdx2, fadedEdgeParams);
+    R3D_CreateStmNodeEdge(leftRightStmNode, stateIdx2, stateIdx3, edgeParams);
+    R3D_CreateStmNodeEdge(leftRightStmNode, stateIdx3, stateIdx0, fadedEdgeParams);
   end;
 
-  // ===== Создание forward-backward state machine =====
+  // ===== Create forward-backward state machine =====
   forwBackStmNode := R3D_CreateStmNode(@animTree, 4, 4);
   if forwBackStmNode <> nil then
   begin
-    // Создаем узлы анимации
+    // Create animation nodes
     StrPCopy(loopingAnimParams.name, 'walk forward');
-    animNodeFB0 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
-    animNodeFB1 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
+    animNode0 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
+    animNode1 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
 
     StrPCopy(loopingAnimParams.name, 'walk backward');
-    animNodeFB2 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
-    animNodeFB3 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
+    animNode2 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
+    animNode3 := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
 
-    // Создаем состояния и рёбра
-    if (animNodeFB0 <> nil) and (animNodeFB1 <> nil) and
-       (animNodeFB2 <> nil) and (animNodeFB3 <> nil) then
-    begin
-      stateIdx0 := R3D_CreateStmNodeState(forwBackStmNode, animNodeFB0, 1);
-      stateIdx1 := R3D_CreateStmNodeState(forwBackStmNode, animNodeFB1, 1);
-      stateIdx2 := R3D_CreateStmNodeState(forwBackStmNode, animNodeFB2, 1);
-      stateIdx3 := R3D_CreateStmNodeState(forwBackStmNode, animNodeFB3, 1);
+    // Create states and edges
+    stateIdx0 := R3D_CreateStmNodeState(forwBackStmNode, animNode0, 1);
+    stateIdx1 := R3D_CreateStmNodeState(forwBackStmNode, animNode1, 1);
+    stateIdx2 := R3D_CreateStmNodeState(forwBackStmNode, animNode2, 1);
+    stateIdx3 := R3D_CreateStmNodeState(forwBackStmNode, animNode3, 1);
 
-      R3D_CreateStmNodeEdge(forwBackStmNode, stateIdx0, stateIdx1, edgeParams);
-      R3D_CreateStmNodeEdge(forwBackStmNode, stateIdx1, stateIdx2, fadedEdgeParams);
-      R3D_CreateStmNodeEdge(forwBackStmNode, stateIdx2, stateIdx3, edgeParams);
-      R3D_CreateStmNodeEdge(forwBackStmNode, stateIdx3, stateIdx0, fadedEdgeParams);
-    end;
+    R3D_CreateStmNodeEdge(forwBackStmNode, stateIdx0, stateIdx1, edgeParams);
+    R3D_CreateStmNodeEdge(forwBackStmNode, stateIdx1, stateIdx2, fadedEdgeParams);
+    R3D_CreateStmNodeEdge(forwBackStmNode, stateIdx2, stateIdx3, edgeParams);
+    R3D_CreateStmNodeEdge(forwBackStmNode, stateIdx3, stateIdx0, fadedEdgeParams);
   end;
 
-  // ===== Создание switch node =====
+  // ===== Create switch node =====
   switchParams.synced := False;
   switchParams.activeInput := 0;
   switchParams.xFadeTime := 0.4;
@@ -167,6 +155,7 @@ begin
   switchNode := R3D_CreateSwitchNode(@animTree, 3, switchParams);
 
   // Create idle node
+  FillChar(loopingAnimParams.name, SizeOf(loopingAnimParams.name), 0);
   StrPCopy(loopingAnimParams.name, 'idle');
   idleNode := R3D_CreateAnimationNode(@animTree, loopingAnimParams);
 
@@ -218,8 +207,8 @@ begin
       ClearBackground(RAYWHITE);
 
       R3D_Begin(camera);
-        R3D_DrawMesh(plane, R3D_MATERIAL_BASE, Vector3Create(0, 0, 0), 1.0);
-        R3D_DrawAnimatedModel(model, modelPlayer, Vector3Create(0, 0, 0), 1.0);
+        R3D_DrawMesh(plane, R3D_MATERIAL_BASE, Vector3Zero(), 1.0);
+        R3D_DrawAnimatedModel(model, modelPlayer, Vector3Zero(), 1.0);
       R3D_End();
 
       DrawText('Press ''1'' to idle', 10, GetScreenHeight() - 74, 20, BLACK);

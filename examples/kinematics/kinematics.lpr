@@ -1,5 +1,7 @@
 program KinematicsExample;
 
+{$mode objfpc}{$H+}
+
 uses
   Math, SysUtils,
   raylib,
@@ -8,13 +10,16 @@ uses
 
 const
   RESOURCES_PATH = 'resources/';
+  GRAVITY_ = -15.0;
+  MOVE_SPEED = 5.0;
+  JUMP_FORCE = 8.0;
 
-function GetCapsuleCenter(capsule: TR3D_Capsule): TVector3;
+function GetCapsuleCenter(const capsule: TR3D_Capsule): TVector3;
 begin
   Result := Vector3Scale(Vector3Add(capsule.start, capsule.end_), 0.5);
 end;
 
-function GetBoxCenter(box: TBoundingBox): TVector3;
+function GetBoxCenter(const box: TBoundingBox): TVector3;
 begin
   Result := Vector3Scale(Vector3Add(box.min, box.max), 0.5);
 end;
@@ -44,7 +49,7 @@ var
   dx, dz: Integer;
   moveInput: TVector3;
   angleRad, pitchRad: Single;
-  right, forwardVec: TVector3;
+  rightVec, forwardVec: TVector3;
   isGrounded: Boolean;
   movement: TVector3;
   target: TVector3;
@@ -61,9 +66,7 @@ begin
   R3D_SetTextureWrap(TEXTURE_WRAP_REPEAT);
 
   // Setup sky and ambient
-  // sky := R3D_GenCubemapSky(4096, R3D_CUBEMAP_SKY_BASE);
   sky := R3D_GenProceduralSky(1024, R3D_PROCEDURAL_SKY_BASE);
-
   ambient := R3D_GenAmbientMap(sky, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
   R3D_ENVIRONMENT_SET('background.sky', sky);
   R3D_ENVIRONMENT_SET('ambient.map', ambient);
@@ -71,13 +74,12 @@ begin
   // Setup directional light
   light := R3D_CreateLight(R3D_LIGHT_DIR);
   R3D_SetLightDirection(light, Vector3Create(-1.0, -1.0, -1.0));
-  R3D_SetLightActive(light, True);
   R3D_SetLightRange(light, 16.0);
+  R3D_SetLightActive(light, True);
   R3D_EnableShadow(light);
-  R3D_SetShadowDepthBias(light, 0.005);
 
   // Load base albedo texture
-  baseAlbedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/placeholder.png'), WHITE);
+  baseAlbedo := R3D_LoadAlbedoMap(RESOURCES_PATH + 'images/placeholder.png', WHITE);
 
   // Ground material
   groundMat := R3D_GetDefaultMaterial();
@@ -96,7 +98,7 @@ begin
 
   // Slope obstacle
   slopeMeshData := R3D_GenMeshDataSlope(2.0, 2.0, 2.0, Vector3Create(0.0, 1.0, -1.0));
-  slopeMesh := R3D_LoadMesh(R3D_PRIMITIVE_TRIANGLES, slopeMeshData, nil, R3D_STATIC_MESH);
+  slopeMesh := R3D_LoadMesh(R3D_PRIMITIVE_TRIANGLES, slopeMeshData, nil);
   slopeTransform := MatrixTranslate(0.0, 1.0, 5.0);
 
   // Player capsule
@@ -107,9 +109,9 @@ begin
 
   // Player state
   velocity := Vector3Zero();
-  moveSpeed := 5.0;
-  gravity := -15.0;
-  jumpForce := 8.0;
+  moveSpeed := MOVE_SPEED;
+  gravity := GRAVITY_;
+  jumpForce := JUMP_FORCE;
 
   // Camera
   cameraAngle := 0.0;
@@ -145,17 +147,17 @@ begin
     if (dx <> 0) or (dz <> 0) then
     begin
       angleRad := cameraAngle * DEG2RAD;
-      right := Vector3Create(Cos(angleRad), 0.0, -Sin(angleRad));
+      rightVec := Vector3Create(Cos(angleRad), 0.0, -Sin(angleRad));
       forwardVec := Vector3Create(Sin(angleRad), 0.0, Cos(angleRad));
       moveInput := Vector3Normalize(Vector3Add(
-        Vector3Scale(right, dx),
+        Vector3Scale(rightVec, dx),
         Vector3Scale(forwardVec, dz)
       ));
     end;
 
-    // Check grounded
-    isGrounded := R3D_IsCapsuleGroundedBox(capsule, 0.01, groundBox, nil) or
-                  R3D_IsCapsuleGroundedMesh(capsule, 0.3, slopeMeshData, slopeTransform, nil);
+    // Check grounded (using R3D_CheckCapsuleSupport functions)
+    isGrounded := R3D_CheckCapsuleSupportBoundingBox(capsule, Vector3Create(0, -1, 0), 0.01, groundBox, nil) or
+                  R3D_CheckCapsuleSupportMesh(capsule, Vector3Create(0, -1, 0), 0.3, slopeMeshData, slopeTransform, nil);
 
     // Jump and apply gravity
     if isGrounded and IsKeyPressed(KEY_SPACE) then
@@ -188,10 +190,11 @@ begin
     target := GetCapsuleCenter(capsule);
     pitchRad := cameraPitch * DEG2RAD;
     angleRad := cameraAngle * DEG2RAD;
-
-    camera.position.x := target.x - Sin(angleRad) * Cos(pitchRad) * 5.0;
-    camera.position.y := target.y + Sin(pitchRad) * 5.0;
-    camera.position.z := target.z - Cos(angleRad) * Cos(pitchRad) * 5.0;
+    camera.position := Vector3Create(
+      target.x - Sin(angleRad) * Cos(pitchRad) * 5.0,
+      target.y + Sin(pitchRad) * 5.0,
+      target.z - Cos(angleRad) * Cos(pitchRad) * 5.0
+    );
     camera.target := target;
 
     // Rendering

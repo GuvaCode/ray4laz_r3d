@@ -1,5 +1,7 @@
 program BillboardsExample;
 
+{$mode objfpc}{$H+}
+
 uses
   SysUtils, Math, raylib, r3d, raymath;
 
@@ -7,7 +9,6 @@ const
   RESOURCES_PATH = 'resources/';
 
 var
-  ScreenWidth, ScreenHeight: Integer;
   meshGround, meshBillboard: TR3D_Mesh;
   matGround, matBillboard: TR3D_Material;
   instances: TR3D_InstanceBuffer;
@@ -16,12 +17,9 @@ var
   camera: TCamera3D;
   i: Integer;
   scaleFactor: Single;
-  bgColor, ambColor: TColor;
 begin
   // Initialize window
-  ScreenWidth := 800;
-  ScreenHeight := 450;
-  InitWindow(ScreenWidth, ScreenHeight, '[r3d] - Billboards example');
+  InitWindow(800, 450, '[r3d] - Billboards example');
   SetTargetFPS(60);
 
   // Initialize R3D
@@ -29,15 +27,9 @@ begin
   R3D_SetTextureFilter(TEXTURE_FILTER_POINT);
 
   // Set background/ambient color
-  bgColor := ColorCreate(102, 191, 255, 255);
-  ambColor := ColorCreate(10, 19, 25, 255);
-  //R3D_ENVIRONMENT_SET(background.color, bgColor);
-  R3D_GetEnvironment^.background.color := bgColor;
-
-  //R3D_ENVIRONMENT_SET(ambient.color, ambColor);
-  R3D_GetEnvironment^.ambient.color := ambColor;
-  //R3D_ENVIRONMENT_SET(tonemap.mode, R3D_TONEMAP_FILMIC);
-  R3D_GetEnvironment^.tonemap.mode := R3D_TONEMAP_FILMIC;
+  R3D_ENVIRONMENT_SET('background.color', ColorCreate(102, 191, 255, 255));
+  R3D_ENVIRONMENT_SET('ambient.color', ColorCreate(10, 19, 25, 255));
+  R3D_ENVIRONMENT_SET('tonemap.mode', R3D_TONEMAP_FILMIC);
 
   // Create ground mesh and material
   meshGround := R3D_GenMeshPlane(200, 200, 1, 1);
@@ -49,15 +41,15 @@ begin
   meshBillboard.shadowCastMode := R3D_SHADOW_CAST_ON_DOUBLE_SIDED;
 
   matBillboard := R3D_GetDefaultMaterial();
-  matBillboard.albedo := R3D_LoadAlbedoMap(PAnsiChar(RESOURCES_PATH + 'images/tree.png'), WHITE);
+  matBillboard.albedo := R3D_LoadAlbedoMap(RESOURCES_PATH + 'images/tree.png', WHITE);
   matBillboard.billboardMode := R3D_BILLBOARD_Y_AXIS;
 
   // Create transforms for instanced billboards
   instances := R3D_LoadInstanceBuffer(64, R3D_INSTANCE_POSITION or R3D_INSTANCE_SCALE);
 
-  // Получаем указатели на данные инстансов
-  positionsPtr := PVector3(R3D_MapInstances(instances, R3D_INSTANCE_POSITION));
-  scalesPtr := PVector3(R3D_MapInstances(instances, R3D_INSTANCE_SCALE));
+  // Get pointers to instance data
+  positionsPtr := R3D_MapInstances(instances, R3D_INSTANCE_POSITION, false);
+  scalesPtr := R3D_MapInstances(instances, R3D_INSTANCE_SCALE, false);
 
   Randomize;
   for i := 0 to 63 do
@@ -76,7 +68,6 @@ begin
   // Setup directional light with shadows
   light := R3D_CreateLight(R3D_LIGHT_DIR);
   R3D_SetLightDirection(light, Vector3Create(-1, -1, -1));
-  R3D_SetShadowDepthBias(light, 0.01);
   R3D_EnableShadow(light);
   R3D_SetLightActive(light, True);
   R3D_SetLightRange(light, 32.0);
@@ -103,7 +94,6 @@ begin
         R3D_DrawMesh(meshGround, matGround, Vector3Zero(), 1.0);
         R3D_DrawMeshInstanced(meshBillboard, matBillboard, instances, 64);
       R3D_End();
-
     EndDrawing();
   end;
 

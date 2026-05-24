@@ -58,14 +58,13 @@ begin
 
   // Generate a ground plane and load the animated model
   plane := R3D_GenMeshPlane(10, 10, 1, 1);
-  model := R3D_LoadModel(PAnsiChar(RESOURCES_PATH + 'models/CesiumMan.glb'));
+  model := R3D_LoadModel(RESOURCES_PATH + 'models/CesiumMan.glb');
 
   // Load animations
-  modelAnims := R3D_LoadAnimationLib(PAnsiChar(RESOURCES_PATH + 'models/CesiumMan.glb'));
+  modelAnims := R3D_LoadAnimationLib(RESOURCES_PATH + 'models/CesiumMan.glb');
   modelPlayer := R3D_LoadAnimationPlayer(model.skeleton, modelAnims);
 
   // Setup animation playing
-  R3D_SetAnimationWeight(@modelPlayer, 0, 1.0);
   R3D_SetAnimationLoop(@modelPlayer, 0, True);
   R3D_PlayAnimation(@modelPlayer, 0);
 
@@ -73,7 +72,7 @@ begin
   instances := R3D_LoadInstanceBuffer(4, R3D_INSTANCE_POSITION);
 
   // Map instances to fill positions
-  positions := PVector3(R3D_MapInstances(instances, R3D_INSTANCE_POSITION));
+  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION, False);
 
   // Fill positions in a 2x2 grid
   for z := 0 to 1 do
@@ -81,9 +80,9 @@ begin
     begin
       i := z * 2 + x;
       positions[i] := Vector3Create(
-        (x - 0.5),
+        x - 0.5,
         0.0,
-        (z - 0.5)
+        z - 0.5
       );
     end;
 
@@ -119,7 +118,7 @@ begin
         R3D_DrawMesh(plane, R3D_MATERIAL_BASE, Vector3Zero(), 1.0);
 
         // Draw single animated model
-        R3D_DrawAnimatedModel(model, modelPlayer, Vector3Create(0, 0, 0), 1.25);
+        R3D_DrawAnimatedModel(model, modelPlayer, Vector3Zero(), 1.25);
 
         // Draw instanced animated models
         R3D_DrawAnimatedModelInstanced(model, modelPlayer, instances, 4);

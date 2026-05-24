@@ -61,10 +61,10 @@ begin
 
   instances := R3D_LoadInstanceBufferEx(INSTANCE_COUNT, layout);
 
-  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION);
-  rotations := R3D_MapInstances(instances, R3D_INSTANCE_ROTATION);
-  scales := R3D_MapInstances(instances, R3D_INSTANCE_SCALE);
-  colors := R3D_MapInstances(instances, R3D_INSTANCE_COLOR);
+  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION, false);
+  rotations := R3D_MapInstances(instances, R3D_INSTANCE_ROTATION, false);
+  scales := R3D_MapInstances(instances, R3D_INSTANCE_SCALE, false);
+  colors := R3D_MapInstances(instances, R3D_INSTANCE_COLOR, false);
 
   Randomize;
   for i := 0 to INSTANCE_COUNT - 1 do

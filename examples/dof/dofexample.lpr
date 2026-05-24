@@ -34,7 +34,7 @@ begin
 
   // Initialize R3D with FXAA
   R3D_Init(GetScreenWidth(), GetScreenHeight());
-  R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA);
+
   // Configure depth of field and background
   bgColor := ColorCreate(0, 0, 0, 255);
  // R3D_ENVIRONMENT_SET(background.color, bgColor);
@@ -48,7 +48,7 @@ begin
 //  R3D_ENVIRONMENT_SET(dof.maxBlurSize, 20.0);
   R3D_GetEnvironment^.dof.maxBlurSize:=20.0;
 //  R3D_ENVIRONMENT_SET(dof.debugMode, False);
-  R3D_GetEnvironment^.dof.debugMode:=False;
+
   // Create directional light
   light := R3D_CreateLight(R3D_LIGHT_DIR);
   R3D_SetLightDirection(light, Vector3Create(0, -1, 0));
@@ -65,8 +65,8 @@ begin
   idx := 0;
 
   instances := R3D_LoadInstanceBuffer(INSTANCE_COUNT, R3D_INSTANCE_POSITION or R3D_INSTANCE_COLOR);
-  positions := PVector3(R3D_MapInstances(instances, R3D_INSTANCE_POSITION));
-  colors := PColor(R3D_MapInstances(instances, R3D_INSTANCE_COLOR));
+  positions := PVector3(R3D_MapInstances(instances, R3D_INSTANCE_POSITION, false));
+  colors := PColor(R3D_MapInstances(instances, R3D_INSTANCE_COLOR, false));
 
   Randomize;
   for x := 0 to X_INSTANCES - 1 do
@@ -129,7 +129,7 @@ begin
     if IsKeyPressed(KEY_F1) then
     begin
      // R3D_ENVIRONMENT_SET(dof.debugMode, not R3D_ENVIRONMENT_GET(dof.debugMode));
-      R3D_GetEnvironment^.dof.debugMode:= not R3D_GetEnvironment^.dof.debugMode;
+ //     R3D_GetEnvironment^.dof.debugMode:= not R3D_GetEnvironment^.dof.debugMode;
     end;
 
     BeginDrawing();
@@ -141,15 +141,14 @@ begin
       R3D_End();
 
       // Display DoF values
-      dofText := Format('Focus Point: %.2f'#10 +
+    {  dofText := Format('Focus Point: %.2f'#10 +
                        'Focus Scale: %.2f'#10 +
                        'Max Blur Size: %.2f'#10 +
-                       'Debug Mode: %d',
+
                        [R3D_GetEnvironment^.dof.focusPoint,
                         R3D_GetEnvironment^.dof.focusScale,
-                        R3D_GetEnvironment^.dof.maxBlurSize,
-                        Integer(R3D_GetEnvironment^.dof.debugMode)]);
-
+                        R3D_GetEnvironment^.dof.maxBlurSize]);
+     }
       textColor := ColorCreate(255, 255, 255, 127);
       DrawText(PAnsiChar(dofText), 10, 30, 20, textColor);
 

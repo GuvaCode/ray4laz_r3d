@@ -30,7 +30,7 @@ begin
 
   // Initialize R3D
   R3D_Init(GetScreenWidth(), GetScreenHeight());
-  R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA);
+      R3D_SetAntiAliasingMode(R3D_ANTI_ALIASING_MODE_FXAA);
 
   // Create meshes and material
   plane := R3D_GenMeshPlane(1000.0, 1000.0, 1, 1);
@@ -39,7 +39,7 @@ begin
 
   // Create transforms for instanced spheres
   instances := R3D_LoadInstanceBuffer(INSTANCE_COUNT, R3D_INSTANCE_POSITION);
-  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION);
+  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION, false);
 
   spacing := 1.5;
   offsetX := (X_INSTANCES * spacing) / 2.0;
@@ -62,8 +62,10 @@ begin
   R3D_UnmapInstances(instances, R3D_INSTANCE_POSITION);
 
   // Setup environment
-  skybox := R3D_GenCubemapSky(1024, R3D_CUBEMAP_SKY_BASE);
+  skybox := R3D_GenProceduralSky(1024, R3D_PROCEDURAL_SKY_BASE);
   R3D_ENVIRONMENT_SET('background.sky', skybox);
+
+
 
   ambientMap := R3D_GenAmbientMap(skybox, R3D_AMBIENT_ILLUMINATION or R3D_AMBIENT_REFLECTION);
   R3D_ENVIRONMENT_SET('ambient.map', ambientMap);
