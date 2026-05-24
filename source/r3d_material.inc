@@ -194,7 +194,7 @@ type
     cullMode: TR3D_CullMode;                  ///< Face culling mode (default: BACK)
 
     unlit: Boolean;                           ///< If true, material does not participate in lighting (default: false)
-
+    priority: Integer;                        ///< Render order priority; lower values are drawn first (default: 0)
     shader: PR3D_SurfaceShader;               ///< Custom shader applied to the material (default: NULL)
   end;
   PR3D_Material = ^TR3D_Material;

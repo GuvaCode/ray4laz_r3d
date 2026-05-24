@@ -90,55 +90,48 @@ type
   TR3D_EnvSSAO = record
     sampleCount: Integer;     ///< Number of samples to compute SSAO (default: 16)
     intensity: Single;        ///< Base occlusion strength multiplier (default: 1.0)
-    power: Single;            ///< Exponential falloff for sharper darkening (default: 1.5)
-    radius: Single;           ///< Sampling radius in world space (default: 0.35)
-    bias: Single;             ///< Depth bias to prevent self-shadowing, good value is ~2% of the radius (default: 0.007)
+    power: Single;            ///< Exponential falloff for sharper darkening (default: 1.0)
+    maxRadius: Single;        ///< Fraction of screen height beyond which the sampling radius is clamped (default: 0.2)
+    radius: Single;           ///< Sampling radius in world space (default: 1.0)
+    bias: Single;             ///< Depth bias to prevent self-occlusion artifacts, in world-space units (default: 0.03)
     enabled: Boolean;         ///< Enable/disable SSAO effect (default: false)
   end;
 
   {*
    * @brief Screen Space Indirect Lighting (SSIL) settings.
    *
-   * Approximates indirect lighting by gathering light from nearby visible
-   * surfaces in screen space.
-   *
-   * With a small radius, SSIL behaves like an extension of SSAO,
-   * producing a very subtle local blending of light and surface hues.
-   * With a larger radius, it becomes a better complement to SSGI,
-   * reinforcing indirect lighting over a wider area.
+   * Extends the SSAO algorithm with a global illumination component: occluding
+   * surfaces not only darken the fragment (ambient occlusion) but also transfer
+   * their color to it (indirect light bounce). A larger radius than SSAO is
+   * generally preferable to capture meaningful indirect lighting contributions.
    *}
    PR3D_EnvSSIL = ^TR3D_EnvSSIL;
    TR3D_EnvSSIL = record
-     sampleCount: Integer;     ///< Number of samples to compute indirect lighting (default: 2)
-     sliceCount: Integer;      ///< Number of depth slices for accumulation (default: 4)
-     radius: Single;           ///< Maximum distance to gather light from (default: 2.0)
-     thickness: Single;        ///< Thickness threshold for occluders (default: 1.0)
-     intensity: Single;        ///< IL intensity multiplier (default: 1.0)
-     aoPower: Single;          ///< AO exponent/power (default: 1.0)
-     denoiseSteps: Integer;    ///< Number of denoiser iterations (default: 4)
+     sampleCount: Integer;     ///< Number of samples to compute SSIL (default: 16)
+     giIntensity: Single;      ///< Indirect light strength multiplier (default: 1.0)
+     aoIntensity: Single;      ///< Ambient occlusion strength multiplier (default: 1.0)
+     aoPower: Single;          ///< Exponential falloff for sharper occlusion darkening (default: 1.0)
+     maxRadius: Single;        ///< Fraction of screen height beyond which the sampling radius is clamped (default: 0.2)
+     radius: Single;           ///< Sampling radius in world space (default: 4.0)
+     bias: Single;             ///< Depth bias to prevent self-occlusion artifacts, in world-space units (default: 0.03)
      enabled: Boolean;         ///< Enable/disable SSIL effect (default: false)
    end;
 
-  (*
-   * @brief Screen Space Global Illumination (SSGI) settings.
-   *
-   * Real-time global illlumination calculated in screen space.
-   * @note Best suited for enclosed/indoor environments.
-   *)
+   {*
+    * @brief Screen Space Global Illumination (SSGI) settings.
+    *
+    * Computes indirect lighting from the scene's visible surfaces in real time.
+    *}
    PR3D_EnvSSGI = ^TR3D_EnvSSGI;
    TR3D_EnvSSGI = record
-     sampleCount: Integer;     ///< Number of rays per pixel (default: 2)
-     maxRaySteps: Integer;     ///< Maximum ray marching steps (default: 32)
-     stepSize: Single;         ///< Ray step size (default: 0.125)
-     thickness: Single;        ///< Depth tolerance for valid hits (default: 1.0)
-     maxDistance: Single;      ///< Maximum ray distance (default: 4.0)
-     intensity: Single;        ///< GI intensity multiplier (default: 3.0)
-     fadeStart: Single;        ///< Distance at which the GI fade begins (default: 8.0)
-     fadeEnd: Single;          ///< Distance at which GI is fully faded (default: 16.0)
-     denoiseSteps: Integer;    ///< Number of denoiser iterations (default: 5)
-     enabled: Boolean;         ///< Enable/disable SSGI (default: false)
+     sliceCount: Integer;         ///< Number of directions sampled per pixel. Higher = fewer noise streaks, higher cost. (default: 4)
+     edgeFade: Single;         ///< Fades out GI near screen edges to hide emissive objects partially off-screen. (default: 0.1)
+     distanceFalloff: Single;  ///< How quickly indirect light fades with distance. Higher = shorter reach, darker result. (default: 1.0)
+     normalRejection: Single;  ///< Prevents surfaces from receiving light through their own backside. 0 = off, 1 = physically correct. May look inconsistent with non-directional emissives. (default: 0.0)
+     intensity: Single;        ///< Brightness of the indirect lighting. Dimly lit scenes may require significantly higher values to show probable contribution. (default: 1.0)
+     denoiseSteps: Integer;       ///< Number of denoiser passes. Higher = smoother result, slightly higher cost. (default: 4)
+     enabled: Boolean;           ///< Enable or disable SSGI entirely. (default: false)
    end;
-
 
   {*
    * @brief Screen Space Reflections (SSR) settings.

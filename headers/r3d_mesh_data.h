@@ -10,6 +10,7 @@
 #define R3D_MESH_DATA_H
 
 #include "./r3d_platform.h"
+#include "./r3d_vertex.h"
 #include <raylib.h>
 #include <stdint.h>
 
@@ -38,19 +39,6 @@ typedef enum R3D_PrimitiveType {
 // ========================================
 // STRUCTS TYPES
 // ========================================
-
-/**
- * @brief Represents a vertex and all its attributes for a mesh.
- */
-typedef struct R3D_Vertex {
-    Vector3 position;       ///< The 3D position of the vertex in object space.
-    Vector2 texcoord;       ///< The 2D texture coordinates (UV) for mapping textures.
-    Vector3 normal;         ///< The normal vector used for lighting calculations.
-    Color color;            ///< Vertex color, in RGBA32. */
-    Vector4 tangent;        ///< The tangent vector, used in normal mapping (often with a handedness in w).
-    int boneIds[4];         ///< Indices of up to 4 bones that influence this vertex (for skinning).
-    float weights[4];       ///< Corresponding bone weights (should sum to 1.0). Defines the influence of each bone.
-} R3D_Vertex;
 
 /**
  * @brief Represents a mesh stored in CPU memory.

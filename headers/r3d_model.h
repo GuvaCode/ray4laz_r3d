@@ -21,6 +21,17 @@
  */
 
 // ========================================
+// ALIASES TYPES
+// ========================================
+
+/**
+ * @brief Fixed-length string type for mesh names.
+ *
+ * The size can be freely adjusted before compilation.
+ */
+typedef char R3D_MeshName[32];
+
+// ========================================
 // STRUCTS TYPES
 // ========================================
 
@@ -31,16 +42,18 @@
  */
 typedef struct R3D_Model {
 
-    R3D_Mesh* meshes;                   ///< Array of meshes composing the model.
-    R3D_MeshData* meshData;             ///< Array of meshes data in RAM (optional, can be NULL).
-    R3D_Material* materials;            ///< Array of materials used by the model.
-    int* meshMaterials;                 ///< Array of material indices, one per mesh.
+    R3D_Mesh* meshes;           ///< Array of meshes composing the model.
+    R3D_MeshData* meshData;     ///< Array of meshes data in RAM (optional, can be NULL).
+    R3D_MeshName* meshNames;    ///< Array of meshes names (optional, can be NULL).
 
-    int meshCount;                      ///< Number of meshes.
-    int materialCount;                  ///< Number of materials.
+    R3D_Material* materials;    ///< Array of materials used by the model.
+    int* meshMaterials;         ///< Array of material indices, one per mesh.
 
-    BoundingBox aabb;                   ///< Axis-Aligned Bounding Box encompassing the whole model.
-    R3D_Skeleton skeleton;              ///< Skeleton hierarchy and bind pose used for skinning (NULL if non-skinned).
+    int meshCount;              ///< Number of meshes.
+    int materialCount;          ///< Number of materials.
+
+    BoundingBox aabb;           ///< Axis-Aligned Bounding Box encompassing the whole model.
+    R3D_Skeleton skeleton;      ///< Skeleton hierarchy and bind pose used for skinning (NULL if non-skinned).
 
 } R3D_Model;
 
@@ -135,6 +148,33 @@ R3DAPI R3D_Model R3D_LoadModelFromImporter(const R3D_Importer* importer);
  * Set to false if textures are still being used elsewhere to avoid freeing shared resources.
  */
 R3DAPI void R3D_UnloadModel(R3D_Model model, bool unloadMaterials);
+
+/**
+ * @brief Returns the index of the mesh with the given name.
+ *
+ * @param model The model to search in.
+ * @param meshName The name of the mesh to look up.
+ * @return The mesh index, or -1 if not found or if @c meshNames is NULL.
+ */
+R3DAPI int R3D_GetModelMeshIndex(R3D_Model model, const char* meshName);
+
+/**
+ * @brief Returns a pointer to the mesh with the given name.
+ *
+ * @param model The model to search in.
+ * @param meshName The name of the mesh to look up.
+ * @return A pointer to the mesh, or NULL if not found or if @c meshNames is NULL.
+ */
+R3DAPI R3D_Mesh* R3D_GetModelMesh(R3D_Model model, const char* meshName);
+
+/**
+ * @brief Returns a pointer to the mesh data with the given name.
+ *
+ * @param model The model to search in.
+ * @param meshName The name of the mesh to look up.
+ * @return A pointer to the mesh data, or NULL if not found or if @c meshNames or @c meshData is NULL.
+ */
+R3DAPI R3D_MeshData* R3D_GetModelMeshData(R3D_Model model, const char* meshName);
 
 #ifdef __cplusplus
 } // extern "C"

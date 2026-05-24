@@ -22,22 +22,6 @@ type
 // ========================================
 // STRUCTS TYPES
 // ========================================
-
-{*
- * @brief Represents a vertex and all its attributes for a mesh.
- *}
-type
-  PR3D_Vertex = ^TR3D_Vertex;
-  TR3D_Vertex = record
-    position: TVector3;              ///< The 3D position of the vertex in object space.
-    texcoord: TVector2;              ///< The 2D texture coordinates (UV) for mapping textures.
-    normal: TVector3;                ///< The normal vector used for lighting calculations.
-    color: TColorB;                  ///< Vertex color, in RGBA32.
-    tangent: TVector4;               ///< The tangent vector, used in normal mapping (often with a handedness in w).
-    boneIds: array[0..3] of Integer; ///< Indices of up to 4 bones that influence this vertex (for skinning).
-    weights: array[0..3] of Single;  ///< Corresponding bone weights (should sum to 1.0). Defines the influence of each bone.
-  end;
-
 {*
  * @brief Represents a mesh stored in CPU memory.
  *

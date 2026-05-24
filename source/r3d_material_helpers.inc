@@ -51,6 +51,8 @@ begin
   Result.cullMode := R3D_CULL_BACK;
 
   // Дополнительные параметры
+
   Result.unlit := False;
+  Result.priority := 0;
   Result.shader := nil;
 end;

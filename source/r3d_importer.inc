@@ -19,6 +19,16 @@ const
    *}
   R3D_IMPORT_MESH_DATA    = 1 shl 0;
 
+
+  {*
+   * @brief Import and store mesh names from the model file.
+   *
+   * When enabled, mesh names are retrieved during import and stored in @c meshNames.
+   *}
+  R3D_IMPORT_MESH_NAMES  = 1 shl 1;
+
+
+
   {*
    * Enable high-quality import processing.
    * When enabled, the importer uses a higher-quality post-processing
@@ -26,7 +36,7 @@ const
    * This mode is intended for editor usage and offline processing.
    * When disabled, a faster import preset is used, suitable for runtime.
    *}
-  R3D_IMPORT_QUALITY      = 1 shl 1;
+  R3D_IMPORT_QUALITY      = 1 shl 2;
 
 
 // ========================================

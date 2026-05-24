@@ -16,7 +16,7 @@ echo "=== Building dynamic library ==="
 mkdir build_lin64_dynamic && cd build_lin64_dynamic
 cmake .. -DR3D_RAYLIB_VENDORED=ON -DR3D_ASSIMP_VENDORED=ON -DBUILD_SHARED_LIBS=ON -DR3D_MAX_SHADER_CODE_LENGTH=32768 -DR3D_MAX_SHADER_UNIFORMS=32 -DR3D_MAX_SHADER_SAMPLERS=8 -DR3D_MAX_SCREEN_SHADERS=16 -DR3D_BUILD_EXAMPLES=OFF
 cmake --build .
-#cp lib/libr3d.so ../../../libs/x86_64-linux/libr3d.so
+cp lib/libr3d.so ../../../libs/x86_64-linux/libr3d.so
 cp lib/libassimp.so.6.0.2 ../../../libs/x86_64-linux/libassimp.so
 
 cd ..

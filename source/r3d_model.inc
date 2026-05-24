@@ -1,4 +1,20 @@
-// R3D Model Module.
+// r3d_model.inc -- R3D Model Module.
+
+// ========================================
+// ALIASES TYPES
+// ========================================
+
+{*
+ * @brief Fixed-length string type for mesh names.
+ *
+ * The size can be freely adjusted before compilation.
+ *}
+type
+  TR3D_MeshName = array[0..31] of Char;
+
+// ========================================
+// STRUCTS TYPES
+// ========================================
 
 {*
  * @brief Represents a complete 3D model with meshes and materials.
@@ -10,6 +26,7 @@ type
   TR3D_Model = record
     meshes: PR3D_Mesh;               ///< Array of meshes composing the model.
     meshData: PR3D_MeshData;         ///< Array of meshes data in RAM (optional, can be NULL).
+    meshNames: ^TR3D_MeshName;       ///< Array of meshes names (optional, can be NULL).
     materials: PR3D_Material;        ///< Array of materials used by the model.
     meshMaterials: PInteger;         ///< Array of material indices, one per mesh.
 
@@ -116,5 +133,32 @@ function R3D_LoadModelFromImporter(const importer: PR3D_Importer): TR3D_Model; c
 procedure R3D_UnloadModel(model: TR3D_Model; unloadMaterials: Boolean); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadModel';
 
+{*
+ * @brief Returns the index of the mesh with the given name.
+ *
+ * @param model The model to search in.
+ * @param meshName The name of the mesh to look up.
+ * @return The mesh index, or -1 if not found or if meshNames is NULL.
+ *}
+function R3D_GetModelMeshIndex(model: TR3D_Model; const meshName: PAnsiChar): Integer; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetModelMeshIndex';
 
+{*
+ * @brief Returns a pointer to the mesh with the given name.
+ *
+ * @param model The model to search in.
+ * @param meshName The name of the mesh to look up.
+ * @return A pointer to the mesh, or NULL if not found or if meshNames is NULL.
+ *}
+function R3D_GetModelMesh(model: TR3D_Model; const meshName: PAnsiChar): PR3D_Mesh; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetModelMesh';
 
+{*
+ * @brief Returns a pointer to the mesh data with the given name.
+ *
+ * @param model The model to search in.
+ * @param meshName The name of the mesh to look up.
+ * @return A pointer to the mesh data, or NULL if not found or if meshNames or meshData is NULL.
+ *}
+function R3D_GetModelMeshData(model: TR3D_Model; const meshName: PAnsiChar): PR3D_MeshData; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetModelMeshData';

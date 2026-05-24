@@ -25,7 +25,7 @@
 {$IFDEF FPC}
   {$mode objfpc}{$H+}
 {$ENDIF}
-{.$DEFINE USED_R3D}
+{$DEFINE USED_R3D}
 
 interface
 
@@ -44,8 +44,9 @@ uses
 
 
   {$I r3d_core.inc}
+  {$I r3d_camera.inc}
   {$I r3d_screen_shader.inc}
-
+  {$I r3d_pack.inc}
   {$I r3d_cubemap.inc}
   {$I r3d_ambient_map.inc}
   {$I r3d_importer.inc}
@@ -65,14 +66,21 @@ uses
   {$I r3d_animation.inc}
   {$I r3d_animation_player.inc}
   {$I r3d_animation_tree.inc}
+  {$I r3d_vertex.inc}
   {$I r3d_mesh_data.inc}
+
   {$I r3d_mesh.inc}
+
+
   {$I r3d_model.inc}
+
+  {$I r3d_shape.inc}
   {$I r3d_kinematics.inc}
+  {$I r3d_frustum.inc}
   {$I r3d_utils.inc}
   {$I r3d_instance.inc}
   {$I r3d_draw.inc}
-  {$I r3d_visibility.inc}
+  //{$I r3d_visibility.inc}
 
 implementation
 
@@ -84,6 +92,9 @@ implementation
     {$linklib pthread}
     {$linklib libr3d.a}
     {$linklib libassimp}
+    //{$linklib libraylib.a}
+
+
   {$ENDIF}
 {$ENDIF}
 

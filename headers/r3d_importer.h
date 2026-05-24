@@ -32,9 +32,16 @@ typedef uint32_t R3D_ImportFlags;
 /**
  * @brief Keep a CPU-side copy of mesh data.
  *
- * When enabled, raw mesh data is preserved in RAM after model import.
+ * When enabled, raw mesh data is preserved in RAM after model import and stored in @c meshData.
  */
 #define R3D_IMPORT_MESH_DATA    (1 << 0)
+
+/**
+ * @brief Import and store mesh names from the model file.
+ *
+ * When enabled, mesh names are retrieved during import and stored in @c meshNames.
+ */
+#define R3D_IMPORT_MESH_NAMES   (1 << 1)
 
 /**
  * @brief Enable high-quality import processing.
@@ -45,7 +52,7 @@ typedef uint32_t R3D_ImportFlags;
  *
  * When disabled, a faster import preset is used, suitable for runtime.
  */
-#define R3D_IMPORT_QUALITY      (1 << 1)
+#define R3D_IMPORT_QUALITY      (1 << 2)
 
 // ========================================
 // STRUCTS TYPES

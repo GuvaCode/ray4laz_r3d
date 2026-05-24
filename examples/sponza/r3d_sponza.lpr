@@ -15,7 +15,10 @@ var
   i: Integer;
   tonemap: TR3D_Tonemap;
   tonemapText: PChar;
-  env: PR3D_Environment;
+  aaMode: TR3D_AntiAliasingMode;
+  aaModeText: PChar;
+  aaPreset: TR3D_AntiAliasingPreset;
+  aaPresetText: PChar;
 
 begin
   // Initialize window
@@ -25,11 +28,9 @@ begin
   // Initialize R3D
   R3D_Init(GetScreenWidth(), GetScreenHeight());
 
-  // Get environment pointer for direct access
-  env := R3D_GetEnvironment();
-
   // Post-processing setup
   R3D_ENVIRONMENT_SET('bloom.mode', R3D_BLOOM_MIX);
+  R3D_ENVIRONMENT_SET('ssgi.intensity', 8.0);
   R3D_ENVIRONMENT_SET('ssao.enabled', True);
 
   // Background and ambient
@@ -38,16 +39,16 @@ begin
 
   // Load Sponza model
   R3D_SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_8X);
-  sponza := R3D_LoadModel(RESOURCES_PATH + 'models/Sponza.glb');
+  sponza := R3D_LoadModel(RESOURCES_PATH + 'models/hermit.glb');
 
   // Setup lights
   for i := 0 to 1 do
   begin
     lights[i] := R3D_CreateLight(R3D_LIGHT_OMNI);
     if i = 0 then
-      R3D_SetLightPosition(lights[i], Vector3Create(-10.0, 20.0, 0.0))
+      R3D_SetLightPosition(lights[i], Vector3Create(10.0, 20.0, 0.0))
     else
-      R3D_SetLightPosition(lights[i], Vector3Create(10.0, 20.0, 0.0));
+      R3D_SetLightPosition(lights[i], Vector3Create(-10.0, 20.0, 0.0));
 
     R3D_SetLightActive(lights[i], True);
     R3D_SetLightEnergy(lights[i], 8.0);
@@ -74,62 +75,67 @@ begin
     // Toggle SSAO
     if IsKeyPressed(KEY_ONE) then
     begin
-      env^.ssao.enabled := not env^.ssao.enabled;
+      //R3D_ENVIRONMENT_SET('ssao.enabled') := not R3D_ENVIRONMENT_GET('ssao.enabled'));
     end;
 
     // Toggle SSIL
     if IsKeyPressed(KEY_TWO) then
     begin
-      env^.ssil.enabled := not env^.ssil.enabled;
+      //R3D_ENVIRONMENT_SET('ssil.enabled', not R3D_ENVIRONMENT_GET('ssil.enabled'));
     end;
 
     // Toggle SSGI
     if IsKeyPressed(KEY_THREE) then
     begin
-      env^.ssgi.enabled := not env^.ssgi.enabled;
+      //R3D_ENVIRONMENT_SET('ssgi.enabled', not R3D_ENVIRONMENT_GET('ssgi.enabled'));
     end;
 
     // Toggle SSR
     if IsKeyPressed(KEY_FOUR) then
     begin
-      env^.ssr.enabled := not env^.ssr.enabled;
+     // R3D_ENVIRONMENT_SET('ssr.enabled', not R3D_ENVIRONMENT_GET('ssr.enabled'));
     end;
 
     // Toggle fog
     if IsKeyPressed(KEY_FIVE) then
     begin
-      if env^.fog.mode = R3D_FOG_DISABLED then
-        env^.fog.mode := R3D_FOG_EXP
-      else
-        env^.fog.mode := R3D_FOG_DISABLED;
+     // if R3D_ENVIRONMENT_GET('fog.mode', R3D_FOG_DISABLED) then
+     //   R3D_ENVIRONMENT_SET('fog.mode', R3D_FOG_EXP)
+     // else
+     //   R3D_ENVIRONMENT_SET('fog.mode', R3D_FOG_DISABLED);
     end;
 
-    // Toggle FXAA
-    if IsKeyPressed(KEY_SIX) then
+    // Switch anti aliasing mode
+    if IsKeyPressed(KEY_F) then
     begin
-      if R3D_GetAntiAliasing = R3D_ANTI_ALIASING_DISABLED then
-        R3D_SetAntiAliasing(R3D_ANTI_ALIASING_FXAA)
-      else
-        R3D_SetAntiAliasing(R3D_ANTI_ALIASING_DISABLED);
+     // aaMode := R3D_GetAntiAliasingMode;
+     // R3D_SetAntiAliasingMode((aaMode + 1) mod 3);
     end;
 
-    // Cycle tonemapping
+    // Switch anti aliasing preset
+    if IsKeyPressed(KEY_G) then
+    begin
+     // aaPreset := R3D_GetAntiAliasingPreset;
+     // R3D_SetAntiAliasingPreset((aaPreset + 1) mod R3D_ANTI_ALIASING_PRESET_COUNT);
+    end;
+
+    // Cycle tonemapping (left mouse - previous, right mouse - next)
     if IsMouseButtonPressed(MOUSE_BUTTON_LEFT) then
     begin
-      tonemap := env^.tonemap.mode;
+     // tonemap := R3D_ENVIRONMENT_GET('tonemap.mode');
       if tonemap = R3D_TONEMAP_LINEAR then
-        env^.tonemap.mode := R3D_TONEMAP_AGX
+        R3D_ENVIRONMENT_SET('tonemap.mode', R3D_TONEMAP_AGX)
       else
-        env^.tonemap.mode := Pred(tonemap);
+        R3D_ENVIRONMENT_SET('tonemap.mode', Pred(tonemap));
     end;
 
     if IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) then
     begin
-      tonemap := env^.tonemap.mode;
-      if tonemap = R3D_TONEMAP_AGX then
-        env^.tonemap.mode := R3D_TONEMAP_LINEAR
-      else
-        env^.tonemap.mode := Succ(tonemap);
+     // tonemap := R3D_ENVIRONMENT_GET('tonemap.mode');
+     // if tonemap = R3D_TONEMAP_AGX then
+     //   R3D_ENVIRONMENT_SET('tonemap.mode', R3D_TONEMAP_LINEAR)
+     // else
+     //   R3D_ENVIRONMENT_SET('tonemap.mode', Succ(tonemap));
     end;
 
     BeginDrawing;
@@ -147,7 +153,7 @@ begin
       EndMode3D;
 
       // Display tonemapping
-      tonemap := env^.tonemap.mode;
+      tonemap := R3D_GetEnvironment^.tonemap.mode;
       tonemapText := '';
       case tonemap of
         R3D_TONEMAP_LINEAR:    tonemapText := '< TONEMAP LINEAR >';
@@ -156,8 +162,29 @@ begin
         R3D_TONEMAP_ACES:      tonemapText := '< TONEMAP ACES >';
         R3D_TONEMAP_AGX:       tonemapText := '< TONEMAP AGX >';
       end;
-
       DrawText(tonemapText, GetScreenWidth - MeasureText(tonemapText, 20) - 10, 10, 20, LIME);
+
+      // Display anti aliasing mode
+      aaMode := R3D_GetAntiAliasingMode;
+      aaModeText := '';
+      case aaMode of
+        R3D_ANTI_ALIASING_MODE_NONE:  aaModeText := 'AA: NONE';
+        R3D_ANTI_ALIASING_MODE_FXAA:  aaModeText := 'AA: FXAA';
+        R3D_ANTI_ALIASING_MODE_SMAA:  aaModeText := 'AA: SMAA';
+      end;
+      DrawText(aaModeText, 10, GetScreenHeight - 30, 20, LIME);
+
+      // Display anti aliasing preset
+      aaPreset := R3D_GetAntiAliasingPreset;
+      aaPresetText := '';
+      case aaPreset of
+        R3D_ANTI_ALIASING_PRESET_LOW:     aaPresetText := '- Low';
+        R3D_ANTI_ALIASING_PRESET_MEDIUM:  aaPresetText := '- Medium';
+        R3D_ANTI_ALIASING_PRESET_HIGH:    aaPresetText := '- High';
+        R3D_ANTI_ALIASING_PRESET_ULTRA:   aaPresetText := '- Ultra';
+      end;
+      DrawText(aaPresetText, MeasureText(aaModeText, 20) + 20, GetScreenHeight - 30, 20, LIME);
+
       DrawFPS(10, 10);
     EndDrawing;
   end;

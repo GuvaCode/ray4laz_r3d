@@ -6,19 +6,30 @@ uses
 const
   INSTANCE_COUNT = 1000;
 
+type
+  TPackedRotation = record
+    x, y, z, w: Int16;
+  end;
+
+  TPackedScale = record
+    x, y, z: UInt16;
+  end;
+
 var
   ScreenWidth, ScreenHeight: Integer;
   mesh: TR3D_Mesh;
   material: TR3D_Material;
   instances: TR3D_InstanceBuffer;
+  layout: TR3D_InstanceLayout;
   positions: PVector3;
-  rotations: PQuaternion;
-  scales: PVector3;
+  rotations: ^TPackedRotation;
+  scales: ^TPackedScale;
   colors: PColor;
   light: TR3D_Light;
   camera: TCamera3D;
   i: Integer;
-  ambientColor: TColor;
+  rotation: TQuaternion;
+  scale: TVector3;
 
 begin
   // Initialize window
@@ -31,22 +42,29 @@ begin
   R3D_Init(GetScreenWidth(), GetScreenHeight());
 
   // Set ambient light
-  ambientColor := DARKGRAY;
- // R3D_ENVIRONMENT_SET(ambient.color, ambientColor);
-  R3D_GetEnvironment^.ambient.color := ambientColor;
+  R3D_GetEnvironment^.ambient.color := DARKGRAY;
+
   // Create cube mesh and default material
   mesh := R3D_GenMeshCube(1, 1, 1);
   material := R3D_GetDefaultMaterial();
 
-  // Generate random transforms and colors for instances
-  instances := R3D_LoadInstanceBuffer(INSTANCE_COUNT,
-    R3D_INSTANCE_POSITION or R3D_INSTANCE_ROTATION or
-    R3D_INSTANCE_SCALE or R3D_INSTANCE_COLOR);
+  // Setup instance layout with custom formats
+  layout.formats[0] := R3D_INSTANCE_FORMAT_FLOAT32;    // position
+  layout.formats[1] := R3D_INSTANCE_FORMAT_SNORM16;    // rotation quaternion
+  layout.formats[2] := R3D_INSTANCE_FORMAT_FLOAT16;    // scale
+  layout.formats[3] := R3D_INSTANCE_FORMAT_UNORM8;     // color
+  layout.formats[4] := R3D_INSTANCE_FORMAT_FLOAT32;    // custom (unused)
+  layout.flags := R3D_INSTANCE_POSITION or
+                  R3D_INSTANCE_ROTATION or
+                  R3D_INSTANCE_SCALE or
+                  R3D_INSTANCE_COLOR;
 
-  positions := PVector3(R3D_MapInstances(instances, R3D_INSTANCE_POSITION));
-  rotations := PQuaternion(R3D_MapInstances(instances, R3D_INSTANCE_ROTATION));
-  scales := PVector3(R3D_MapInstances(instances, R3D_INSTANCE_SCALE));
-  colors := PColor(R3D_MapInstances(instances, R3D_INSTANCE_COLOR));
+  instances := R3D_LoadInstanceBufferEx(INSTANCE_COUNT, layout);
+
+  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION);
+  rotations := R3D_MapInstances(instances, R3D_INSTANCE_ROTATION);
+  scales := R3D_MapInstances(instances, R3D_INSTANCE_SCALE);
+  colors := R3D_MapInstances(instances, R3D_INSTANCE_COLOR);
 
   Randomize;
   for i := 0 to INSTANCE_COUNT - 1 do
@@ -57,17 +75,26 @@ begin
       GetRandomValue(-50000, 50000) / 1000.0
     );
 
-    rotations[i] := QuaternionFromEuler(
+    rotation := QuaternionFromEuler(
       GetRandomValue(-314000, 314000) / 100000.0,
       GetRandomValue(-314000, 314000) / 100000.0,
       GetRandomValue(-314000, 314000) / 100000.0
     );
 
-    scales[i] := Vector3Create(
+    rotations[i].x := R3D_PackSnorm16(rotation.x);
+    rotations[i].y := R3D_PackSnorm16(rotation.y);
+    rotations[i].z := R3D_PackSnorm16(rotation.z);
+    rotations[i].w := R3D_PackSnorm16(rotation.w);
+
+    scale := Vector3Create(
       GetRandomValue(100, 2000) / 1000.0,
       GetRandomValue(100, 2000) / 1000.0,
       GetRandomValue(100, 2000) / 1000.0
     );
+
+    scales[i].x := R3D_PackFloat16(scale.x);
+    scales[i].y := R3D_PackFloat16(scale.y);
+    scales[i].z := R3D_PackFloat16(scale.z);
 
     colors[i] := ColorFromHSV(
       GetRandomValue(0, 360000) / 1000.0,
@@ -77,8 +104,10 @@ begin
   end;
 
   R3D_UnmapInstances(instances,
-    R3D_INSTANCE_POSITION or R3D_INSTANCE_ROTATION or
-    R3D_INSTANCE_SCALE or R3D_INSTANCE_COLOR);
+    R3D_INSTANCE_POSITION or
+    R3D_INSTANCE_ROTATION or
+    R3D_INSTANCE_SCALE or
+    R3D_INSTANCE_COLOR);
 
   // Setup directional light
   light := R3D_CreateLight(R3D_LIGHT_DIR);
@@ -112,6 +141,7 @@ begin
   end;
 
   // Cleanup
+  R3D_UnloadInstanceBuffer(instances);
   R3D_UnloadMaterial(material);
   R3D_UnloadMesh(mesh);
   R3D_Close();

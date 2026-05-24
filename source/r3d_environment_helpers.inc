@@ -26,30 +26,28 @@ begin
   Result.ambient.map := Default(TR3D_AmbientMap); // Пустая карта окружения
 
   Result.ssao.sampleCount := 16;
-  Result.ssao.intensity := 0.5;
-  Result.ssao.power := 1.5;
-  Result.ssao.radius := 0.5;
-  Result.ssao.bias := 0.02;
+  Result.ssao.intensity := 1.0;
+  Result.ssao.power := 1.0;
+  Result.ssao.maxRadius := 0.2;
+  Result.ssao.radius := 1.0;
+  Result.ssao.bias := 0.03;
   Result.ssao.enabled := false;
 
-  Result.ssil.sampleCount := 2;
-  Result.ssil.sliceCount := 4;
-  Result.ssil.radius := 2.0;
-  Result.ssil.thickness := 1.0;
-  Result.ssil.intensity := 1.0;
+  Result.ssil.sampleCount := 16;
+  Result.ssil.giIntensity := 1.0;
+  Result.ssil.aoIntensity := 1.0;
   Result.ssil.aoPower := 1.0;
-  Result.ssil.denoiseSteps := 4;
+  Result.ssil.maxRadius := 0.2;
+  Result.ssil.radius := 4.0;
+  Result.ssil.bias := 0.03;
   Result.ssil.enabled := false;
 
-  Result.ssgi.sampleCount := 2;
-  Result.ssgi.maxRaySteps:= 32;
-  Result.ssgi.stepSize := 0.125;
-  Result.ssgi.thickness:= 1.0;
-  Result.ssgi.maxDistance := 4.0;
-  Result.ssgi.intensity := 3.0;
-  Result.ssgi.fadeStart := 8.0;
-  Result.ssgi.fadeEnd := 16.0;
-  Result.ssgi.denoiseSteps :=  5;
+  Result.ssgi.sliceCount := 4;
+  Result.ssgi.edgeFade := 0.1;
+  Result.ssgi.distanceFalloff := 1.0;
+  Result.ssgi.normalRejection:= 0.0;
+  Result.ssgi.intensity := 1.0;
+  Result.ssgi.denoiseSteps :=  4;
   Result.ssgi.enabled := False;
 
   Result.ssr.maxRaySteps := 32;
@@ -115,22 +113,23 @@ begin
     // SSAO
     'ssao.intensity': Env^.ssao.intensity := Value;
     'ssao.power': Env^.ssao.power := Value;
+    'ssao.maxRadius': Env^.ssao.maxRadius := Value;
     'ssao.radius': Env^.ssao.radius := Value;
     'ssao.bias': Env^.ssao.bias := Value;
 
     // SSIL
-    'ssil.radius': Env^.ssil.radius := Value;
-    'ssil.thickness': Env^.ssil.thickness := Value;
-    'ssil.intensity': Env^.ssil.intensity := Value;
+    'ssil.giIntensity': Env^.ssil.giIntensity := Value;
+    'ssil.aoIntensity': Env^.ssil.aoIntensity := Value;
     'ssil.aoPower': Env^.ssil.aoPower := Value;
+    'ssil.maxRadius': Env^.ssil.maxRadius := Value;
+    'ssil.radius': Env^.ssil.radius := Value;
+    'ssil.bias': Env^.ssil.bias := Value;
 
     // SSGI
-    'ssgi.stepSize': Env^.ssgi.stepSize := Value;
-    'ssgi.thickness': Env^.ssgi.thickness := Value;
-    'ssgi.maxDistance': Env^.ssgi.maxDistance := Value;
-    'ssgi.intensity': Env^.ssgi.intensity:= Value;
-    'ssgi.fadeStart': Env^.ssgi.fadeStart := Value;
-    'ssgi.fadeEnd': Env^.ssgi.fadeEnd := Value;
+    'ssgi.edgeFade': Env^.ssgi.edgeFade := Value;
+    'ssgi.distanceFalloff': Env^.ssgi.distanceFalloff := Value;
+    'ssgi.normalRejection': Env^.ssgi.normalRejection := Value;
+    'ssgi.intensity': Env^.ssgi.intensity := Value;
 
     // SSR
     'ssr.stepsize': Env^.ssr.stepSize := Value;
@@ -185,14 +184,12 @@ begin
 
     // SSIL
     'ssil.samplecount': Env^.ssil.sampleCount := Value;
-    'ssil.slicecount': Env^.ssil.sliceCount := Value;
-    'ssil.denoiseSteps': Env^.ssil.denoiseSteps:= Value;
+
     // SSR
     'ssr.maxraysteps': Env^.ssr.maxRaySteps := Value;
     'ssr.binarysteps': Env^.ssr.binarySteps := Value;
     // SSGI
-    'sampleCount': Env^.ssgi.sampleCount := Value;
-    'maxRaySteps': Env^.ssgi.maxRaySteps := Value;
+    'sampleCount': Env^.ssgi.sliceCount := Value;
     'denoiseSteps': Env^.ssgi.denoiseSteps := Value;
 
   else
