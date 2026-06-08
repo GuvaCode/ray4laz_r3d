@@ -39,7 +39,7 @@ begin
 
   // Load Sponza model
   R3D_SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_8X);
-  sponza := R3D_LoadModel(RESOURCES_PATH + 'models/hermit.glb');
+  sponza := R3D_LoadModel(RESOURCES_PATH + 'models/Sponza.glb');
 
   // Setup lights
   for i := 0 to 1 do

@@ -50,7 +50,7 @@ begin
 
   // Load a screen shader
   shader := R3D_LoadScreenShader(PAnsiChar(RESOURCES_PATH + 'shaders/screen.glsl'));
-  R3D_SetScreenShaderChain(@shader, 1);
+      R3D_SetScreenShaderChain(R3D_SCREEN_SHADER_STAGE_OUTPUT, @shader, 1);
 
   // Create light
   light := R3D_CreateLight(R3D_LIGHT_SPOT);

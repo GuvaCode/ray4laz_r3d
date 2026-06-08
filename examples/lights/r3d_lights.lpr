@@ -50,7 +50,7 @@ begin
 
   // Allocate transforms for all spheres
   instances := R3D_LoadInstanceBuffer(GRID_SIZE * GRID_SIZE, R3D_INSTANCE_POSITION);
-  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION);
+  positions := R3D_MapInstances(instances, R3D_INSTANCE_POSITION, false);
 
   z := -50;
   while z < 50 do

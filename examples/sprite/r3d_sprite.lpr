@@ -43,7 +43,7 @@ begin
   // Initialize R3D
   R3D_Init(GetScreenWidth(), GetScreenHeight());
   R3D_SetTextureFilter(TEXTURE_FILTER_POINT);
-
+      R3D_SetTextureWrap(TEXTURE_WRAP_REPEAT);
   // Set background/ambient color
   R3D_GetEnvironment()^.background.color := ColorCreate(102, 191, 255, 255);
   R3D_GetEnvironment()^.ambient.color := ColorCreate(10, 19, 25, 255);

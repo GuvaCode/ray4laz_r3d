@@ -9,7 +9,7 @@
         <MainUnitHasScaledStatement Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="r3d_directional"/>
+      <Title Value="to_texture"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -33,16 +33,15 @@
     </RequiredPackages>
     <Units>
       <Unit>
-        <Filename Value="r3d_directional.lpr"/>
+        <Filename Value="to_texture.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="DirectionalLightExample"/>
       </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="../../binary/r3d_directional"/>
+      <Filename Value="../../binary/to_texture"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

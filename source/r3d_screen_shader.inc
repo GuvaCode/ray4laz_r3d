@@ -17,6 +17,39 @@ type
   PR3D_ScreenShader = ^TR3D_ScreenShader;
   PPR3D_ScreenShader = ^PR3D_ScreenShader;
 
+  // ========================================
+  // ENUM TYPES
+  // ========================================
+
+  {*
+   * @brief Screen shader execution stage.
+   *
+   * Screen shaders are custom fullscreen post-processing passes inserted at
+   * specific points of the frame.
+   *
+   * The SCENE stage runs before built-in post-processing and receives
+   * scene-referred HDR linear color. It is an advanced stage: effects
+   * may affect bloom, auto exposure, and all later passes.
+   *
+   * The POST stage runs after built-in HDR post-processing, but before output
+   * conversion. It still receives scene-referred HDR linear color.
+   *
+   * The OUTPUT stage runs after tonemapping/output conversion, but before
+   * anti-aliasing. It receives display-referred LDR color and is suitable for
+   * most artistic image effects.
+   *
+   * The FINAL stage runs after anti-aliasing, before the final blit. It receives
+   * the final display-referred image and is suitable for overlays, grain,
+   * scanlines, sharpening, fades, and debug visualization.
+   *}
+  TR3D_ScreenShaderStage = (
+    R3D_SCREEN_SHADER_STAGE_SCENE,  ///< Before built-in post-processing; advanced HDR scene stage.
+    R3D_SCREEN_SHADER_STAGE_POST,   ///< After built-in HDR post-processing, before output conversion.
+    R3D_SCREEN_SHADER_STAGE_OUTPUT, ///< After output conversion, before anti-aliasing.
+    R3D_SCREEN_SHADER_STAGE_FINAL,  ///< After anti-aliasing, before final blit.
+    R3D_SCREEN_SHADER_STAGE_COUNT  ///< Number of screen shader stages.
+    );
+
 // ========================================
 // PUBLIC API
 // ========================================
@@ -128,20 +161,21 @@ procedure R3D_SetScreenShaderSampler(shader: PR3D_ScreenShader; const name: PAns
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetScreenShaderSampler';
 
 {*
- * @brief Sets the list of screen shaders to execute at the end of the frame.
+ * @brief Sets the screen shader chain for a given stage.
  *
- * The maximum number of shaders is defined by `R3D_MAX_SCREEN_SHADERS`.
- * If the provided count exceeds this limit, a warning is emitted and only
- * the first `R3D_MAX_SCREEN_SHADERS` shaders are used.
+ * Screen shaders are executed in the order provided. The maximum number of
+ * shaders per stage is `R3D_MAX_SCREEN_SHADERS`; extra entries are ignored
+ * and a warning is emitted.
  *
- * Shader pointers are copied internally, so the original array can be modified or freed after the call.
- * NULL entries are allowed safely within the list.
+ * Shader pointers are copied internally, so the original array may be modified
+ * or freed after the call. NULL entries are allowed and skipped safely.
  *
- * Calling this function resets all internal screen shaders before copying the new list.
- * To disable all screen shaders, call this function with `shaders = NULL` and/or `count = 0`.
+ * Calling this function replaces the previous chain for the selected stage.
+ * To clear a stage, pass `shaders = NULL` or `count = 0`.
  *
+ * @param stage Screen shader stage to configure.
  * @param shaders Array of pointers to R3D_ScreenShader objects.
  * @param count Number of shaders in the array.
  *}
-procedure R3D_SetScreenShaderChain(shaders: PPR3D_ScreenShader; count: Integer); cdecl;
+procedure R3D_SetScreenShaderChain(stage: TR3D_ScreenShaderStage; shaders:  PPR3D_ScreenShader; count: Integer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetScreenShaderChain';

@@ -58,13 +58,6 @@ begin
   Result.ssr.edgeFade := 0.25;
   Result.ssr.enabled := false;
 
-  Result.bloom.mode := R3D_BLOOM_DISABLED;
-  Result.bloom.levels := 0.5;
-  Result.bloom.intensity := 0.05;
-  Result.bloom.threshold := 0.0;
-  Result.bloom.softThreshold := 0.5;
-  Result.bloom.filterRadius := 1.0;
-
   Result.fog.mode := R3D_FOG_DISABLED;
   Result.fog.color.r := 255;
   Result.fog.color.g := 255;
@@ -80,6 +73,19 @@ begin
   Result.dof.focusScale := 1.0;
   Result.dof.nearScale := 1.0;
   Result.dof.maxBlurSize := 20.0;
+
+  Result.bloom.mode := R3D_BLOOM_DISABLED;
+  Result.bloom.levels := 0.5;
+  Result.bloom.intensity := 0.05;
+  Result.bloom.threshold := 0.0;
+  Result.bloom.softThreshold := 0.5;
+  Result.bloom.filterRadius := 1.0;
+
+  Result.autoExposure.minEV := -1.0;
+  Result.autoExposure.maxEV := 1.0;
+  Result.autoExposure.exposureCompensation := 0.0;
+  Result.autoExposure.adaptationToBright := 0.5;
+  Result.autoExposure.adaptationToDark := 1.0;
 
   Result.tonemap.mode := R3D_TONEMAP_LINEAR;
   Result.tonemap.exposure := 1.0;
@@ -137,12 +143,7 @@ begin
     'ssr.maxdistance': Env^.ssr.maxDistance := Value;
     'ssr.edgefade': Env^.ssr.edgeFade := Value;
 
-    // Bloom
-    'bloom.levels': Env^.bloom.levels := Value;
-    'bloom.intensity': Env^.bloom.intensity := Value;
-    'bloom.threshold': Env^.bloom.threshold := Value;
-    'bloom.softthreshold': Env^.bloom.softThreshold := Value;
-    'bloom.filterradius': Env^.bloom.filterRadius := Value;
+
 
     // Fog
     'fog.start': Env^.fog.start := Value;
@@ -155,6 +156,20 @@ begin
     'dof.focusscale': Env^.dof.focusScale := Value;
     'dof.nearScale': Env^.dof.nearScale := Value;
     'dof.maxblursize': Env^.dof.maxBlurSize := Value;
+
+    // Bloom
+    'bloom.levels': Env^.bloom.levels := Value;
+    'bloom.intensity': Env^.bloom.intensity := Value;
+    'bloom.threshold': Env^.bloom.threshold := Value;
+    'bloom.softthreshold': Env^.bloom.softThreshold := Value;
+    'bloom.filterradius': Env^.bloom.filterRadius := Value;
+
+    //autoExposure
+    'autoExposure.minEV': Env^.autoExposure.minEV := Value;
+    'autoExposure.maxEV': Env^.autoExposure.maxEV := Value;
+    'autoExposure.exposureCompensation': Env^.autoExposure.exposureCompensation := Value;
+    'autoExposure.adaptationToBright': Env^.autoExposure.adaptationToBright := Value;
+    'autoExposure.adaptationToDark': Env^.autoExposure.adaptationToDark := Value;
 
     // Tonemap
     'tonemap.exposure': Env^.tonemap.exposure := Value;
@@ -217,6 +232,8 @@ begin
 
     // SSGI
     'ssgi.enabled': Env^.ssgi.enabled := Value;
+    // autoExposure
+    'autoExposure.enabled': Env^.autoExposure.enabled := Value;
 
   else
     raise Exception.CreateFmt('Unknown Boolean field or wrong type: %s', [Path]);

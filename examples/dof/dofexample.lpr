@@ -22,7 +22,7 @@ var
   delta, focusPoint, focusScale, maxBlur, mouseWheel: Single;
   rotation: TMatrix;
   mousePos: TVector2;
-  dofText, fpsText: string;
+  dofText, dofText1, dofText2, fpsText: string;
   bgColor, textColor: TColor;
   view: TVector3;
 begin
@@ -128,8 +128,10 @@ begin
 
     if IsKeyPressed(KEY_F1) then
     begin
-     // R3D_ENVIRONMENT_SET(dof.debugMode, not R3D_ENVIRONMENT_GET(dof.debugMode));
- //     R3D_GetEnvironment^.dof.debugMode:= not R3D_GetEnvironment^.dof.debugMode;
+      if R3D_GetOutputMode() = R3D_OUTPUT_SCENE then
+        R3D_SetOutputMode(R3D_OUTPUT_DOF)
+      else
+        R3D_SetOutputMode(R3D_OUTPUT_SCENE);
     end;
 
     BeginDrawing();
@@ -141,17 +143,15 @@ begin
       R3D_End();
 
       // Display DoF values
-    {  dofText := Format('Focus Point: %.2f'#10 +
-                       'Focus Scale: %.2f'#10 +
-                       'Max Blur Size: %.2f'#10 +
+      dofText := Sysutils.Format('Focus Point: %.2f',[R3D_GetEnvironment^.dof.focusPoint]);
+      dofText1 := Sysutils.Format('Focus Scale: %.2f',[R3D_GetEnvironment^.dof.focusScale]);
+      dofText2 := Sysutils.Format('Max Blur Size: %.2f',[R3D_GetEnvironment^.dof.maxBlurSize]);
 
-                       [R3D_GetEnvironment^.dof.focusPoint,
-                        R3D_GetEnvironment^.dof.focusScale,
-                        R3D_GetEnvironment^.dof.maxBlurSize]);
-     }
+
       textColor := ColorCreate(255, 255, 255, 127);
       DrawText(PAnsiChar(dofText), 10, 30, 20, textColor);
-
+      DrawText(PAnsiChar(dofText1), 10, 50, 20, textColor);
+      DrawText(PAnsiChar(dofText2), 10, 70, 20, textColor);
       // Display instructions
       DrawText('F1: Toggle Debug Mode'#10 +
                'Scroll: Adjust Max Blur Size'#10 +

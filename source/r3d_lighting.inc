@@ -526,6 +526,31 @@ procedure R3D_SetShadowSoftness(id: TR3D_Light; softness: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetShadowSoftness';
 
 {*
+ * @brief Retrieves the shadow opacity for a light.
+ *
+ * @param id The ID of the light.
+ * @return The current shadow opacity.
+ *}
+function R3D_GetShadowOpacity(id: TR3D_Light): Single; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetShadowOpacity';
+
+{*
+ * @brief Sets the shadow opacity for a light.
+ *
+ * The opacity controls the visual strength of shadows. A value of 0 makes shadows
+ * fully transparent, while 1 applies full opacity. Values are not clamped, but the
+ * usual range is 0 to 1.
+ *
+ * When the opacity is exactly 0, the light still owns its shadow map, but shadow
+ * map rendering and shadow application are entirely skipped.
+ *
+ * @param id The ID of the light.
+ * @param opacity The shadow opacity to apply.
+ *}
+procedure R3D_SetShadowOpacity(id: TR3D_Light; opacity: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetShadowOpacity';
+
+{*
  * @brief Gets the shadow depth bias value.
  *}
 function R3D_GetShadowDepthBias(id: TR3D_Light): Single; cdecl;
@@ -557,6 +582,37 @@ function R3D_GetShadowSlopeBias(id: TR3D_Light): Single; cdecl;
  *}
 procedure R3D_SetShadowSlopeBias(id: TR3D_Light; value: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetShadowSlopeBias';
+
+{*
+ * @brief Gets the shadow caster mask.
+ *}
+function R3D_GetShadowCasterMask(id: TR3D_Light): TR3D_Layer; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetShadowCasterMask';
+{*
+ * @brief Replaces the shadow caster mask.
+ *}
+procedure R3D_SetShadowCasterMask(id: TR3D_Light; cullMask: TR3D_Layer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetShadowCasterMask';
+{*
+ * @brief Enables one or more layers in the shadow caster mask.
+ *}
+procedure R3D_EnableShadowCasterLayers(id: TR3D_Light; layerMask: TR3D_Layer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EnableShadowCasterLayers';
+{*
+ * @brief Disables one or more layers from the shadow caster mask.
+ *}
+procedure R3D_DisableShadowCasterLayers(id: TR3D_Light; layerMask: TR3D_Layer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DisableShadowCasterLayers';
+{*
+ * @brief Toggles one or more layers in the shadow caster mask.
+ *}
+procedure R3D_ToggleShadowCasterLayers(id: TR3D_Light; layerMask: TR3D_Layer); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ToggleShadowCasterLayers';
+{*
+ * @brief Checks whether at least one object layer is visible to the shadow caster.
+ *}
+function R3D_IsShadowCasterLayerVisible(id: TR3D_Light; layerMask: TR3D_Layer): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsShadowCasterLayerVisible';
 
 // ----------------------------------------
 // LIGHTING: Light Helper Functions

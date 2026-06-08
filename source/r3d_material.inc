@@ -136,6 +136,7 @@ type
     occlusion: Single;    ///< Occlusion multiplier (default: 1.0f)
     roughness: Single;    ///< Roughness multiplier (default: 1.0f)
     metalness: Single;    ///< Metalness multiplier (default: 0.0f)
+    specular: Single;     ///< Controls how reflective non-metal materials appear (default: 0.5f)
   end;
 
   {*
@@ -403,9 +404,10 @@ procedure R3D_UnloadNormalMap(map: TR3D_NormalMap); cdecl;
  * @param occlusion Occlusion multiplier.
  * @param roughness Roughness multiplier.
  * @param metalness Metalness multiplier.
+ * @param specular Base reflectivity multiplier for non-metal materials.
  * @return ORM map. Returns an empty map on failure.
  *}
-function R3D_LoadOrmMap(fileName: PAnsiChar; occlusion, roughness, metalness: Single): TR3D_OrmMap; cdecl;
+function R3D_LoadOrmMap(fileName: PAnsiChar; occlusion, roughness, metalness, specular: Single): TR3D_OrmMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadOrmMap';
 
 {*
@@ -419,10 +421,11 @@ function R3D_LoadOrmMap(fileName: PAnsiChar; occlusion, roughness, metalness: Si
  * @param occlusion Occlusion multiplier.
  * @param roughness Roughness multiplier.
  * @param metalness Metalness multiplier.
+ * @param specular Base reflectivity multiplier for non-metal materials.
  * @return ORM map. Returns an empty map on failure.
  *}
 function R3D_LoadOrmMapFromMemory(fileType: PAnsiChar; fileData: Pointer; dataSize: Integer;
-  occlusion, roughness, metalness: Single): TR3D_OrmMap; cdecl;
+  occlusion, roughness, metalness, specular: Single): TR3D_OrmMap; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LoadOrmMapFromMemory';
 
 {*

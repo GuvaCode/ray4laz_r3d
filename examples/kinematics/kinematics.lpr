@@ -10,16 +10,16 @@ uses
 
 const
   RESOURCES_PATH = 'resources/';
-  GRAVITY_ = -15.0;
+  GRAVITY = -15.0;
   MOVE_SPEED = 5.0;
   JUMP_FORCE = 8.0;
 
-function GetCapsuleCenter(const capsule: TR3D_Capsule): TVector3;
+function CapsuleCenter(const capsule: TR3D_Capsule): TVector3;
 begin
   Result := Vector3Scale(Vector3Add(capsule.start, capsule.end_), 0.5);
 end;
 
-function GetBoxCenter(const box: TBoundingBox): TVector3;
+function BoxCenter(const box: TBoundingBox): TVector3;
 begin
   Result := Vector3Scale(Vector3Add(box.min, box.max), 0.5);
 end;
@@ -39,8 +39,6 @@ var
   slopeTransform: TMatrix;
 
   velocity: TVector3;
-  moveSpeed, gravity, jumpForce: Single;
-
   cameraAngle, cameraPitch: Single;
   camera: TCamera3D;
 
@@ -51,8 +49,7 @@ var
   angleRad, pitchRad: Single;
   rightVec, forwardVec: TVector3;
   isGrounded: Boolean;
-  movement: TVector3;
-  target: TVector3;
+  movement, target: TVector3;
   correction: Single;
 
 begin
@@ -78,15 +75,13 @@ begin
   R3D_SetLightActive(light, True);
   R3D_EnableShadow(light);
 
-  // Load base albedo texture
+  // Load materials
   baseAlbedo := R3D_LoadAlbedoMap(RESOURCES_PATH + 'images/placeholder.png', WHITE);
 
-  // Ground material
   groundMat := R3D_GetDefaultMaterial();
   groundMat.uvScale := Vector2Create(250.0, 250.0);
   groundMat.albedo := baseAlbedo;
 
-  // Slope material
   slopeMat := R3D_GetDefaultMaterial();
   slopeMat.albedo.color := ColorCreate(255, 255, 0, 255);
   slopeMat.albedo.texture := baseAlbedo.texture;
@@ -107,17 +102,13 @@ begin
   capsule.radius := 0.5;
   capsMesh := R3D_GenMeshCapsule(0.5, 1.0, 64, 32);
 
-  // Player state
   velocity := Vector3Zero();
-  moveSpeed := MOVE_SPEED;
-  gravity := GRAVITY_;
-  jumpForce := JUMP_FORCE;
 
   // Camera
   cameraAngle := 0.0;
   cameraPitch := 30.0;
   camera.position := Vector3Create(0.0, 5.0, 5.0);
-  camera.target := GetCapsuleCenter(capsule);
+  camera.target := CapsuleCenter(capsule);
   camera.up := Vector3Create(0.0, 1.0, 0.0);
   camera.fovy := 60.0;
   camera.projection := CAMERA_PERSPECTIVE;
@@ -155,21 +146,21 @@ begin
       ));
     end;
 
-    // Check grounded (using R3D_CheckCapsuleSupport functions)
+    // Check grounded
     isGrounded := R3D_CheckCapsuleSupportBoundingBox(capsule, Vector3Create(0, -1, 0), 0.01, groundBox, nil) or
                   R3D_CheckCapsuleSupportMesh(capsule, Vector3Create(0, -1, 0), 0.3, slopeMeshData, slopeTransform, nil);
 
     // Jump and apply gravity
     if isGrounded and IsKeyPressed(KEY_SPACE) then
-      velocity.y := jumpForce;
+      velocity.y := JUMP_FORCE;
 
     if not isGrounded then
-      velocity.y := velocity.y + gravity * dt
+      velocity.y := velocity.y + GRAVITY * dt
     else if velocity.y < 0 then
       velocity.y := 0;
 
     // Calculate total movement
-    movement := Vector3Scale(moveInput, moveSpeed * dt);
+    movement := Vector3Scale(moveInput, MOVE_SPEED * dt);
     movement.y := velocity.y * dt;
 
     // Apply movement with collision
@@ -187,7 +178,7 @@ begin
     end;
 
     // Update camera position
-    target := GetCapsuleCenter(capsule);
+    target := CapsuleCenter(capsule);
     pitchRad := cameraPitch * DEG2RAD;
     angleRad := cameraAngle * DEG2RAD;
     camera.position := Vector3Create(
@@ -204,7 +195,7 @@ begin
       R3D_Begin(camera);
         R3D_DrawMeshPro(slopeMesh, slopeMat, slopeTransform);
         R3D_DrawMesh(groundMesh, groundMat, Vector3Zero(), 1.0);
-        R3D_DrawMesh(capsMesh, R3D_MATERIAL_BASE, GetCapsuleCenter(capsule), 1.0);
+        R3D_DrawMesh(capsMesh, R3D_MATERIAL_BASE, CapsuleCenter(capsule), 1.0);
       R3D_End();
 
       DrawFPS(10, 10);

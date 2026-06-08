@@ -150,21 +150,6 @@ type
   end;
 
   {*
-   * @brief Bloom post-processing settings.
-   *
-   * Glow effect around bright areas in the scene.
-   *}
-  PR3D_EnvBloom = ^TR3D_EnvBloom;
-  TR3D_EnvBloom = record
-    mode: TR3D_Bloom;         ///< Bloom blending mode (default: R3D_BLOOM_DISABLED)
-    levels: Single;           ///< Mipmap spread factor [0-1]: higher = wider glow (default: 0.5)
-    intensity: Single;        ///< Bloom strength multiplier (default: 0.05)
-    threshold: Single;        ///< Minimum brightness to trigger bloom (default: 0.0)
-    softThreshold: Single;    ///< Softness of brightness cutoff transition (default: 0.5)
-    filterRadius: Single;     ///< Blur filter radius during upscaling (default: 1.0)
-  end;
-
-  {*
    * @brief Fog atmospheric effect settings.
    *}
   PR3D_EnvFog = ^TR3D_EnvFog;
@@ -190,6 +175,43 @@ type
     nearScale: Single;        ///< Near blur intensity: 0.0 = disabled, 1.0 = symmetric to far (default: 1.0)
     maxBlurSize: Single;      ///< Maximum blur radius, similar to aperture (default: 20.0)
   end;
+
+  {*
+   * @brief Bloom post-processing settings.
+   *
+   * Glow effect around bright areas in the scene.
+   *}
+  PR3D_EnvBloom = ^TR3D_EnvBloom;
+  TR3D_EnvBloom = record
+    mode: TR3D_Bloom;          ///< Bloom blending mode (default: R3D_BLOOM_DISABLED)
+    levels : Single;           ///< Mipmap spread factor [0-1]: higher = wider glow (default: 0.5)
+    intensity : Single;        ///< Bloom strength multiplier (default: 0.05)
+    threshold : Single;        ///< Minimum brightness to trigger bloom (default: 0.0)
+    softThreshold : Single;    ///< Softness of brightness cutoff transition (default: 0.5)
+    filterRadius : Single;     ///< Blur filter radius during upscaling (default: 1.0)
+  end;
+
+  {*
+   * @brief Auto exposure post-processing settings.
+   *
+   * Automatically adjusts scene exposure from average luminance,
+   * simulating eye adaptation. Adaptation should physically be
+   * faster toward bright scenes than toward dark scenes,
+   * as dark adaptation is slower.
+   *
+   * @warning Current implementation keeps a single temporal history. Enabling
+   * auto exposure for multiple scene passes in the same frame, or across
+   * different scenes, may produce incorrect adaptation. For now, use it only on
+   * one continuous begin/end scene render path.
+   *}
+   TR3D_EnvAutoExposure = record
+     minEV: Single;                ///< Minimum measured luminance in EV stops, relative to middle gray (default: -1.0)
+     maxEV: Single;                ///< Maximum measured luminance in EV stops, relative to middle gray (default:  1.0)
+     exposureCompensation: Single; ///< Artistic exposure bias in EV stops: +1 = one stop brighter (default: 0.0)
+     adaptationToBright: Single;   ///< Time constant in seconds when scene luminance increases; lower = faster (default: 0.5)
+     adaptationToDark: Single;     ///< Time constant in seconds when scene luminance decreases; lower = faster (default: 1.0)
+     enabled: Boolean;               ///< Enable auto exposure (default: false)
+   end;
 
   {*
    * @brief Tone mapping and exposure settings.
@@ -228,9 +250,10 @@ type
     ssil: TR3D_EnvSSIL;             ///< Screen space indirect lighting
     ssgi: TR3D_EnvSSGI;             ///< Screen space global illumination
     ssr: TR3D_EnvSSR;               ///< Screen space reflections
-    bloom: TR3D_EnvBloom;           ///< Bloom glow effect
     fog: TR3D_EnvFog;               ///< Atmospheric fog
     dof: TR3D_EnvDoF;               ///< Depth of field focus effect
+    bloom: TR3D_EnvBloom;           ///< Bloom glow effect
+    autoExposure: TR3D_EnvAutoExposure; ///< Auto exposure effect
     tonemap: TR3D_EnvTonemap;       ///< HDR tone mapping
     color: TR3D_EnvColor;           ///< Color grading adjustments
   end;
