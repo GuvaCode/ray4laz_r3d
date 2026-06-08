@@ -6,8 +6,9 @@ temp/*.compiled
 temp/
 
 binary/*
-!binary/libr3d.so
-!binary/libr3d.dll
+!binary/*.so
+!binary/*.so.6
+!binary/*.dll
 !binary/resources/
 
 !libs/x86_64-linux/
