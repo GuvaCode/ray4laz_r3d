@@ -69,7 +69,7 @@ begin
   light := R3D_CreateLight(R3D_LIGHT_DIR);
   R3D_SetLightDirection(light, Vector3Create(-1, -1, -1));
   R3D_EnableShadow(light);
-  R3D_SetLightActive(light, True);
+  R3D_EnableLight(light);
   R3D_SetLightRange(light, 32.0);
 
   // Setup camera

@@ -73,7 +73,7 @@ begin
   // Create directional light with shadows
   light := R3D_CreateLight(R3D_LIGHT_DIR);
   R3D_SetLightDirection(light, Vector3Create(-1.0, -1.0, -1.0));
-  R3D_SetLightActive(light, True);
+  R3D_EnableLight(light);
   R3D_SetLightRange(light, 16.0);
   R3D_SetShadowSoftness(light, 2.0);
   R3D_SetShadowDepthBias(light, 0.01);

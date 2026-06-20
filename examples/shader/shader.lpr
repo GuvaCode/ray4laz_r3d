@@ -54,9 +54,9 @@ begin
 
   // Create light
   light := R3D_CreateLight(R3D_LIGHT_SPOT);
-  R3D_LightLookAt(light, Vector3Create(0, 10, 5), Vector3Create(0, 0, 0));
+  R3D_SetLightTarget(light, Vector3Create(0, 10, 5), Vector3Create(0, 0, 0));
   R3D_EnableShadow(light);
-  R3D_SetLightActive(light, True);
+  R3D_EnableLight(light);
 
   // Setup camera
   camera.position := Vector3Create(0, 2, 2);

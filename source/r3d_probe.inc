@@ -40,9 +40,7 @@ type
    *
    * Negative values indicate an invalid probe.
    *}
-// cint32                 = UnixType.cint32;      pcint32                = UnixType.pcint32;
   TR3D_Probe = cint32;
-//  PR3D_Probe = ^TR3D_Probe;
 
 // ========================================
 // PUBLIC API
@@ -69,42 +67,64 @@ procedure R3D_DestroyProbe(id: TR3D_Probe); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DestroyProbe';
 
 {*
- * @brief Returns whether a probe exists.
+ * @brief Returns whether a probe ID is valid and allocated.
  *
  * @param id Probe ID.
- * @return true if the probe is valid and allocated, otherwise false.
+ * @return true if the probe exists, otherwise false.
  *}
-function R3D_IsProbeExist(id: TR3D_Probe): Boolean; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsProbeExist';
+function R3D_IsProbeValid(id: TR3D_Probe): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsProbeValid';
 
 {*
-* @brief Returns the probe flags.
-*
-* @param id Probe ID.
-* @return The flags assigned to the probe.
+ * @brief Returns the probe flags.
+ *
+ * @param id Probe ID.
+ * @return The flags assigned to the probe.
  *}
 function R3D_GetProbeFlags(id: TR3D_Probe): TR3D_ProbeFlags; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetProbeType';
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetProbeFlags';
 
 {*
- * @brief Returns whether a probe is currently active.
+ * @brief Returns whether a probe is currently enabled.
  *
- * Inactive probes do not contribute to lighting.
+ * Disabled probes do not contribute to lighting.
  *
  * @param id Probe ID.
- * @return true if active, otherwise false.
+ * @return true if the probe is enabled, otherwise false.
  *}
-function R3D_IsProbeActive(id: TR3D_Probe): Boolean; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsProbeActive';
+function R3D_IsProbeEnabled(id: TR3D_Probe): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsProbeEnabled';
 
 {*
- * @brief Enables or disables a probe.
+ * @brief Toggles a probe between enabled and disabled states.
+ *
+ * Re-enabling a probe schedules a scene capture on the next frame.
  *
  * @param id Probe ID.
- * @param active Set to true to enable the probe.
  *}
-procedure R3D_SetProbeActive(id: TR3D_Probe; active: Boolean); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetProbeActive';
+procedure R3D_ToggleProbe(id: TR3D_Probe); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ToggleProbe';
+
+{*
+ * @brief Enables a probe.
+ *
+ * Schedules a scene capture on the next frame.
+ * Has no effect if the probe is already enabled.
+ *
+ * @param id Probe ID.
+ *}
+procedure R3D_EnableProbe(id: TR3D_Probe); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EnableProbe';
+
+{*
+ * @brief Disables a probe.
+ *
+ * Has no effect if the probe is already disabled.
+ *
+ * @param id Probe ID.
+ *}
+procedure R3D_DisableProbe(id: TR3D_Probe); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DisableProbe';
 
 {*
  * @brief Gets the probe update mode.
@@ -216,4 +236,3 @@ function R3D_GetProbeFalloff(id: TR3D_Probe): Single; cdecl;
  *}
 procedure R3D_SetProbeFalloff(id: TR3D_Probe; falloff: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetProbeFalloff';
-

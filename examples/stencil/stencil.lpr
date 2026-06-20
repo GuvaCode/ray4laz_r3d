@@ -71,9 +71,9 @@ begin
   R3D_ENVIRONMENT_SET('ambient.color', ColorCreate(10, 10, 15, 255));
 
   light := R3D_CreateLight(R3D_LIGHT_SPOT);
-  R3D_LightLookAt(light, Vector3Create(4, 8, 5), Vector3Zero);
+  R3D_SetLightTarget(light, Vector3Create(4, 8, 5), Vector3Zero);
   R3D_SetShadowSoftness(light, 8.0);
-  R3D_SetLightActive(light, true);
+  R3D_EnableLight(light);
   R3D_EnableShadow(light);
 
  camera.position :=  Vector3Create(0,3,5);

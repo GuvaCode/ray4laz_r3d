@@ -57,7 +57,7 @@ begin
   R3D_SetLightDirection(light, Vector3Create(0.5, -1, -0.5));
   R3D_SetShadowDepthBias(light, 0.005);
   R3D_EnableShadow(light);
-  R3D_SetLightActive(light, True);
+  R3D_EnableLight(light);
 
   // Setup camera
   camera.position := Vector3Create(0, 3, 3);

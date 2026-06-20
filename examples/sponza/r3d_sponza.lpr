@@ -50,7 +50,7 @@ begin
     else
       R3D_SetLightPosition(lights[i], Vector3Create(-10.0, 20.0, 0.0));
 
-    R3D_SetLightActive(lights[i], True);
+    R3D_EnableLight(lights[i]);
     R3D_SetLightEnergy(lights[i], 8.0);
     R3D_SetShadowUpdateMode(lights[i], R3D_SHADOW_UPDATE_MANUAL);
     R3D_EnableShadow(lights[i]);

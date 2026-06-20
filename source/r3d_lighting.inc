@@ -1,4 +1,9 @@
-// R3D Lighting Module.
+// r3d_lighting.inc -- R3D Lighting Module.
+
+
+// ========================================
+// ENUM TYPES
+// ========================================
 
 {*
  * @brief Types of lights supported by the rendering engine.
@@ -7,9 +12,9 @@
  *}
 type
   TR3D_LightType = (
-    R3D_LIGHT_DIR,    ///< Directional light, affects the entire scene with parallel rays.
-    R3D_LIGHT_SPOT,   ///< Spot light, emits light in a cone shape.
-    R3D_LIGHT_OMNI,   ///< Omni light, emits light in all directions from a single point.
+    R3D_LIGHT_DIR,          ///< Directional light, affects the entire scene with parallel rays.
+    R3D_LIGHT_SPOT,         ///< Spot light, emits light in a cone shape.
+    R3D_LIGHT_OMNI,         ///< Omni light, emits light in all directions from a single point.
     R3D_LIGHT_TYPE_COUNT
   );
 
@@ -20,10 +25,14 @@ type
  *}
 type
   TR3D_ShadowUpdateMode = (
-    R3D_SHADOW_UPDATE_MANUAL,    ///< Shadow maps update only when explicitly requested.
-    R3D_SHADOW_UPDATE_INTERVAL,  ///< Shadow maps update at defined time intervals.
-    R3D_SHADOW_UPDATE_CONTINUOUS ///< Shadow maps update every frame for real-time accuracy.
+    R3D_SHADOW_UPDATE_MANUAL,     ///< Shadow maps update only when explicitly requested.
+    R3D_SHADOW_UPDATE_INTERVAL,   ///< Shadow maps update at defined time intervals.
+    R3D_SHADOW_UPDATE_CONTINUOUS  ///< Shadow maps update every frame for real-time accuracy.
   );
+
+// ========================================
+// HANDLE TYPE
+// ========================================
 
 {*
  * @brief Unique identifier for an R3D light.
@@ -32,11 +41,10 @@ type
  * A negative value indicates an invalid light.
  *}
 type
-  TR3D_Light = Int32;
-  PR3D_Light = ^TR3D_Light;
+  TR3D_Light = cint32;
 
 // ========================================
-// Public API Functions
+// PUBLIC API
 // ========================================
 
 // ----------------------------------------
@@ -52,7 +60,7 @@ type
  * @param type The type of light to create (directional, spot or omni-directional).
  * @return The ID of the created light.
  *}
-function R3D_CreateLight(&type: TR3D_LightType): TR3D_Light; cdecl;
+function R3D_CreateLight(typ: TR3D_LightType): TR3D_Light; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CreateLight';
 
 {*
@@ -74,8 +82,8 @@ procedure R3D_DestroyLight(id: TR3D_Light); cdecl;
  * @param id The ID of the light to check.
  * @return True if the light exists, false otherwise.
  *}
-function R3D_IsLightExist(id: TR3D_Light): Boolean; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsLightExist';
+function R3D_IsLightValid(id: TR3D_Light): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsLightValid';
 
 {*
  * @brief Gets the type of a light.
@@ -89,21 +97,16 @@ function R3D_GetLightType(id: TR3D_Light): TR3D_LightType; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightType';
 
 {*
- * @brief Checks if a light is active.
+ * @brief Returns whether a light is currently enabled.
  *
- * This function checks whether the specified light is currently active (enabled or disabled).
- *
- * @param id The ID of the light to check.
- * @return True if the light is active, false otherwise.
+ * @param id The ID of the light to query.
+ * @return True if the light is enabled, false otherwise.
  *}
-function R3D_IsLightActive(id: TR3D_Light): Boolean; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsLightActive';
+function R3D_IsLightEnabled(id: TR3D_Light): Boolean; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_IsLightEnabled';
 
 {*
- * @brief Toggles the state of a light (active or inactive).
- *
- * This function toggles the state of the specified light, turning it on if it is off,
- * or off if it is on.
+ * @brief Toggles a light between enabled and disabled states.
  *
  * @param id The ID of the light to toggle.
  *}
@@ -111,35 +114,44 @@ procedure R3D_ToggleLight(id: TR3D_Light); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ToggleLight';
 
 {*
- * @brief Sets the active state of a light.
+ * @brief Enables a light.
  *
- * This function allows manually turning a light on or off by specifying its active state.
+ * Has no effect if the light is already enabled.
  *
- * @param id The ID of the light to set the active state for.
- * @param active True to activate the light, false to deactivate it.
+ * @param id The ID of the light to enable.
  *}
-procedure R3D_SetLightActive(id: TR3D_Light; active: Boolean); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightActive';
+procedure R3D_EnableLight(id: TR3D_Light); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EnableLight';
+
+{*
+ * @brief Disables a light.
+ *
+ * Has no effect if the light is already disabled.
+ *
+ * @param id The ID of the light to disable.
+ *}
+procedure R3D_DisableLight(id: TR3D_Light); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DisableLight';
 
 {*
  * @brief Gets the color of a light.
  *
- * This function retrieves the color of the specified light as a `TColor` structure.
+ * This function retrieves the color of the specified light as a `Color` structure.
  *
  * @param id The ID of the light.
- * @return The color of the light as a `TColor` structure.
+ * @return The color of the light as a `Color` structure.
  *}
 function R3D_GetLightColor(id: TR3D_Light): TColor; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightColor';
 
 {*
- * @brief Gets the color of a light as a `TVector3`.
+ * @brief Gets the color of a light as a `Vector3`.
  *
- * This function retrieves the color of the specified light as a `TVector3`, where each
+ * This function retrieves the color of the specified light as a `Vector3`, where each
  * component (x, y, z) represents the RGB values of the light.
  *
  * @param id The ID of the light.
- * @return The color of the light as a `TVector3`.
+ * @return The color of the light as a `Vector3`.
  *}
 function R3D_GetLightColorV(id: TR3D_Light): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightColorV';
@@ -147,7 +159,7 @@ function R3D_GetLightColorV(id: TR3D_Light): TVector3; cdecl;
 {*
  * @brief Sets the color of a light.
  *
- * This function sets the color of the specified light using a `TColor` structure.
+ * This function sets the color of the specified light using a `Color` structure.
  *
  * @param id The ID of the light.
  * @param color The new color to set for the light.
@@ -156,13 +168,13 @@ procedure R3D_SetLightColor(id: TR3D_Light; color: TColor); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightColor';
 
 {*
- * @brief Sets the color of a light using a `TVector3`.
+ * @brief Sets the color of a light using a `Vector3`.
  *
- * This function sets the color of the specified light using a `TVector3`, where each
+ * This function sets the color of the specified light using a `Vector3`, where each
  * component (x, y, z) represents the RGB values of the light.
  *
  * @param id The ID of the light.
- * @param color The new color to set for the light as a `TVector3`.
+ * @param color The new color to set for the light as a `Vector3`.
  *}
 procedure R3D_SetLightColorV(id: TR3D_Light; color: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightColorV';
@@ -174,7 +186,7 @@ procedure R3D_SetLightColorV(id: TR3D_Light; color: TVector3); cdecl;
  * Only applicable to spot lights or omni-lights.
  *
  * @param id The ID of the light.
- * @return The position of the light as a `TVector3`.
+ * @return The position of the light as a `Vector3`.
  *}
 function R3D_GetLightPosition(id: TR3D_Light): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightPosition';
@@ -202,7 +214,7 @@ procedure R3D_SetLightPosition(id: TR3D_Light; position: TVector3); cdecl;
  * Only applicable to directional lights or spot lights.
  *
  * @param id The ID of the light.
- * @return The direction of the light as a `TVector3`.
+ * @return The direction of the light as a `Vector3`.
  *}
 function R3D_GetLightDirection(id: TR3D_Light): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightDirection';
@@ -239,8 +251,8 @@ procedure R3D_SetLightDirection(id: TR3D_Light; direction: TVector3); cdecl;
  * @param position The position to set for the light.
  * @param target The point the light should look at.
  *}
-procedure R3D_LightLookAt(id: TR3D_Light; position, target: TVector3); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LightLookAt';
+procedure R3D_SetLightTarget(id: TR3D_Light; position: TVector3; target: TVector3); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightTarget';
 
 {*
  * @brief Gets the energy level of a light.
@@ -315,80 +327,64 @@ procedure R3D_SetLightRange(id: TR3D_Light; range: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightRange';
 
 {*
- * @brief Gets the attenuation factor of a light.
+ * @brief Gets the falloff exponent of a light.
  *
- * This function retrieves the attenuation factor of the specified light.
- * Attenuation controls how the intensity of a light decreases with distance.
- * Only applicable to spot lights or omni-lights.
+ * Controls the shape of the attenuation curve over the light's range.
+ * A value of 1.0 produces a linear falloff, 2.0 a quadratic (more physically
+ * plausible) falloff, and higher values concentrate the light closer to the source.
+ * Only applicable to spot lights and omni-lights.
  *
  * @param id The ID of the light.
- * @return The attenuation factor of the light.
+ * @return The falloff exponent of the light.
  *}
-function R3D_GetLightAttenuation(id: TR3D_Light): Single; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightAttenuation';
+function R3D_GetLightFalloff(id: TR3D_Light): Single; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightFalloff';
 
 {*
- * @brief Sets the attenuation factor of a light.
+ * @brief Sets the falloff exponent of a light.
  *
- * This function sets the attenuation factor of the specified light.
- * A higher attenuation value causes the light to lose intensity more quickly as the distance increases.
- * For a realistic effect, an attenuation factor of 2.0f is typically used.
- * Only applicable to spot lights or omni-lights.
+ * Controls the shape of the attenuation curve over the light's range.
+ * A value of 1.0 produces a linear falloff, 2.0 a quadratic (more physically
+ * plausible) falloff, and higher values concentrate the light closer to the source.
+ * Values of 0.0 or below are clamped to 1.0.
+ * Only applicable to spot lights and omni-lights.
  *
  * @param id The ID of the light.
- * @param attenuation The new attenuation factor to set for the light.
+ * @param falloff The falloff exponent to set. Typical range is [0.5, 4.0].
  *}
-procedure R3D_SetLightAttenuation(id: TR3D_Light; attenuation: Single); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightAttenuation';
+procedure R3D_SetLightFalloff(id: TR3D_Light; falloff: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightFalloff';
 
 {*
- * @brief Gets the inner cutoff angle of a spotlight.
+ * @brief Gets the inner and outer cone angles of a spot light.
  *
- * This function retrieves the inner cutoff angle of a spotlight.
- * The inner cutoff defines the cone of light where the light is at full intensity.
+ * The inner angle defines the region of full intensity, and the outer angle
+ * defines where the light fully fades out. The transition between the two
+ * produces a soft edge. Both angles are in degrees.
+ * Only applicable to spot lights.
  *
  * @param id The ID of the light.
- * @return The inner cutoff angle in degrees of the spotlight.
+ * @param inner Pointer to receive the inner cone angle, in degrees. May be NULL.
+ * @param outer Pointer to receive the outer cone angle, in degrees. May be NULL.
  *}
-function R3D_GetLightInnerCutOff(id: TR3D_Light): Single; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightInnerCutOff';
+procedure R3D_GetLightAngle(id: TR3D_Light; inner: PSingle; outer: PSingle); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightAngle';
 
 {*
- * @brief Sets the inner cutoff angle of a spotlight.
+ * @brief Sets the inner and outer cone angles of a spot light.
  *
- * This function sets the inner cutoff angle of a spotlight.
- * The inner cutoff angle defines the cone where the light is at full intensity.
- * Anything outside this cone starts to fade.
- *
- * @param id The ID of the light.
- * @param degrees The new inner cutoff angle in degrees.
- *}
-procedure R3D_SetLightInnerCutOff(id: TR3D_Light; degrees: Single); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightInnerCutOff';
-
-{*
- * @brief Gets the outer cutoff angle of a spotlight.
- *
- * This function retrieves the outer cutoff angle of a spotlight.
- * The outer cutoff defines the outer boundary of the light's cone, where the light starts to fade.
+ * The inner angle defines the region of full intensity, and the outer angle
+ * defines where the light fully fades out. The transition between the two
+ * produces a soft edge. Both angles are in degrees. If inner exceeds outer,
+ * the two values are swapped automatically.
+ * Only applicable to spot lights.
  *
  * @param id The ID of the light.
- * @return The outer cutoff angle in degrees of the spotlight.
+ * @param inner The inner cone half-angle, in degrees.
+ * @param outer The outer cone half-angle, in degrees.
  *}
-function R3D_GetLightOuterCutOff(id: TR3D_Light): Single; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightOuterCutOff';
-
-{*
- * @brief Sets the outer cutoff angle of a spotlight.
- *
- * This function sets the outer cutoff angle of a spotlight.
- * The outer cutoff defines the boundary of the light's cone where the light intensity starts to gradually decrease.
- *
- * @param id The ID of the light.
- * @param degrees The new outer cutoff angle in degrees.
- *}
-procedure R3D_SetLightOuterCutOff(id: TR3D_Light; degrees: Single); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightOuterCutOff';
+procedure R3D_SetLightAngle(id: TR3D_Light; inner: Single; outer: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightAngle';
 
 // ----------------------------------------
 // LIGHTING: Shadow Config Functions
@@ -461,30 +457,26 @@ procedure R3D_SetShadowUpdateMode(id: TR3D_Light; mode: TR3D_ShadowUpdateMode); 
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetShadowUpdateMode';
 
 {*
- * @brief Gets the frequency of shadow map updates for the interval update mode.
+ * @brief Gets the interval between shadow map updates in interval update mode.
  *
- * This function retrieves the frequency (in milliseconds) at which the shadow map should be updated when
- * the interval update mode is enabled. This function is only relevant if the shadow map update mode is set
- * to "Interval".
+ * Only relevant when the shadow update mode is set to @ref R3D_SHADOW_UPDATE_INTERVAL.
  *
  * @param id The ID of the light.
- * @return The frequency in milliseconds at which the shadow map is updated.
+ * @return The interval in seconds between shadow map updates.
  *}
-function R3D_GetShadowUpdateFrequency(id: TR3D_Light): Integer; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetShadowUpdateFrequency';
+function R3D_GetShadowUpdateInterval(id: TR3D_Light): Single; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetShadowUpdateInterval';
 
 {*
- * @brief Sets the frequency of shadow map updates for the interval update mode.
+ * @brief Sets the interval between shadow map updates in interval update mode.
  *
- * This function sets the frequency (in milliseconds) at which the shadow map should be updated when
- * the interval update mode is enabled. This function is only relevant if the shadow map update mode is set
- * to "Interval".
+ * Only relevant when the shadow update mode is set to @ref R3D_SHADOW_UPDATE_INTERVAL.
  *
  * @param id The ID of the light.
- * @param msec The frequency in milliseconds at which to update the shadow map.
+ * @param seconds The interval in seconds between shadow map updates.
  *}
-procedure R3D_SetShadowUpdateFrequency(id: TR3D_Light; msec: Integer); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetShadowUpdateFrequency';
+procedure R3D_SetShadowUpdateInterval(id: TR3D_Light; seconds: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetShadowUpdateInterval';
 
 {*
  * @brief Forces an immediate update of the shadow map during the next rendering pass.
@@ -588,26 +580,31 @@ procedure R3D_SetShadowSlopeBias(id: TR3D_Light; value: Single); cdecl;
  *}
 function R3D_GetShadowCasterMask(id: TR3D_Light): TR3D_Layer; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetShadowCasterMask';
+
 {*
  * @brief Replaces the shadow caster mask.
  *}
 procedure R3D_SetShadowCasterMask(id: TR3D_Light; cullMask: TR3D_Layer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetShadowCasterMask';
+
 {*
  * @brief Enables one or more layers in the shadow caster mask.
  *}
 procedure R3D_EnableShadowCasterLayers(id: TR3D_Light; layerMask: TR3D_Layer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EnableShadowCasterLayers';
+
 {*
  * @brief Disables one or more layers from the shadow caster mask.
  *}
 procedure R3D_DisableShadowCasterLayers(id: TR3D_Light; layerMask: TR3D_Layer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DisableShadowCasterLayers';
+
 {*
  * @brief Toggles one or more layers in the shadow caster mask.
  *}
 procedure R3D_ToggleShadowCasterLayers(id: TR3D_Light; layerMask: TR3D_Layer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ToggleShadowCasterLayers';
+
 {*
  * @brief Checks whether at least one object layer is visible to the shadow caster.
  *}
@@ -649,5 +646,5 @@ function R3D_GetLightBoundingBox(light: TR3D_Light): TBoundingBox; cdecl;
  *
  * @param id The ID of the light.
  *}
-procedure R3D_DrawLightShape(id: TR3D_Light); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawLightShape';
+procedure R3D_DrawLightDebug(id: TR3D_Light); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawLightDebug';

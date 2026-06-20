@@ -49,8 +49,8 @@ begin
 
   // Create light
   light := R3D_CreateLight(R3D_LIGHT_SPOT);
-  R3D_LightLookAt(light, Vector3Create(0, 10, 5), Vector3Create(0, 0, 0));
-  R3D_SetLightActive(light, True);
+  R3D_SetLightTarget(light, Vector3Create(0, 10, 5), Vector3Create(0, 0, 0));
+  R3D_EnableLight(light);
   R3D_EnableShadow(light);
 
   // Create probe
@@ -58,7 +58,7 @@ begin
   R3D_SetProbePosition(probe, Vector3Create(0, 1, 0));
   R3D_SetProbeShadows(probe, True);
   R3D_SetProbeFalloff(probe, 0.5);
-  R3D_SetProbeActive(probe, True);
+  R3D_EnableProbe(probe);
 
   // Setup camera
   camera.position := Vector3Create(0, 3.0, 6.0);

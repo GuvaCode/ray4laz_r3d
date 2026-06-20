@@ -75,7 +75,7 @@ begin
     R3D_SetLightPosition(lights[i], Vector3Create(RandF(-50.0, 50.0), RandF(1.0, 5.0), RandF(-50.0, 50.0)));
     R3D_SetLightColor(lights[i], ColorFromHSV(RandF(0.0, 360.0), 1.0, 1.0));
     R3D_SetLightRange(lights[i], RandF(8.0, 16.0));
-    R3D_SetLightActive(lights[i], True);
+    R3D_EnableLight(lights[i]);
   end;
 
   // Setup camera
@@ -105,7 +105,7 @@ begin
         BeginMode3D(camera);
         for i := 0 to NUM_LIGHTS - 1 do
         begin
-          R3D_DrawLightShape(lights[i]);
+          R3D_DrawLightDebug(lights[i]);
         end;
         EndMode3D();
       end;
