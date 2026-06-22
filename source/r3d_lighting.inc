@@ -1,6 +1,5 @@
 // r3d_lighting.inc -- R3D Lighting Module.
 
-
 // ========================================
 // ENUM TYPES
 // ========================================
@@ -133,51 +132,69 @@ procedure R3D_EnableLight(id: TR3D_Light); cdecl;
 procedure R3D_DisableLight(id: TR3D_Light); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DisableLight';
 
+// ----------------------------------------
+// LIGHTING: Light Color Functions
+// ----------------------------------------
+
 {*
- * @brief Gets the color of a light.
+ * @brief Gets the color of a light in sRGB space.
  *
- * This function retrieves the color of the specified light as a `Color` structure.
+ * The internal linear color is converted to sRGB before being returned.
  *
  * @param id The ID of the light.
- * @return The color of the light as a `Color` structure.
+ * @return The color of the light as an sRGB `TColor`.
  *}
 function R3D_GetLightColor(id: TR3D_Light): TColor; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightColor';
 
 {*
- * @brief Gets the color of a light as a `Vector3`.
+ * @brief Sets the color of a light from an sRGB color.
  *
- * This function retrieves the color of the specified light as a `Vector3`, where each
- * component (x, y, z) represents the RGB values of the light.
- *
- * @param id The ID of the light.
- * @return The color of the light as a `Vector3`.
- *}
-function R3D_GetLightColorV(id: TR3D_Light): TVector3; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightColorV';
-
-{*
- * @brief Sets the color of a light.
- *
- * This function sets the color of the specified light using a `Color` structure.
+ * The provided sRGB color is converted to linear space before being stored internally.
  *
  * @param id The ID of the light.
- * @param color The new color to set for the light.
+ * @param color The new color to set for the light, in sRGB space.
  *}
 procedure R3D_SetLightColor(id: TR3D_Light; color: TColor); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightColor';
 
 {*
- * @brief Sets the color of a light using a `Vector3`.
+ * @brief Gets the color of a light in linear space.
  *
- * This function sets the color of the specified light using a `Vector3`, where each
- * component (x, y, z) represents the RGB values of the light.
+ * Returns the raw internal color without any color space conversion.
  *
  * @param id The ID of the light.
- * @param color The new color to set for the light as a `Vector3`.
+ * @return The color of the light as a linear RGB `TVector3`.
  *}
-procedure R3D_SetLightColorV(id: TR3D_Light; color: TVector3); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightColorV';
+function R3D_GetLightColorLinear(id: TR3D_Light): TVector3; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightColorLinear';
+
+{*
+ * @brief Sets the color of a light from a linear RGB color.
+ *
+ * The provided value is stored as-is, without any color space conversion.
+ *
+ * @param id The ID of the light.
+ * @param color The new color to set for the light, in linear space.
+ *}
+procedure R3D_SetLightColorLinear(id: TR3D_Light; color: TVector3); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightColorLinear';
+
+{*
+ * @brief Sets the color of a light from a color temperature.
+ *
+ * Converts the given temperature to an sRGB color using the Tanner Helland approximation,
+ * then applies the appropriate sRGB-to-linear conversion before storing it internally.
+ *
+ * @param id The ID of the light.
+ * @param kelvin The color temperature in Kelvin. Valid range is 1000K to 40000K.
+ *}
+procedure R3D_SetLightTemperature(id: TR3D_Light; kelvin: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightTemperature';
+
+// ----------------------------------------
+// LIGHTING: Light Position & Direction
+// ----------------------------------------
 
 {*
  * @brief Gets the position of a light.
@@ -186,7 +203,7 @@ procedure R3D_SetLightColorV(id: TR3D_Light; color: TVector3); cdecl;
  * Only applicable to spot lights or omni-lights.
  *
  * @param id The ID of the light.
- * @return The position of the light as a `Vector3`.
+ * @return The position of the light as a `TVector3`.
  *}
 function R3D_GetLightPosition(id: TR3D_Light): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightPosition';
@@ -197,9 +214,9 @@ function R3D_GetLightPosition(id: TR3D_Light): TVector3; cdecl;
  * This function sets the position of the specified light.
  * Only applicable to spot lights or omni-lights.
  *
- * @note Has no effect for directional lights.
- *       If called on a directional light,
- *       a warning will be logged.
+ * @note For directional lights, the position is stored internally but has no effect
+ *       on lighting calculations. It can still be retrieved via `R3D_GetLightPosition`
+ *       and may be used for debug visualization with `R3D_DrawLightDebug`.
  *
  * @param id The ID of the light.
  * @param position The new position to set for the light.
@@ -214,7 +231,7 @@ procedure R3D_SetLightPosition(id: TR3D_Light; position: TVector3); cdecl;
  * Only applicable to directional lights or spot lights.
  *
  * @param id The ID of the light.
- * @return The direction of the light as a `Vector3`.
+ * @return The direction of the light as a `TVector3`.
  *}
 function R3D_GetLightDirection(id: TR3D_Light): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightDirection';
@@ -242,10 +259,11 @@ procedure R3D_SetLightDirection(id: TR3D_Light; direction: TVector3); cdecl;
  * This function sets both the position and the direction of the specified light,
  * causing it to "look at" a given target point.
  *
- * @note - For directional lights, only the direction is updated (position is ignored).
+ * @note - For directional lights, only the direction is updated. The position is stored
+ *         internally but has no effect on lighting calculations; it may still be used
+ *         for debug visualization with `R3D_DrawLightDebug`.
  *       - For omni-directional lights, only the position is updated (direction is not calculated).
  *       - For spot lights, both position and direction are set accordingly.
- *       - This function does **not** emit any warning or log message.
  *
  * @param id The ID of the light.
  * @param position The position to set for the light.
@@ -254,11 +272,12 @@ procedure R3D_SetLightDirection(id: TR3D_Light; direction: TVector3); cdecl;
 procedure R3D_SetLightTarget(id: TR3D_Light; position: TVector3; target: TVector3); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightTarget';
 
+// ----------------------------------------
+// LIGHTING: Light Energy & Specular
+// ----------------------------------------
+
 {*
  * @brief Gets the energy level of a light.
- *
- * This function retrieves the energy level (intensity) of the specified light.
- * Energy typically affects the brightness of the light.
  *
  * @param id The ID of the light.
  * @return The energy level of the light.
@@ -277,6 +296,32 @@ function R3D_GetLightEnergy(id: TR3D_Light): Single; cdecl;
  *}
 procedure R3D_SetLightEnergy(id: TR3D_Light; energy: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightEnergy';
+
+{*
+ * @brief Gets the energy level of a light as a luminous flux.
+ *
+ * Converts the light's current energy factor to lumens using a reference distance of 1 unit,
+ * assuming 1 unit = 1 meter. For a custom reference distance, use `R3D_EnergyToLumens`
+ * with `R3D_GetLightEnergy` directly.
+ *
+ * @param id The ID of the light.
+ * @return The luminous flux in lumens.
+ *}
+function R3D_GetLightLumen(id: TR3D_Light): Single; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightLumen';
+
+{*
+ * @brief Sets the energy of a light from a luminous flux value.
+ *
+ * Converts the given flux to an energy factor using a reference distance of 1 unit,
+ * assuming 1 unit = 1 meter. For a custom reference distance, use `R3D_LumensToEnergy`
+ * and pass the result to `R3D_SetLightEnergy` directly.
+ *
+ * @param id The ID of the light.
+ * @param lumens The luminous flux in lumens.
+ *}
+procedure R3D_SetLightLumen(id: TR3D_Light; lumens: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightLumen';
 
 {*
  * @brief Gets the specular intensity of a light.
@@ -301,6 +346,10 @@ function R3D_GetLightSpecular(id: TR3D_Light): Single; cdecl;
  *}
 procedure R3D_SetLightSpecular(id: TR3D_Light; specular: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightSpecular';
+
+// ----------------------------------------
+// LIGHTING: Light Range & Falloff
+// ----------------------------------------
 
 {*
  * @brief Gets the range of a light.
@@ -355,6 +404,10 @@ function R3D_GetLightFalloff(id: TR3D_Light): Single; cdecl;
 procedure R3D_SetLightFalloff(id: TR3D_Light; falloff: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightFalloff';
 
+// ----------------------------------------
+// LIGHTING: Light Cone Angles
+// ----------------------------------------
+
 {*
  * @brief Gets the inner and outer cone angles of a spot light.
  *
@@ -385,6 +438,32 @@ procedure R3D_GetLightAngle(id: TR3D_Light; inner: PSingle; outer: PSingle); cde
  *}
 procedure R3D_SetLightAngle(id: TR3D_Light; inner: Single; outer: Single); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightAngle';
+
+// ----------------------------------------
+// LIGHTING: Volumetric Fog
+// ----------------------------------------
+
+{*
+ * @brief Gets the volumetric fog energy multiplier of a light.
+ *
+ * @param id The ID of the light.
+ * @return The volumetric fog energy multiplier of the light.
+ *}
+function R3D_GetLightFogEnergy(id: TR3D_Light): Single; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightFogEnergy';
+
+{*
+ * @brief Sets the volumetric fog energy multiplier of a light.
+ *
+ * The final fog contribution is the light's energy multiplied by this factor,
+ * allowing fine-grained control over its volumetric fog intensity independently
+ * of its regular lighting contribution.
+ *
+ * @param id The ID of the light.
+ * @param energy The new volumetric fog energy multiplier to set for the light.
+ *}
+procedure R3D_SetLightFogEnergy(id: TR3D_Light; energy: Single); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetLightFogEnergy';
 
 // ----------------------------------------
 // LIGHTING: Shadow Config Functions
@@ -629,7 +708,7 @@ function R3D_IsShadowCasterLayerVisible(id: TR3D_Light; layerMask: TR3D_Layer): 
  *
  * @param light The light for which to compute the bounding box.
  *
- * @return A TBoundingBox struct that encloses the light's influence volume.
+ * @return A `TBoundingBox` struct that encloses the light's influence volume.
  *}
 function R3D_GetLightBoundingBox(light: TR3D_Light): TBoundingBox; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetLightBoundingBox';
@@ -648,3 +727,32 @@ function R3D_GetLightBoundingBox(light: TR3D_Light): TBoundingBox; cdecl;
  *}
 procedure R3D_DrawLightDebug(id: TR3D_Light); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_DrawLightDebug';
+
+// ----------------------------------------
+// LIGHTING: Math Helper Functions
+// ----------------------------------------
+
+{*
+ * @brief Converts a luminous flux to an energy factor.
+ *
+ * Computes the illuminance in lux at the given reference distance from an isotropic
+ * point source: `energy = lumens / (4 * pi * distance * distance)`
+ *
+ * @param lumens The luminous flux in lumens.
+ * @param referenceDistance The reference distance in scene units (1 unit = 1 meter).
+ * @return The corresponding energy factor.
+ *}
+function R3D_LumensToEnergy(lumens: Single; referenceDistance: Single): Single; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_LumensToEnergy';
+
+{*
+ * @brief Converts an energy factor back to a luminous flux.
+ *
+ * Inverse of `R3D_LumensToEnergy`: `lumens = energy * 4 * pi * distance * distance`
+ *
+ * @param energy The energy factor.
+ * @param referenceDistance The reference distance in scene units (1 unit = 1 meter).
+ * @return The corresponding luminous flux in lumens.
+ *}
+function R3D_EnergyToLumens(energy: Single; referenceDistance: Single): Single; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_EnergyToLumens';

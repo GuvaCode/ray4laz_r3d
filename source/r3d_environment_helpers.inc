@@ -68,6 +68,17 @@ begin
   Result.fog.density := 0.05;
   Result.fog.skyAffect := 0.5;
 
+  Result.volumetricFog.scatteringDensity := 0.01;
+  Result.volumetricFog.absortionDensity := 0.03;
+  Result.volumetricFog.scatteringColor := WHITE;
+  Result.volumetricFog.anisotropy := 0.5;
+  Result.volumetricFog.emissionColor := WHITE;
+  Result.volumetricFog.emissionEnergy := 0.0;
+  Result.volumetricFog.skyAffect := 0.5;
+  Result.volumetricFog.length := 50.0;
+  Result.volumetricFog.stepSize := 1.0;
+  Result.volumetricFog.enabled := false;
+
   Result.dof.mode := R3D_DOF_DISABLED;
   Result.dof.focusPoint := 10.0;
   Result.dof.focusScale := 1.0;
@@ -94,6 +105,7 @@ begin
   Result.color.brightness := 1.0;
   Result.color.contrast := 1.0;
   Result.color.saturation := 1.0;
+
 end;
 
 // ========================================
@@ -143,13 +155,20 @@ begin
     'ssr.maxdistance': Env^.ssr.maxDistance := Value;
     'ssr.edgefade': Env^.ssr.edgeFade := Value;
 
-
-
     // Fog
     'fog.start': Env^.fog.start := Value;
     'fog.end': Env^.fog.end_ := Value;
     'fog.density': Env^.fog.density := Value;
     'fog.skyaffect': Env^.fog.skyAffect := Value;
+
+    // VolumetricFog
+    'volumetricFog.scatteringDensity': Env^.volumetricFog.scatteringDensity := Value;
+    'volumetricFog.absortionDensity': Env^.volumetricFog.absortionDensity := Value;
+    'volumetricFog.anisotropy': Env^.volumetricFog.anisotropy := Value;
+    'volumetricFog.emissionEnergy': Env^.volumetricFog.emissionEnergy := Value;
+    'volumetricFog.skyAffect': Env^.volumetricFog.skyAffect := Value;
+    'volumetricFog.length': Env^.volumetricFog.length := Value;
+    'volumetricFog.stepSize': Env^.volumetricFog.stepSize := Value;
 
     // Depth of Field
     'dof.focuspoint': Env^.dof.focusPoint := Value;
@@ -232,8 +251,13 @@ begin
 
     // SSGI
     'ssgi.enabled': Env^.ssgi.enabled := Value;
-    // autoExposure
+
+    // AutoExposure
     'autoExposure.enabled': Env^.autoExposure.enabled := Value;
+
+   // VolumetricFog
+
+   'volumetricFog.enabled': Env^.volumetricFog.enabled := Value;
 
   else
     raise Exception.CreateFmt('Unknown Boolean field or wrong type: %s', [Path]);
@@ -258,6 +282,9 @@ begin
     // Fog
     'fog.color': Env^.fog.color := Value;
 
+    // VolumetricFog
+    'volumetricFog.scatteringColor' :Env^.volumetricFog.scatteringColor := Value;
+    'volumetricFog.emissionColor' :Env^.volumetricFog.emissionColor := Value;
   else
     raise Exception.CreateFmt('Unknown TColor field or wrong type: %s', [Path]);
   end;

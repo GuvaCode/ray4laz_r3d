@@ -44,3 +44,16 @@ function R3D_ColorFromCurrentSpace(color: TColor): TVector4; cdecl;
 function R3D_ColorFromCurrentSpaceVector3(color: TColor): TVector3; cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ColorFromCurrentSpaceVector3';
 
+
+{*
+ * @brief Converts a color temperature to an sRGB color.
+ *
+ * Uses the Tanner Helland approximation, valid between 1000K and 40000K.
+ * Results outside the valid range are undefined.
+ *
+ * @param kelvin The color temperature in Kelvin.
+ * @return The corresponding color as an sRGB Color.
+ *}
+function R3D_ColorFromTemperature(kelvin: Single): TColorB; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ColorFromTemperature';
+

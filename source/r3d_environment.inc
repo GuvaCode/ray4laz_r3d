@@ -150,7 +150,7 @@ type
   end;
 
   {*
-   * @brief Fog atmospheric effect settings.
+   * @brief Atmospheric fog effect settings.
    *}
   PR3D_EnvFog = ^TR3D_EnvFog;
   TR3D_EnvFog = record
@@ -160,6 +160,23 @@ type
     end_: Single;             ///< Linear mode: distance of full fog density (default: 50.0)
     density: Single;          ///< Exponential modes: fog thickness factor (default: 0.05)
     skyAffect: Single;        ///< Fog influence on skybox [0-1] (default: 0.5)
+  end;
+
+ {*
+  * @brief Volumetric fog effect settings.
+  *}
+  PR3D_VolumetricFog = ^TR3D_VolumetricFog;
+  TR3D_VolumetricFog = record
+    scatteringDensity: Single;    ///< Light scattering thickness; higher = more visible light rays (default: 0.01)
+    absortionDensity: Single;     ///< Light absorption thickness; higher = darker scene (default: 0.03)
+    scatteringColor: TColorB;     ///< Tint color of scattered light rays (default: WHITE)
+    anisotropy: Single;           ///< Scattering direction: 0 = uniform, >0 = forward (haze), <0 = backward (default: 0.5)
+    emissionColor: TColorB;       ///< Color emitted by the fog regardless of lighting (default: WHITE)
+    emissionEnergy: Single;       ///< Emission brightness; 0 disables emission (default: 0.0)
+    skyAffect: Single;            ///< Fog influence on the skybox [0-1] (default: 0.5)
+    length: Single;               ///< Maximum fog render distance in world units (default: 50.0)
+    stepSize: Single;             ///< Ray-march step size; smaller = higher quality, lower performance (default: 1.0)
+    enabled: Boolean;             ///< Enables or disables the volumetric fog (default: false)
   end;
 
   {*
@@ -251,6 +268,7 @@ type
     ssgi: TR3D_EnvSSGI;             ///< Screen space global illumination
     ssr: TR3D_EnvSSR;               ///< Screen space reflections
     fog: TR3D_EnvFog;               ///< Atmospheric fog
+    volumetricFog: TR3D_VolumetricFog;  ///< Volumetric fog
     dof: TR3D_EnvDoF;               ///< Depth of field focus effect
     bloom: TR3D_EnvBloom;           ///< Bloom glow effect
     autoExposure: TR3D_EnvAutoExposure; ///< Auto exposure effect
