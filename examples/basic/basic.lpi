@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="12"/>
+    <Version Value="13"/>
     <General>
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
@@ -34,7 +34,6 @@
     <Units>
       <Unit>
         <Filename Value="basic.lpr"/>
-        <IsPartOfProject Value="True"/>
       </Unit>
     </Units>
   </ProjectOptions>
@@ -47,6 +46,9 @@
       <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="../../temp/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <CodeGeneration>
+      <TargetOS Value="win64"/>
+    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf3"/>
