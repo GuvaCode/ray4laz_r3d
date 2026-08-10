@@ -457,6 +457,7 @@ procedure R3D_GenMeshDataUVsCylindrical(meshData: PR3D_MeshData); cdecl;
  * @param meshData Mesh data to modify.
  * @param primitiveType Primitive type of the mesh. Points and line primitives are not
  *                      supported and will default to a front-facing normal (0, 0, 1).
+ * @warning Not thread-safe: uses the shared global scratch stack
  *}
 procedure R3D_GenMeshDataNormals(meshData: PR3D_MeshData; primitiveType: TR3D_PrimitiveType); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataNormals';
@@ -466,6 +467,7 @@ procedure R3D_GenMeshDataNormals(meshData: PR3D_MeshData; primitiveType: TR3D_Pr
  * @param meshData Mesh data to modify.
  * @param primitiveType Primitive type of the mesh. Points and line primitives are not
  *                      supported and will default to a front-facing tangent (1, 0, 0, 1).
+ * @warning Not thread-safe: uses the shared global scratch stack
  *}
 procedure R3D_GenMeshDataTangents(meshData: PR3D_MeshData; primitiveType: TR3D_PrimitiveType); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GenMeshDataTangents';

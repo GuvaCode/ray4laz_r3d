@@ -3,7 +3,7 @@ program sponza_example;
 {$mode objfpc}{$H+}
 
 uses
-  raylib, raymath, r3d, math;
+   CThreads, raylib, raymath, r3d, math;
 
 const
   RESOURCES_PATH = 'resources/';

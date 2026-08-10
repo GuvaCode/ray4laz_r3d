@@ -358,7 +358,7 @@ function R3D_GetLightSpecular(id: TR3D_Light): Single; cdecl;
  * This function sets the specular intensity of the specified light.
  * Higher specular values result in stronger and sharper highlights on reflective surfaces.
  *
- * Default: 0.5f
+ * Default: 1.0
  *
  * @param id The ID of the light.
  * @param specular The new specular intensity value to set for the light.
