@@ -5,17 +5,15 @@
 // ========================================
 
 {*
- * @brief Transparency modes.
- *
- * This enumeration defines how a material handles transparency during rendering.
- * It controls whether transparency is disabled, rendered using a depth pre-pass,
- * or rendered with standard alpha blending.
- *}
+* @brief Material transparency handling modes.
+*
+* Defines how material opacity and blending are processed during rendering.
+*}
 type
   TR3D_TransparencyMode = (
-    R3D_TRANSPARENCY_DISABLED,      ///< No transparency, supports alpha cutoff.
-    R3D_TRANSPARENCY_PREPASS,       ///< Supports transparency with shadows. Writes shadows for alpha > 0.1 and depth for alpha > 0.99.
-    R3D_TRANSPARENCY_ALPHA          ///< Standard transparency without shadows or depth writes.
+  R3D_TRANSPARENCY_OPAQUE,        ///< Fully opaque in G-Buffer (supports hard alpha cutoff/masking). Ignores blend mode.
+  R3D_TRANSPARENCY_HYBRID,        ///< Two-pass rendering: opaque cutoff in G-Buffer + forward blending.
+  R3D_TRANSPARENCY_BLEND          ///< Blended only (forward pass, no depth write / shadow casting).
   );
 
 {*
@@ -33,17 +31,18 @@ type
   );
 
 {*
- * @brief Blend modes.
- *
- * Defines common blending modes used in 3D rendering to combine source and destination colors.
- * @note The blend mode is applied only if you are in forward rendering mode or auto-detect mode.
+* @brief Blend modes.
+*
+* Defines common blending modes to combine source and destination colors.
+* @note Ignored when R3D_TRANSPARENCY_OPAQUE is selected.
  *}
 type
   TR3D_BlendMode = (
-    R3D_BLEND_MIX,                  ///< Default mode: the result will be opaque or alpha blended depending on the transparency mode.
-    R3D_BLEND_ADDITIVE,             ///< Additive blending: source color is added to the destination, making bright effects.
-    R3D_BLEND_MULTIPLY,             ///< Multiply blending: source color is multiplied with the destination, darkening the image.
-    R3D_BLEND_PREMULTIPLIED_ALPHA   ///< Premultiplied alpha blending: source color is blended with the destination assuming the source color is already multiplied by its alpha.
+    R3D_BLEND_ALPHA,                ///< Standard alpha blending: source color is blended using its alpha channel.
+    R3D_BLEND_ADDITIVE,             ///< Pure additive blending: source color is added directly to destination (ignores alpha).
+    R3D_BLEND_ADD_ALPHA,            ///< Alpha-modulated additive blending: source color scaled by alpha before adding to destination.
+    R3D_BLEND_MULTIPLY,             ///< Multiply blending: source color is multiplied with destination, darkening the image.
+    R3D_BLEND_PREMULTIPLIED_ALPHA   ///< Premultiplied alpha blending: assumes source color is already multiplied by its alpha.
   );
 
 {*
@@ -184,14 +183,14 @@ type
 
     uvOffset: TVector2;                       ///< UV offset (default: {0.0f, 0.0f})
     uvScale: TVector2;                        ///< UV scale (default: {1.0f, 1.0f})
-    alphaCutoff: Single;                      ///< Alpha cutoff threshold (default: 0.01f)
+    alphaCutoff: Single;                      ///< Alpha cutoff threshold (default: 0.5)
 
     depth: TR3D_DepthState;                   ///< Depth test configuration (default: standard)
     stencil: TR3D_StencilState;               ///< Stencil test configuration (default: disabled)
 
-    transparencyMode: TR3D_TransparencyMode;  ///< Transparency mode (default: DISABLED)
+    transparencyMode: TR3D_TransparencyMode;  ///< Transparency mode (default: R3D_TRANSPARENCY_OPAQUE)
     billboardMode: TR3D_BillboardMode;        ///< Billboard mode (default: DISABLED)
-    blendMode: TR3D_BlendMode;                ///< Blend mode (default: MIX)
+    blendMode: TR3D_BlendMode;                ///< Blend mode (default: R3D_BLEND_ALPHA)
     cullMode: TR3D_CullMode;                  ///< Face culling mode (default: BACK)
 
     unlit: Boolean;                           ///< If true, material does not participate in lighting (default: false)

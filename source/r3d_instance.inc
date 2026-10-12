@@ -145,15 +145,27 @@ procedure R3D_UnloadInstanceBuffer(buffer: TR3D_InstanceBuffer); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_UnloadInstanceBuffer';
 
 {*
- * @brief Grow the GPU buffers of an instance buffer to a new capacity.
+ * @brief Grow an instance buffer's capacity if needed.
  *
- * Only expands; if newCapacity <= buffer^.capacity the call is a no-op.
- * All attribute buffers present in buffer^.layout.flags are reallocated and
- * if keepData is true, their existing content is copied to the new
- * buffers before the old ones are deleted.
+ * No-op if minCapacity <= buffer^.capacity. Otherwise calls
+ * R3D_ResizeInstanceBuffer with minCapacity.
+ *
+ * @param buffer      Instance buffer to reserve capacity on (updated in place).
+ * @param minCapacity Minimum capacity in number of instances.
+ * @param keepData    If true, preserves existing instance data.
+ *}
+procedure R3D_ReserveInstanceBuffer(buffer: PR3D_InstanceBuffer; minCapacity: Integer; keepData: Boolean); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_ReserveInstanceBuffer';
+
+{*
+ * @brief Resize the GPU buffers of an instance buffer to an exact capacity.
+ *
+ * Grows or shrinks every enabled attribute buffer to newCapacity. No-op if
+ * newCapacity already equals the current capacity. If keepData is true,
+ * existing content is copied over, truncated if newCapacity is smaller.
  *
  * @param buffer      Instance buffer to resize (updated in place).
- * @param newCapacity Desired minimum capacity in number of instances.
+ * @param newCapacity Exact new capacity in number of instances.
  * @param keepData    If true, preserves existing instance data.
  *}
 procedure R3D_ResizeInstanceBuffer(buffer: PR3D_InstanceBuffer; newCapacity: Integer; keepData: Boolean); cdecl;

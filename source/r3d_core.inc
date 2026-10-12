@@ -20,8 +20,8 @@ type
     R3D_HINT_MESH_STREAMING_CAPACITY,       ///< Initial capacity for tracking freed mesh slots. Default: 128
     R3D_HINT_DRAW_CALL_CAPACITY,            ///< Initial capacity of the CPU-side draw call list. Default: 1024
     R3D_HINT_FORWARD_LIGHT_PER_MESH,        ///< Max lights per mesh in forward pass. Default: 16
-    R3D_HINT_PROBE_MAX_ACTIVE,              ///< Max probes rendered simultaneously. Default: 8
-    R3D_HINT_PROBE_CAPTURE_SIZE,            ///< Probe capture cubemap face size (px). Default: 256
+    R3D_HINT_PROBE_ILLUMINATION_MAX_ACTIVE, ///< Max illumination probes rendered simultaneously. Default: 32
+    R3D_HINT_PROBE_REFLECTION_MAX_ACTIVE,   ///< Max reflection probes rendered simultaneously. Default: 8
     R3D_HINT_SHADOW_DIR_SIZE,               ///< Directional light shadow map size (px). Default: 4096
     R3D_HINT_SHADOW_SPOT_SIZE,              ///< Spot light shadow map size (px). Default: 2048
     R3D_HINT_SHADOW_OMNI_SIZE,              ///< Omni light shadow map size (px). Default: 2048
@@ -92,7 +92,7 @@ type
     R3D_OUTPUT_ALBEDO,
     R3D_OUTPUT_NORMAL,
     R3D_OUTPUT_ORM,
-    R3D_OUTPUT_DIFFUSE,
+    R3D_OUTPUT_RADIANCE,
     R3D_OUTPUT_SPECULAR,
     R3D_OUTPUT_SSAO,
     R3D_OUTPUT_SSIL,
@@ -100,15 +100,6 @@ type
     R3D_OUTPUT_SSR,
     R3D_OUTPUT_BLOOM,
     R3D_OUTPUT_DOF
-  );
-
-{*
- * @brief Specifies the color space for user-provided colors and color textures.
- *}
-type
-  TR3D_ColorSpace = (
-    R3D_COLORSPACE_LINEAR,  ///< Linear color space.
-    R3D_COLORSPACE_SRGB     ///< sRGB color space.
   );
 
 // ========================================
@@ -296,22 +287,3 @@ procedure R3D_SetTextureFilter(filter: TTextureFilter); cdecl;
 procedure R3D_SetTextureWrap(wrap: TTextureWrap); cdecl;
   external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetTextureWrap';
 
-{*
- * @brief Set the working color space for user-provided surface colors and color textures.
- *
- * Defines how all *color inputs* should be interpreted:
- * - surface colors provided in materials (e.g. albedo/emission tints)
- * - color textures such as albedo and emission maps
- *
- * When set to sRGB, these values are converted to linear before shading.
- * When set to linear, values are used as-is.
- *
- * This does NOT affect lighting inputs (direct or indirect light),
- * which are always expected to be provided in linear space.
- *
- * The default color space is `R3D_COLORSPACE_SRGB`.
- *
- * @param space Color space to use for color inputs (linear or sRGB).
- *}
-procedure R3D_SetColorSpace(space: TR3D_ColorSpace); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_SetColorSpace';

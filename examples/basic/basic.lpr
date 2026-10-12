@@ -15,6 +15,7 @@ type
     plane, sphere: TR3D_Mesh;
     material: TR3D_Material;
     light: TR3D_Light;
+    shadow: TR3D_ShadowMap;
     camera: TCamera3D;
     procedure Init;
     procedure Update;
@@ -71,10 +72,10 @@ begin
   R3D_ENVIRONMENT_SET('ambient.color', ColorCreate(10, 10, 10, 255));
 
   // Create light
-  light := R3D_CreateLight(R3D_LIGHT_SPOT);
-  R3D_SetLightTarget(light, Vector3Create(0, 10, 5), Vector3Create(0, 0, 0));
-  R3D_EnableShadow(light);
-  R3D_EnableLight(light);
+
+  light := R3D_CreateSpotLight(Vector3Create(0, 10, 5), Vector3Create(0, -1, -0.5), 50.0, WHITE, 1.0);
+  shadow := R3D_LoadShadowMap(R3D_LIGHT_SPOT);
+  shadow.softness := 4.0;
 
   // Setup camera
   camera.position := Vector3Create(0, 2, 2);
@@ -94,6 +95,7 @@ begin
   ClearBackground(RAYWHITE);
 
   R3D_Begin(camera);
+      R3D_PushLightEx(light, shadow, false);
     R3D_DrawMesh(plane, material, Vector3Create(0, -0.5, 0), 1.0);
     R3D_DrawMesh(sphere, material, Vector3Zero(), 1.0);
   R3D_End();

@@ -19,6 +19,7 @@ var
   light: TR3D_Light;
   camera: TCamera3D;
   time: Single;
+  shadow: TR3D_ShadowMap;
 
 begin
   // Initialize window
@@ -50,13 +51,19 @@ begin
 
   // Load a screen shader
   shader := R3D_LoadScreenShader(PAnsiChar(RESOURCES_PATH + 'shaders/screen.glsl'));
-      R3D_SetScreenShaderChain(R3D_SCREEN_SHADER_STAGE_OUTPUT, @shader, 1);
+  R3D_SetScreenShaderChain(R3D_SCREEN_SHADER_STAGE_OUTPUT, @shader, 1);
 
   // Create light
-  light := R3D_CreateLight(R3D_LIGHT_SPOT);
+ {/ light := R3D_CreateLight(R3D_LIGHT_SPOT);
   R3D_SetLightTarget(light, Vector3Create(0, 10, 5), Vector3Create(0, 0, 0));
   R3D_EnableShadow(light);
-  R3D_EnableLight(light);
+  R3D_EnableLight(light); }
+
+
+  // Create light
+ light := R3D_CreateSpotLight(Vector3Create(0, 10, 5), Vector3Create(0, -1, -0.5), 50.0, WHITE, 1.0);
+ shadow := R3D_LoadShadowMap(R3D_LIGHT_SPOT);
+ shadow.softness := 4.0;
 
   // Setup camera
   camera.position := Vector3Create(0, 2, 2);
@@ -73,11 +80,12 @@ begin
     BeginDrawing();
       ClearBackground(RAYWHITE);
 
-      time := 2.0 * GetTime();
-      R3D_SetScreenShaderUniform(shader, 'u_time', @time);
-      R3D_SetSurfaceShaderUniform(material.shader, 'u_time', @time);
+      //time := 2.0 * GetTime();
+     // R3D_SetScreenShaderUniform(shader, 'u_time', @time);
+     // R3D_SetSurfaceShaderUniform(material.shader, 'u_time', @time);
 
       R3D_Begin(camera);
+                      R3D_PushLightEx(light, shadow, true);
         R3D_DrawMesh(plane, R3D_MATERIAL_BASE, Vector3Create(0, -0.5, 0), 1.0);
         R3D_DrawMesh(torus, material, Vector3Zero(), 1.0);
       R3D_End();

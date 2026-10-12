@@ -45,9 +45,9 @@ begin
   Result.stencil.opPass := R3D_STENCIL_REPLACE;
 
   // Режимы рендеринга
-  Result.transparencyMode := R3D_TRANSPARENCY_DISABLED;
+  Result.transparencyMode := R3D_TRANSPARENCY_OPAQUE;
   Result.billboardMode := R3D_BILLBOARD_DISABLED;
-  Result.blendMode := R3D_BLEND_MIX;
+  Result.blendMode := R3D_BLEND_ALPHA;
   Result.cullMode := R3D_CULL_BACK;
 
   // Дополнительные параметры

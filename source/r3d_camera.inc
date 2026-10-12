@@ -142,26 +142,28 @@ function R3D_GetCameraView(camera: TR3D_Camera): TMatrix; cdecl;
 {*
  * @brief Returns the camera projection matrix.
  *}
-function R3D_GetCameraProj(camera: TR3D_Camera; aspect: Double): TMatrix; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetCameraProj';
+function R3D_GetCameraProjection(camera: TR3D_Camera; aspect: Double): TMatrix; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetCameraProjection';
+
+
 
 {*
  * @brief Returns the combined view-projection matrix.
  *}
-function R3D_GetCameraViewProj(camera: TR3D_Camera; aspect: Double): TMatrix; cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetCameraViewProj';
+function R3D_GetCameraViewProjection(camera: TR3D_Camera; aspect: Double): TMatrix; cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_GetCameraViewProjection';
 
 {*
  * @brief Moves the camera in world space.
  *}
-procedure R3D_MoveCamera(camera: PR3D_Camera; delta: TVector3); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_MoveCamera';
+procedure R3D_CameraMove(camera: PR3D_Camera; delta: TVector3); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CameraMove';
 
 {*
  * @brief Moves the camera in local space.
  *}
-procedure R3D_MoveCameraLocal(camera: PR3D_Camera; delta: TVector3); cdecl;
-  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_MoveCameraLocal';
+procedure R3D_CameraMoveLocal(camera: PR3D_Camera; delta: TVector3); cdecl;
+  external {$IFNDEF RAY_STATIC}r3dName{$ENDIF} name 'R3D_CameraMoveLocal';
 
 {*
  * @brief Rotates the camera using a quaternion.

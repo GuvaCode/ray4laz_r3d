@@ -10,11 +10,12 @@
 type
   PR3D_SweepCollision = ^TR3D_SweepCollision;
   TR3D_SweepCollision = record
-    hit: Boolean;           ///< Whether a collision occurred
-    time: Single;           ///< Time of impact [0-1], fraction along velocity vector
     point: TVector3;        ///< World space collision point
     normal: TVector3;       ///< Surface normal at collision point
+    time: Single;           ///< Time of impact [0-1], fraction along velocity vector
+    hit: Boolean;           ///< Whether a collision occurred
   end;
+
 
 // ========================================
 // PUBLIC API

@@ -12,9 +12,11 @@
 #include "./r3d_animation_player.h"
 #include "./r3d_instance.h"
 #include "./r3d_platform.h"
+#include "./r3d_lighting.h"
 #include "./r3d_camera.h"
 #include "./r3d_model.h"
 #include "./r3d_decal.h"
+#include "./r3d_probe.h"
 #include <raylib.h>
 
 /**
@@ -122,6 +124,53 @@ R3DAPI void R3D_BeginCluster(BoundingBox aabb);
  * Stops submitting draw calls to the active cluster.
  */
 R3DAPI void R3D_EndCluster(void);
+
+/**
+ * @brief Queues a light to be rendered for the current frame, without shadows.
+ *
+ * The light is submitted for rendering during R3D_End(), and must be pushed
+ * again on every frame between R3D_Begin() and R3D_End() to remain visible.
+ *
+ * @param light The light data to submit (see R3D_Light).
+ */
+R3DAPI void R3D_PushLight(R3D_Light light);
+
+/**
+ * @brief Queues a light to be rendered for the current frame, with an associated shadow map.
+ *
+ * The light is submitted for rendering during R3D_End(), and must be pushed
+ * again on every frame between R3D_Begin() and R3D_End() to remain visible.
+ *
+ * The shadow map is re-rendered whenever updateShadow is true, or when it has never
+ * been rendered before (so static lights can safely pass false from the start and
+ * still get valid shadows). This happens even if the light is currently off-screen,
+ * so you can safely ignore visibility when driving updateShadow, or factor it in
+ * yourself if you want to defer updates for off-screen lights.
+ *
+ * @param light The light data to submit (see R3D_Light).
+ * @param map The shadow map to associate with this light for this frame.
+ * @param updateShadow Whether the shadow map should be re-rendered this frame.
+ *                     If false, the previously rendered content is reused instead.
+ */
+R3DAPI void R3D_PushLightEx(R3D_Light light, R3D_ShadowMap map, bool updateShadow);
+
+/**
+ * @brief Queues a probe to be rendered for the current frame.
+ *
+ * The probe is submitted for rendering during R3D_End(), and must be pushed
+ * again on every frame between R3D_Begin() and R3D_End() to remain active.
+ *
+ * The probe is re-captured whenever updateProbe is true, or when it has never been
+ * captured before (so static probes can safely pass false from the start and still
+ * get valid data). This happens even if the probe is currently off-screen, so you
+ * can safely ignore visibility when driving updateProbe, or factor it in yourself
+ * if you want to defer updates for off-screen probes.
+ *
+ * @param probe The probe data to submit (see R3D_Probe).
+ * @param updateProbe Whether the probe's capture should be re-rendered this frame.
+ *                    If false, the previously captured content is reused instead.
+ */
+R3DAPI void R3D_PushProbe(R3D_Probe probe, bool updateProbe);
 
 /**
  * @brief Queues a mesh draw command with position and uniform scale.

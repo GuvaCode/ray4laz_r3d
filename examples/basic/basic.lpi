@@ -31,11 +31,6 @@
         <PackageName Value="ray4laz"/>
       </Item>
     </RequiredPackages>
-    <Units>
-      <Unit>
-        <Filename Value="basic.lpr"/>
-      </Unit>
-    </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
@@ -46,9 +41,6 @@
       <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="../../temp/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
-    <CodeGeneration>
-      <TargetOS Value="win64"/>
-    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf3"/>

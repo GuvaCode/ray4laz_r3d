@@ -28,10 +28,10 @@
  * @brief Collision information from a sweep test
  */
 typedef struct R3D_SweepCollision {
-    bool hit;           ///< Whether a collision occurred
-    float time;         ///< Time of impact [0-1], fraction along velocity vector
     Vector3 point;      ///< World space collision point
     Vector3 normal;     ///< Surface normal at collision point
+    float time;         ///< Time of impact [0-1], fraction along velocity vector
+    bool hit;           ///< Whether a collision occurred
 } R3D_SweepCollision;
 
 // ========================================

@@ -23,37 +23,29 @@
 // ========================================
 
 /**
- * @brief Bit-flags controlling what components are generated.
- *
- * - R3D_PROBE_ILLUMINATION -> generate diffuse irradiance
- * - R3D_PROBE_REFLECTION   -> generate specular prefiltered map
+ * @brief Type of data captured by a probe.
  */
-typedef uint32_t R3D_ProbeFlags;
-
-#define R3D_PROBE_ILLUMINATION    (1 << 0)
-#define R3D_PROBE_REFLECTION      (1 << 1)
-
-/**
- * @brief Modes for updating probes.
- *
- * Controls how often probe captures are refreshed.
- */
-typedef enum R3D_ProbeUpdateMode {
-    R3D_PROBE_UPDATE_ONCE,      ///< Updated only when its state or content changes
-    R3D_PROBE_UPDATE_ALWAYS     ///< Updated during every frames
-} R3D_ProbeUpdateMode;
+typedef enum R3D_ProbeType {
+    R3D_PROBE_ILLUMINATION,     ///< Captures indirect diffuse lighting.
+    R3D_PROBE_REFLECTION,       ///< Captures environment reflections.
+} R3D_ProbeType;
 
 // ========================================
-// HANDLE TYPE
+// STRUCT TYPES
 // ========================================
 
 /**
- * @brief Unique identifier for an R3D probe.
- *
- * ID type used to reference a probe.
- * A zero value indicates an invalid probe.
+ * @brief Describes a probe used for indirect lighting or reflections.
  */
-typedef uint32_t R3D_Probe;
+typedef struct R3D_Probe {
+    R3D_ProbeType type;     ///< Type of data captured by the probe
+    uint32_t handle;        ///< Internal probe handle (don't touch)
+    Vector3 position;       ///< World-space probe position
+    float falloff;          ///< Distance falloff factor
+    float range;            ///< Maximum influence distance
+    bool interior;          ///< Whether the probe is captured as an interior
+    bool shadows;           ///< Whether shadows are included in the capture
+} R3D_Probe;
 
 // ========================================
 // PUBLIC API
@@ -64,187 +56,23 @@ extern "C" {
 #endif
 
 /**
- * @brief Creates a new probe of the specified type.
+ * @brief Allocates a probe of the given type.
  *
- * The returned probe must be destroyed using ::R3D_DestroyProbe
- * when it is no longer needed.
- *
- * @param flags IBL components that the probe must support.
- * @return A valid probe ID, or a negative value on failure.
+ * @param type Whether this probe contributes indirect lighting or reflections.
+ * @param interior Whether the skybox is taken into account when capturing this probe.
+ * @param shadow Whether shadow casters are taken into account when capturing this probe.
  */
-R3DAPI R3D_Probe R3D_CreateProbe(R3D_ProbeFlags flags);
+R3DAPI R3D_Probe R3D_LoadProbe(R3D_ProbeType type, bool interior, bool shadow);
 
 /**
- * @brief Destroys a probe and frees its resources.
- *
- * @param id Probe ID to destroy.
+ * @brief Releases a probe, freeing its layer for reuse.
  */
-R3DAPI void R3D_DestroyProbe(R3D_Probe id);
+R3DAPI void R3D_UnloadProbe(R3D_Probe probe);
 
 /**
- * @brief Returns whether a probe ID is valid and allocated.
- *
- * @param id Probe ID.
- * @return true if the probe exists, otherwise false.
+ * @brief Returns whether the probe has a valid allocated layer.
  */
-R3DAPI bool R3D_IsProbeValid(R3D_Probe id);
-
-/**
- * @brief Returns the probe flags.
- *
- * @param id Probe ID.
- * @return The flags assigned to the probe.
- */
-R3DAPI R3D_ProbeFlags R3D_GetProbeFlags(R3D_Probe id);
-
-/**
- * @brief Returns whether a probe is currently enabled.
- *
- * Disabled probes do not contribute to lighting.
- *
- * @param id Probe ID.
- * @return true if the probe is enabled, otherwise false.
- */
-R3DAPI bool R3D_IsProbeEnabled(R3D_Probe id);
-
-/**
- * @brief Toggles a probe between enabled and disabled states.
- *
- * Re-enabling a probe schedules a scene capture on the next frame.
- *
- * @param id Probe ID.
- */
-R3DAPI void R3D_ToggleProbe(R3D_Probe id);
-
-/**
- * @brief Enables a probe.
- *
- * Schedules a scene capture on the next frame.
- * Has no effect if the probe is already enabled.
- *
- * @param id Probe ID.
- */
-R3DAPI void R3D_EnableProbe(R3D_Probe id);
-
-/**
- * @brief Disables a probe.
- *
- * Has no effect if the probe is already disabled.
- *
- * @param id Probe ID.
- */
-R3DAPI void R3D_DisableProbe(R3D_Probe id);
-
-/**
- * @brief Gets the probe update mode.
- *
- * - R3D_PROBE_UPDATE_ONCE:
- *     Captured once, then reused unless its state changes.
- *
- * - R3D_PROBE_UPDATE_ALWAYS:
- *     Recaptured every frame.
- *
- * Use "ONCE" for static scenes, "ALWAYS" for highly dynamic scenes.
- */
-R3DAPI R3D_ProbeUpdateMode R3D_GetProbeUpdateMode(R3D_Probe id);
-
-/**
- * @brief Sets the probe update mode.
- *
- * Controls when the probe capture is refreshed.
- *
- * Default: R3D_PROBE_UPDATE_ONCE
- *
- * @param id Probe ID.
- * @param mode Update mode to apply.
- */
-R3DAPI void R3D_SetProbeUpdateMode(R3D_Probe id, R3D_ProbeUpdateMode mode);
-
-/**
- * @brief Returns whether the probe is considered indoors.
- *
- * Indoor probes do not sample skybox or environment maps.
- * Instead they rely only on ambient and background colors.
- *
- * Use this for rooms, caves, tunnels, etc...
- * where outside lighting should not bleed inside.
- */
-R3DAPI bool R3D_GetProbeInterior(R3D_Probe id);
-
-/**
- * @brief Enables or disables indoor mode for the probe.
- *
- * Default: false
- */
-R3DAPI void R3D_SetProbeInterior(R3D_Probe id, bool active);
-
-/**
- * @brief Returns whether shadows are captured by this probe.
- *
- * When enabled, shadowing is baked into the captured lighting.
- * This improves realism, but increases capture cost.
- */
-R3DAPI bool R3D_GetProbeShadows(R3D_Probe id);
-
-/**
- * @brief Enables or disables shadow rendering during probe capture.
- *
- * Default: false
- */
-R3DAPI void R3D_SetProbeShadows(R3D_Probe id, bool active);
-
-/**
- * @brief Gets the world position of the probe.
- */
-R3DAPI Vector3 R3D_GetProbePosition(R3D_Probe id);
-
-/**
- * @brief Sets the world position of the probe.
- *
- * Default: (Vector3) {0.0f, 0.0f, 0.0f}
- */
-R3DAPI void R3D_SetProbePosition(R3D_Probe id, Vector3 position);
-
-/**
- * @brief Gets the effective range of the probe.
- *
- * The range defines the radius (in world units) within which this probe
- * contributes to lighting. Objects outside this sphere receive no influence.
- */
-R3DAPI float R3D_GetProbeRange(R3D_Probe id);
-
-/**
- * @brief Sets the effective range of the probe.
- *
- * @param range Radius in world units. Must be > 0.
- *
- * Default: 16.0f
- */
-R3DAPI void R3D_SetProbeRange(R3D_Probe id, float range);
-
-/**
- * @brief Gets the falloff factor applied to probe contributions.
- *
- * Falloff controls how lighting fades as distance increases.
- *
- * Internally this uses a power curve:
- *     attenuation = 1.0 - pow(dist / probe.range, probe.falloff)
- *
- * Effects:
- *   - falloff = 1 -> linear fade
- *   - falloff > 1 -> light stays strong near the probe, drops faster at the edge
- *   - falloff < 1 -> softer fade across the whole range
- */
-R3DAPI float R3D_GetProbeFalloff(R3D_Probe id);
-
-/**
- * @brief Sets the falloff factor used for distance attenuation.
- *
- * Larger values make the probe feel more localized.
- *
- * Default: 1.0f
- */
-R3DAPI void R3D_SetProbeFalloff(R3D_Probe id, float falloff);
+R3DAPI bool R3D_IsProbeValid(R3D_Probe probe);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -61,6 +61,10 @@ type
 type
   {*
    * @brief Background and skybox configuration.
+   *
+   * @note A transparent or semi-transparent background color is supported,
+   * but effects that blur/spread geometry (like bloom or DoF) will bleed
+   * or fade at silhouettes instead of blending with real content behind.
    *}
   PR3D_EnvBackground = ^TR3D_EnvBackground;
   TR3D_EnvBackground = record
@@ -91,7 +95,6 @@ type
     sampleCount: Integer;     ///< Number of samples to compute SSAO (default: 16)
     intensity: Single;        ///< Base occlusion strength multiplier (default: 1.0)
     power: Single;            ///< Exponential falloff for sharper darkening (default: 1.0)
-    maxRadius: Single;        ///< Fraction of screen height beyond which the sampling radius is clamped (default: 0.2)
     radius: Single;           ///< Sampling radius in world space (default: 1.0)
     bias: Single;             ///< Depth bias to prevent self-occlusion artifacts, in world-space units (default: 0.03)
     enabled: Boolean;         ///< Enable/disable SSAO effect (default: false)
@@ -111,7 +114,6 @@ type
      giIntensity: Single;      ///< Indirect light strength multiplier (default: 1.0)
      aoIntensity: Single;      ///< Ambient occlusion strength multiplier (default: 1.0)
      aoPower: Single;          ///< Exponential falloff for sharper occlusion darkening (default: 1.0)
-     maxRadius: Single;        ///< Fraction of screen height beyond which the sampling radius is clamped (default: 0.2)
      radius: Single;           ///< Sampling radius in world space (default: 4.0)
      bias: Single;             ///< Depth bias to prevent self-occlusion artifacts, in world-space units (default: 0.03)
      enabled: Boolean;         ///< Enable/disable SSIL effect (default: false)
@@ -125,12 +127,12 @@ type
    PR3D_EnvSSGI = ^TR3D_EnvSSGI;
    TR3D_EnvSSGI = record
      sliceCount: Integer;         ///< Number of directions sampled per pixel. Higher = fewer noise streaks, higher cost. (default: 4)
-     edgeFade: Single;         ///< Fades out GI near screen edges to hide emissive objects partially off-screen. (default: 0.1)
-     distanceFalloff: Single;  ///< How quickly indirect light fades with distance. Higher = shorter reach, darker result. (default: 1.0)
-     normalRejection: Single;  ///< Prevents surfaces from receiving light through their own backside. 0 = off, 1 = physically correct. May look inconsistent with non-directional emissives. (default: 0.0)
-     intensity: Single;        ///< Brightness of the indirect lighting. Dimly lit scenes may require significantly higher values to show probable contribution. (default: 1.0)
+     edgeFade: Single;            ///< Fades out GI near screen edges to hide emissive objects partially off-screen. (default: 0.1)
+     distanceFalloff: Single;     ///< How quickly indirect light fades with distance. Higher = shorter reach, darker result. (default: 1.0)
+     normalRejection: Single;     ///< Prevents surfaces from receiving light through their own backside. 0 = off, 1 = physically correct. May look inconsistent with non-directional emissives. (default: 0.0)
+     intensity: Single;           ///< Brightness of the indirect lighting. Dimly lit scenes may require significantly higher values to show probable contribution. (default: 1.0)
      denoiseSteps: Integer;       ///< Number of denoiser passes. Higher = smoother result, slightly higher cost. (default: 4)
-     enabled: Boolean;           ///< Enable or disable SSGI entirely. (default: false)
+     enabled: Boolean;            ///< Enable or disable SSGI entirely. (default: false)
    end;
 
   {*
@@ -140,13 +142,10 @@ type
    *}
   PR3D_EnvSSR = ^TR3D_EnvSSR;
   TR3D_EnvSSR = record
-    maxRaySteps: Integer;     ///< Maximum ray marching steps (default: 32)
-    binarySteps: Integer;     ///< Binary search refinement steps (default: 4)
-    stepSize: Single;         ///< Ray step size (default: 0.125)
-    thickness: Single;        ///< Depth tolerance for valid hits (default: 0.2)
-    maxDistance: Single;      ///< Maximum ray distance (default: 4.0)
-    edgeFade: Single;         ///< Screen edge fade start [0,1] (default: 0.25)
-    enabled: Boolean;         ///< Enable/disable SSR (default: false)
+    maxIterations: Integer;      ///< Maximum ray marching iterations (default: 64)
+    thickness: Single;           ///< Depth tolerance for valid hits (default: 0.5)
+    edgeFade: Single;            ///< Screen edge fade start [0,1] (default: 0.25)
+    enabled: Boolean;            ///< Enable/disable SSR (default: false)
   end;
 
   {*
@@ -227,7 +226,7 @@ type
      exposureCompensation: Single; ///< Artistic exposure bias in EV stops: +1 = one stop brighter (default: 0.0)
      adaptationToBright: Single;   ///< Time constant in seconds when scene luminance increases; lower = faster (default: 0.5)
      adaptationToDark: Single;     ///< Time constant in seconds when scene luminance decreases; lower = faster (default: 1.0)
-     enabled: Boolean;               ///< Enable auto exposure (default: false)
+     Enabled: Boolean;               ///< Enable auto exposure (default: false)
    end;
 
   {*

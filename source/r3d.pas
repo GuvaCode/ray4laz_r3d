@@ -31,11 +31,12 @@ interface
 
 uses
   SysUtils, raylib, {$IFDEF FPC} ctypes, {$ENDIF} Variants, math;
-
+{
 {$IFDEF LINUX}
   {$DEFINE RAY_STATIC}
 {$IFEND}
   {$DEFINE RAY_STATIC}
+ }
 {$IFNDEF RAY_STATIC}
   const r3dName =
   {$IFDEF MSWINDOWS} 'libr3d.dll'; {$IFEND}
@@ -58,7 +59,7 @@ uses
   {$I r3d_surface_shader.inc}
   {$I r3d_material.inc}
 
-  {$I r3d_color.inc}
+//  {$I r3d_color.inc}
   {$I r3d_texture.inc}
 
   {$I r3d_decal.inc}

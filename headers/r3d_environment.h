@@ -54,104 +54,99 @@
 #define R3D_ENVIRONMENT_BASE                            \
     R3D_LITERAL(R3D_Environment) {                      \
         .background = {                                 \
-            .color = GRAY,                              \
-            .energy = 1.0f,                             \
-            .skyBlur = 0.0f,                            \
-            .sky = {0},                                 \
+            .color    = GRAY,                           \
+            .energy   = 1.0f,                           \
+            .skyBlur  = 0.0f,                           \
+            .sky      = {0},                            \
             .rotation = {0.0f, 0.0f, 0.0f, 1.0f},       \
         },                                              \
         .ambient = {                                    \
-            .color = BLACK,                             \
+            .color  = BLACK,                            \
             .energy = 1.0f,                             \
-            .map = {0},                                 \
+            .map    = {0},                              \
         },                                              \
         .ssao = {                                       \
             .sampleCount = 16,                          \
-            .intensity = 1.0f,                          \
-            .power = 1.0f,                              \
-            .maxRadius = 0.2f,                          \
-            .radius = 1.0f,                             \
-            .bias = 0.03f,                              \
-            .enabled = false,                           \
+            .intensity   = 1.0f,                        \
+            .power       = 1.0f,                        \
+            .radius      = 1.0f,                        \
+            .bias        = 0.03f,                       \
+            .enabled     = false,                       \
         },                                              \
         .ssil = {                                       \
             .sampleCount = 16,                          \
             .giIntensity = 1.0f,                        \
             .aoIntensity = 1.0f,                        \
-            .aoPower = 1.0f,                            \
-            .maxRadius = 0.2f,                          \
-            .radius = 4.0f,                             \
-            .bias = 0.03f,                              \
-            .enabled = false,                           \
+            .aoPower     = 1.0f,                        \
+            .radius      = 4.0f,                        \
+            .bias        = 0.03f,                       \
+            .enabled     = false,                       \
         },                                              \
         .ssgi = {                                       \
-            .sliceCount = 4,                            \
-            .edgeFade = 0.1f,                           \
+            .sliceCount      = 4,                       \
+            .edgeFade        = 0.1f,                    \
             .distanceFalloff = 1.0f,                    \
             .normalRejection = 0.0f,                    \
-            .intensity = 1.0f,                          \
-            .denoiseSteps = 4,                          \
-            .enabled = false,                           \
+            .intensity       = 1.0f,                    \
+            .denoiseSteps    = 4,                       \
+            .enabled         = false,                   \
         },                                              \
         .ssr = {                                        \
-            .maxRaySteps = 32,                          \
-            .binarySteps = 4,                           \
-            .stepSize = 0.125f,                         \
-            .thickness = 0.2f,                          \
-            .maxDistance = 4.0f,                        \
-            .edgeFade = 0.25f,                          \
-            .enabled = false,                           \
+            .maxIterations = 64,                        \
+            .thickness     = 0.5f,                      \
+            .edgeFade      = 0.25f,                     \
+            .enabled       = false,                     \
         },                                              \
         .fog = {                                        \
-            .mode = R3D_FOG_DISABLED,                   \
-            .color = WHITE,                             \
-            .start = 1.0f,                              \
-            .end = 50.0f,                               \
-            .density = 0.05f,                           \
+            .mode      = R3D_FOG_DISABLED,              \
+            .color     = WHITE,                         \
+            .start     = 1.0f,                          \
+            .end       = 50.0f,                         \
+            .density   = 0.05f,                         \
             .skyAffect = 0.5f,                          \
         },                                              \
         .volumetricFog = {                              \
             .scatteringDensity = 0.01f,                 \
-            .absortionDensity = 0.03f,                  \
-            .scatteringColor = WHITE,                   \
-            .anisotropy = 0.5f,                         \
-            .emissionColor = WHITE,                     \
-            .emissionEnergy = 0.0f,                     \
-            .skyAffect = 0.5f,                          \
-            .length = 50.0f,                            \
-            .stepSize = 1.0f,                           \
-            .enabled = false,                           \
+            .absortionDensity  = 0.03f,                 \
+            .scatteringColor   = WHITE,                 \
+            .anisotropy        = 0.5f,                  \
+            .emissionColor     = WHITE,                 \
+            .emissionEnergy    = 0.0f,                  \
+            .skyAffect         = 0.5f,                  \
+            .length            = 50.0f,                 \
+            .stepSize          = 1.0f,                  \
+            .enabled           = false,                 \
         },                                              \
         .dof = {                                        \
-            .mode = R3D_DOF_DISABLED,                   \
-            .focusPoint = 10.0f,                        \
-            .focusScale = 1.0f,                         \
-            .nearScale = 1.0f,                          \
+            .mode        = R3D_DOF_DISABLED,            \
+            .focusPoint  = 10.0f,                       \
+            .focusScale  = 1.0f,                        \
+            .nearScale   = 1.0f,                        \
             .maxBlurSize = 20.0f,                       \
         },                                              \
         .bloom = {                                      \
-            .mode = R3D_BLOOM_DISABLED,                 \
-            .levels = 0.5f,                             \
-            .intensity = 0.05f,                         \
-            .threshold = 0.0f,                          \
+            .mode          = R3D_BLOOM_DISABLED,        \
+            .levels        = 0.5f,                      \
+            .intensity     = 0.05f,                     \
+            .threshold     = 0.0f,                      \
             .softThreshold = 0.5f,                      \
-            .filterRadius = 1.0f,                       \
+            .filterRadius  = 1.0f,                      \
         },                                              \
         .autoExposure = {                               \
-            .minEV = -1.0f,                             \
-            .maxEV =  1.0f,                             \
+            .minEV                = -1.0f,              \
+            .maxEV                =  1.0f,              \
             .exposureCompensation = 0.0f,               \
-            .adaptationToBright = 0.5f,                 \
-            .adaptationToDark = 1.0f,                   \
+            .adaptationToBright   = 0.5f,               \
+            .adaptationToDark     = 1.0f,               \
         },                                              \
         .tonemap = {                                    \
-            .mode = R3D_TONEMAP_LINEAR,                 \
+            .mode     = R3D_TONEMAP_LINEAR,             \
             .exposure = 1.0f,                           \
-            .white = 1.0f,                              \
+            .white    = 1.0f,                           \
         },                                              \
         .color = {                                      \
             .brightness = 1.0f,                         \
-            .contrast = 1.0f,                           \
+            .contrast   = 1.0f,                         \
             .saturation = 1.0f,                         \
         },                                              \
     }
@@ -212,6 +207,10 @@ typedef enum R3D_Tonemap {
 
 /**
  * @brief Background and skybox configuration.
+ *
+ * @note A transparent or semi-transparent background color is supported,
+ * but effects that blur/spread geometry (like bloom or DoF) will bleed
+ * or fade at silhouettes instead of blending with real content behind.
  */
 typedef struct R3D_EnvBackground {
     Color color;            ///< Background color when there is no skybox
@@ -239,7 +238,6 @@ typedef struct R3D_EnvSSAO {
     int sampleCount;        ///< Number of samples to compute SSAO (default: 16)
     float intensity;        ///< Base occlusion strength multiplier (default: 1.0)
     float power;            ///< Exponential falloff for sharper darkening (default: 1.0)
-    float maxRadius;        ///< Fraction of screen height beyond which the sampling radius is clamped (default: 0.2)
     float radius;           ///< Sampling radius in world space (default: 1.0)
     float bias;             ///< Depth bias to prevent self-occlusion artifacts, in world-space units (default: 0.03)
     bool enabled;           ///< Enable/disable SSAO effect (default: false)
@@ -258,7 +256,6 @@ typedef struct R3D_EnvSSIL {
     float giIntensity;      ///< Indirect light strength multiplier (default: 1.0)
     float aoIntensity;      ///< Ambient occlusion strength multiplier (default: 1.0)
     float aoPower;          ///< Exponential falloff for sharper occlusion darkening (default: 1.0)
-    float maxRadius;        ///< Fraction of screen height beyond which the sampling radius is clamped (default: 0.2)
     float radius;           ///< Sampling radius in world space (default: 4.0)
     float bias;             ///< Depth bias to prevent self-occlusion artifacts, in world-space units (default: 0.03)
     bool enabled;           ///< Enable/disable SSIL effect (default: false)
@@ -285,11 +282,8 @@ typedef struct R3D_EnvSSGI {
  * Real-time reflections calculated in screen space.
  */
 typedef struct R3D_EnvSSR {
-    int maxRaySteps;        ///< Maximum ray marching steps (default: 32)
-    int binarySteps;        ///< Binary search refinement steps (default: 4)
-    float stepSize;         ///< Ray step size (default: 0.125)
-    float thickness;        ///< Depth tolerance for valid hits (default: 0.2)
-    float maxDistance;      ///< Maximum ray distance (default: 4.0)
+    int maxIterations;      ///< Maximum ray marching iterations (default: 64)
+    float thickness;        ///< Depth tolerance for valid hits (default: 0.5)
     float edgeFade;         ///< Screen edge fade start [0,1] (default: 0.25)
     bool enabled;           ///< Enable/disable SSR (default: false)
 } R3D_EnvSSR;

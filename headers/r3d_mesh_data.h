@@ -80,13 +80,13 @@ extern "C" {
  *
  * All allocated memory is zero-initialized.
  *
- * @param vertexCount Number of vertices to allocate (capacity). Must be > 0.
- * @param indexCount Number of indices to allocate (capacity). May be 0.
- *                   If 0, no index buffer is allocated.
+ * @param vertexCapacity Number of vertices to allocate. Must be > 0.
+ * @param indexCapacity Number of indices to allocate. May be 0.
+ *                      If 0, no index buffer is allocated.
  *
  * @return A new R3D_MeshData with allocated buffers and zero element counts.
  */
-R3DAPI R3D_MeshData R3D_LoadMeshData(int vertexCount, int indexCount);
+R3DAPI R3D_MeshData R3D_LoadMeshData(int vertexCapacity, int indexCapacity);
 
 /**
  * @brief Releases memory used by a mesh data container.
@@ -452,7 +452,6 @@ R3DAPI void R3D_GenMeshDataNormals(R3D_MeshData* meshData, R3D_PrimitiveType typ
  * @param meshData Mesh data to modify.
  * @param type Primitive type of the mesh. Points and line primitives are not
  *             supported and will default to a front-facing tangent (1, 0, 0, 1).
- * @warning Not thread-safe: uses the shared global scratch stack
  */
 R3DAPI void R3D_GenMeshDataTangents(R3D_MeshData* meshData, R3D_PrimitiveType type);
 

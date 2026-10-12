@@ -54,7 +54,7 @@
         },                                              \
         .uvOffset = {0.0f, 0.0f},                       \
         .uvScale = {1.0f, 1.0f},                        \
-        .alphaCutoff = 0.01f,                           \
+        .alphaCutoff = 0.5f,                            \
         .depth = {                                      \
             .mode = R3D_COMPARE_LESS,                   \
             .offsetFactor = 0.0f,                       \
@@ -70,9 +70,9 @@
             .opZFail = R3D_STENCIL_KEEP,                \
             .opPass = R3D_STENCIL_REPLACE,              \
         },                                              \
-        .transparencyMode = R3D_TRANSPARENCY_DISABLED,  \
+        .transparencyMode = R3D_TRANSPARENCY_OPAQUE,    \
         .billboardMode = R3D_BILLBOARD_DISABLED,        \
-        .blendMode = R3D_BLEND_MIX,                     \
+        .blendMode = R3D_BLEND_ALPHA,                   \
         .cullMode = R3D_CULL_BACK,                      \
         .unlit = false,                                 \
         .priority = 0,                                  \
@@ -84,16 +84,14 @@
 // ========================================
 
 /**
- * @brief Transparency modes.
+ * @brief Material transparency handling modes.
  *
- * This enumeration defines how a material handles transparency during rendering.
- * It controls whether transparency is disabled, rendered using a depth pre-pass,
- * or rendered with standard alpha blending.
+ * Defines how material opacity and blending are processed during rendering.
  */
 typedef enum R3D_TransparencyMode {
-    R3D_TRANSPARENCY_DISABLED,      ///< No transparency, supports alpha cutoff.
-    R3D_TRANSPARENCY_PREPASS,       ///< Supports transparency with shadows. Writes shadows for alpha > 0.1 and depth for alpha > 0.99.
-    R3D_TRANSPARENCY_ALPHA,         ///< Standard transparency without shadows or depth writes.
+    R3D_TRANSPARENCY_OPAQUE,        ///< Fully opaque in G-Buffer (supports hard alpha cutoff/masking). Ignores blend mode.
+    R3D_TRANSPARENCY_HYBRID,        ///< Two-pass rendering: opaque cutoff in G-Buffer + forward blending.
+    R3D_TRANSPARENCY_BLEND,         ///< Blended only (forward pass, no depth write / shadow casting).
 } R3D_TransparencyMode;
 
 /**
@@ -112,14 +110,15 @@ typedef enum R3D_BillboardMode {
 /**
  * @brief Blend modes.
  *
- * Defines common blending modes used in 3D rendering to combine source and destination colors.
- * @note The blend mode is applied only if you are in forward rendering mode or auto-detect mode.
+ * Defines common blending modes to combine source and destination colors.
+ * @note Ignored when R3D_TRANSPARENCY_OPAQUE is selected.
  */
 typedef enum R3D_BlendMode {
-    R3D_BLEND_MIX,                  ///< Default mode: the result will be opaque or alpha blended depending on the transparency mode.
-    R3D_BLEND_ADDITIVE,             ///< Additive blending: source color is added to the destination, making bright effects.
-    R3D_BLEND_MULTIPLY,             ///< Multiply blending: source color is multiplied with the destination, darkening the image.
-    R3D_BLEND_PREMULTIPLIED_ALPHA   ///< Premultiplied alpha blending: source color is blended with the destination assuming the source color is already multiplied by its alpha.
+    R3D_BLEND_ALPHA,                ///< Standard alpha blending: source color is blended using its alpha channel.
+    R3D_BLEND_ADDITIVE,             ///< Pure additive blending: source color is added directly to destination (ignores alpha).
+    R3D_BLEND_ADD_ALPHA,            ///< Alpha-modulated additive blending: source color scaled by alpha before adding to destination.
+    R3D_BLEND_MULTIPLY,             ///< Multiply blending: source color is multiplied with destination, darkening the image.
+    R3D_BLEND_PREMULTIPLIED_ALPHA   ///< Premultiplied alpha blending: assumes source color is already multiplied by its alpha.
 } R3D_BlendMode;
 
 /**
